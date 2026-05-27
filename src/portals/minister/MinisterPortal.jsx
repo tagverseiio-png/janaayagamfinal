@@ -9,39 +9,39 @@ import CrisisMode from './CrisisMode';
 import EscalateCm from './EscalateCm';
 
 export default function MinisterPortal() {
-  const { t } = useTranslation();
+ const { t } = useTranslation();
 
-  const sidebarLinks = [
-    {
-      label: t('dashboard'),
-      path: '/minister',
-      icon: <BarChart2 />
-    },
-    {
-      label: t('dept_view'),
-      path: '/minister/dept',
-      icon: <ShieldAlert />
-    },
-    {
-      label: t('crisis_mode'),
-      path: '/minister/crisis',
-      icon: <Zap />
-    },
-    {
-      label: t('escalate_cm'),
-      path: '/minister/escalate',
-      icon: <AlertTriangle />
-    }
-  ];
+ const sidebarLinks = [
+ {
+ label: t('dashboard'),
+ path: '/minister',
+ icon: <BarChart2 />
+ },
+ {
+ label: t('dept_view'),
+ path: '/minister/dept',
+ icon: <ShieldAlert />
+ },
+ {
+ label: t('crisis_mode'),
+ path: '/minister/crisis',
+ icon: <Zap />
+ },
+ {
+ label: t('escalate_cm'),
+ path: '/minister/escalate',
+ icon: <AlertTriangle />
+ }
+ ];
 
-  return (
-    <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Cabinet Minister Portal">
-      <Routes>
-        <Route path="/" element={<MinisterDashboard />} />
-        <Route path="/dept" element={<MinisterDashboard deptView={true} />} />
-        <Route path="/crisis" element={<CrisisMode />} />
-        <Route path="/escalate" element={<EscalateCm />} />
-      </Routes>
-    </PortalLayout>
-  );
+ return (
+ <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Cabinet Minister Portal">
+ <Routes>
+ <Route path="/" element={<MinisterDashboard />} />
+ <Route path="/dept" element={<MinisterDashboard deptView={true} />} />
+ <Route path="/crisis" element={<CrisisMode />} />
+ <Route path="/escalate" element={<EscalateCm />} />
+ </Routes>
+ </PortalLayout>
+ );
 }

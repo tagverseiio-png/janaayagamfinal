@@ -11,45 +11,45 @@ import MlaAnalytics from './MlaAnalytics';
 import Escalate from './Escalate';
 
 export default function MlaPortal() {
-  const { t } = useTranslation();
+ const { t } = useTranslation();
 
-  const sidebarLinks = [
-    {
-      label: t('dashboard'),
-      path: '/mla',
-      icon: <BarChart2 />
-    },
-    {
-      label: 'Constituency Tickets',
-      path: '/mla/tickets',
-      icon: <FileText />
-    },
-    {
-      label: t('raise_issue'),
-      path: '/mla/raise',
-      icon: <AlertTriangle />
-    },
-    {
-      label: 'Analytics',
-      path: '/mla/analytics',
-      icon: <TrendingUp />
-    },
-    {
-      label: 'Escalate',
-      path: '/mla/escalate',
-      icon: <ArrowUpRight />
-    }
-  ];
+ const sidebarLinks = [
+ {
+ label: t('dashboard'),
+ path: '/mla',
+ icon: <BarChart2 />
+ },
+ {
+ label: 'Constituency Tickets',
+ path: '/mla/tickets',
+ icon: <FileText />
+ },
+ {
+ label: t('raise_issue'),
+ path: '/mla/raise',
+ icon: <AlertTriangle />
+ },
+ {
+ label: 'Analytics',
+ path: '/mla/analytics',
+ icon: <TrendingUp />
+ },
+ {
+ label: 'Escalate',
+ path: '/mla/escalate',
+ icon: <ArrowUpRight />
+ }
+ ];
 
-  return (
-    <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Member of Legislative Assembly (MLA) Portal">
-      <Routes>
-        <Route path="/" element={<MlaDashboard />} />
-        <Route path="/tickets" element={<ConstituencyTickets />} />
-        <Route path="/raise" element={<RaiseIssue />} />
-        <Route path="/analytics" element={<MlaAnalytics />} />
-        <Route path="/escalate" element={<Escalate />} />
-      </Routes>
-    </PortalLayout>
-  );
+ return (
+ <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Member of Legislative Assembly (MLA) Portal">
+ <Routes>
+ <Route path="/" element={<MlaDashboard />} />
+ <Route path="/tickets" element={<ConstituencyTickets />} />
+ <Route path="/raise" element={<RaiseIssue />} />
+ <Route path="/analytics" element={<MlaAnalytics />} />
+ <Route path="/escalate" element={<Escalate />} />
+ </Routes>
+ </PortalLayout>
+ );
 }

@@ -10,45 +10,45 @@ import WardManagement from './WardManagement';
 import CollectorPerformance from './CollectorPerformance';
 
 export default function CollectorPortal() {
-  const { t } = useTranslation();
+ const { t } = useTranslation();
 
-  const sidebarLinks = [
-    {
-      label: t('dashboard'),
-      path: '/collector',
-      icon: <BarChart2 />
-    },
-    {
-      label: t('district_tickets'),
-      path: '/collector/tickets',
-      icon: <FileText />
-    },
-    {
-      label: t('ward_management'),
-      path: '/collector/wards',
-      icon: <Settings />
-    },
-    {
-      label: t('performance'),
-      path: '/collector/performance',
-      icon: <TrendingUp />
-    },
-    {
-      label: t('escalate'),
-      path: '/collector/escalations',
-      icon: <AlertTriangle />
-    }
-  ];
+ const sidebarLinks = [
+ {
+ label: t('dashboard'),
+ path: '/collector',
+ icon: <BarChart2 />
+ },
+ {
+ label: t('district_tickets'),
+ path: '/collector/tickets',
+ icon: <FileText />
+ },
+ {
+ label: t('ward_management'),
+ path: '/collector/wards',
+ icon: <Settings />
+ },
+ {
+ label: t('performance'),
+ path: '/collector/performance',
+ icon: <TrendingUp />
+ },
+ {
+ label: t('escalate'),
+ path: '/collector/escalations',
+ icon: <AlertTriangle />
+ }
+ ];
 
-  return (
-    <PortalLayout sidebarLinks={sidebarLinks} roleLabel="District Collector (IAS) Control Portal">
-      <Routes>
-        <Route path="/" element={<CollectorDashboard />} />
-        <Route path="/tickets" element={<DistrictTickets />} />
-        <Route path="/wards" element={<WardManagement />} />
-        <Route path="/performance" element={<CollectorPerformance />} />
-        <Route path="/escalations" element={<DistrictTickets escalatedOnly={true} />} />
-      </Routes>
-    </PortalLayout>
-  );
+ return (
+ <PortalLayout sidebarLinks={sidebarLinks} roleLabel="District Collector (IAS) Control Portal">
+ <Routes>
+ <Route path="/" element={<CollectorDashboard />} />
+ <Route path="/tickets" element={<DistrictTickets />} />
+ <Route path="/wards" element={<WardManagement />} />
+ <Route path="/performance" element={<CollectorPerformance />} />
+ <Route path="/escalations" element={<DistrictTickets escalatedOnly={true} />} />
+ </Routes>
+ </PortalLayout>
+ );
 }

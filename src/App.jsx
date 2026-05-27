@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 // Import LoginPage
 import LoginPage from './pages/LoginPage';
+import { seedAllDummyData } from './utils/seedData';
 
 // Import Portal Components
 import CitizenPortal from './portals/citizen/CitizenPortal';
@@ -32,18 +33,11 @@ export default function App() {
   const [isMobile, setIsMobile] = React.useState(false);
 
   useEffect(() => {
+    seedAllDummyData();
     // 1. Mobile responsive check for toast placement
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
-    // 2. Restore Elderly Mode on load
-    const isElderly = localStorage.getItem('jn_elderly_mode') === 'true';
-    if (isElderly) {
-      document.body.classList.add('elderly-mode');
-    } else {
-      document.body.classList.remove('elderly-mode');
-    }
 
     // 3. Set default title
     if (window.location.pathname === '/') {
