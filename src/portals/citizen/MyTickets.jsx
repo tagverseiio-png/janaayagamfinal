@@ -600,7 +600,7 @@ export default function MyTickets() {
                                 {/* Content Details Card */}
                                 <div className={`w-full rounded-xl p-3 flex justify-between items-center ${cardBg}`}>
                                   <div>
-                                    <h5 className="text-[13px] font-black text-slate-800 dark:text-slate-100">
+                                    <h5 className="text-[13px] font-black text-slate-800">
                                       {step.role}
                                     </h5>
                                     <span className="text-[11px] text-slate-400 font-bold block mt-0.5 leading-tight">

@@ -58,7 +58,7 @@ const roles = [
   { id: 'dept_secretary', name: 'Dept Secretary', tamil: 'துறைச் செயலாளர்' },
   { id: 'minister', name: 'Minister', tamil: 'அமைச்சர்' },
   { id: 'mla', name: 'MLA', tamil: 'சட்டமன்ற உறுப்பினர் (MLA)' },
-  { id: 'cm', name: 'CM', tamil: 'முதலமைச்சர் (CM)' }
+  { id: 'cm', name: 'CM', tamil: 'முதலமைச்சர் (CM)' },
 ];
 
 /* ─── Hardcoded Pincode Local Data ───────────────────────────────────── */
@@ -329,6 +329,7 @@ export default function LoginPage() {
   // Form selections
   const [district, setDistrict] = useState('Chennai');
   const [selectedRole, setSelectedRole] = useState('citizen');
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   // Pincode Auto-Suggest Ward flow states
   const [pincode, setPincode] = useState('');
@@ -361,7 +362,7 @@ export default function LoginPage() {
       }
     }
 
-    if (newRaw.length <= 12) {
+    if (newRaw.length <= 16) {
       setRawAadhaar(newRaw);
     }
   };
@@ -369,12 +370,12 @@ export default function LoginPage() {
   const getDisplayAadhaar = () => {
     let display = '';
     for (let i = 0; i < rawAadhaar.length; i++) {
-      if (i < 8) {
+      if (i < 12) {
         display += '•';
       } else {
         display += rawAadhaar[i];
       }
-      if ((i === 3 || i === 7) && i < rawAadhaar.length - 1) {
+      if ((i === 3 || i === 7 || i === 11) && i < rawAadhaar.length - 1) {
         display += ' ';
       }
     }
@@ -382,8 +383,8 @@ export default function LoginPage() {
   };
 
   const handleSendOTP = () => {
-    if (rawAadhaar.length !== 12) {
-      toast.error(tLabel('Please enter a valid 12-digit Aadhaar Number', 'தயவுசெய்து செல்லுபடியாகும் 12-இலக்க ஆதார் எண்ணை உள்ளிடவும்'));
+    if (rawAadhaar.length !== 16) {
+      toast.error(tLabel('Please enter a valid 16-digit Aadhaar Number', 'தயவுசெய்து செல்லுபடியாகும் 16-இலக்க ஆதார் எண்ணை உள்ளிடவும்'));
       return;
     }
     setOtpSent(true);
@@ -611,10 +612,10 @@ export default function LoginPage() {
                       disabled={otpSent}
                       value={getDisplayAadhaar()}
                       onChange={handleAadhaarChange}
-                      placeholder="•••• •••• ••••"
+                      placeholder="•••• •••• •••• ••••"
                       className="w-full bg-slate-50 disabled:opacity-80 disabled:bg-slate-50/50 border border-slate-200 outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm tracking-widest placeholder-slate-400 placeholder:tracking-normal focus:border-[#8B1A1A] transition-all"
                     />
-                    {rawAadhaar.length === 12 && !otpSent && (
+                    {rawAadhaar.length === 16 && !otpSent && (
                       <div className="absolute right-4 top-3">
                         <CheckCircle className="w-5 h-5 text-slate-300" />
                       </div>
@@ -649,18 +650,20 @@ export default function LoginPage() {
                     {tLabel('ENTER 6-DIGIT OTP', 'ஒடிபி (OTP) உள்ளிடவும்')}
                   </label>
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="e.g. 123456"
-                      className="flex-1 bg-slate-50 border border-slate-200 focus:border-[#8B1A1A] outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm tracking-widest placeholder-slate-400 placeholder:tracking-normal transition-all"
-                    />
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 123456"
+                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#8B1A1A] outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm tracking-widest placeholder-slate-400 placeholder:tracking-normal transition-all"
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={handleVerifyOTP}
-                      className="px-4 bg-[#8B1A1A] hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all"
+                      className="px-4 bg-[#8B1A1A] hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all shrink-0 whitespace-nowrap"
                     >
                       {tLabel('Verify OTP', 'சரிபார்')}
                     </button>
@@ -675,7 +678,7 @@ export default function LoginPage() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="space-y-4 overflow-hidden pt-1"
+                  className="space-y-4 overflow-visible pt-1"
                 >
                   {/* STEP 2 — Aadhaar Verified Name */}
                   <div className="space-y-1.5">
@@ -862,23 +865,30 @@ export default function LoginPage() {
                     <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
                       {tLabel('SELECT YOUR ROLE', 'பங்கினைத் தேர்ந்தெடுக்கவும்')}
                     </label>
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 outline-none px-4 py-3.5 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm cursor-pointer focus:border-[#8B1A1A] transition-all appearance-none"
-                      style={{
-                        backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E")',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 16px center',
-                        backgroundSize: '16px'
-                      }}
-                    >
-                      {roles.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {isTa ? r.tamil : r.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+                        onBlur={() => setTimeout(() => setRoleDropdownOpen(false), 200)}
+                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl text-slate-700 font-extrabold text-sm flex justify-between items-center outline-none focus:border-[#8B1A1A] transition-all"
+                      >
+                        <span>{roles.find(r => r.id === selectedRole)?.name}</span>
+                        <span>▾</span>
+                      </button>
+                      {roleDropdownOpen && (
+                        <div className="absolute z-[9999] w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-64 overflow-y-auto">
+                          {roles.map((r) => (
+                            <div
+                              key={r.id}
+                              onClick={() => { setSelectedRole(r.id); setRoleDropdownOpen(false); }}
+                              className={`px-4 py-3 cursor-pointer text-sm font-bold hover:bg-slate-50 ${selectedRole === r.id ? 'bg-[#8B1A1A]/10 text-[#8B1A1A]' : 'text-slate-700'}`}
+                            >
+                              {isTa ? r.tamil : r.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Submit Button */}

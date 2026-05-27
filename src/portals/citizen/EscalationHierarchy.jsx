@@ -146,7 +146,7 @@ export default function EscalationHierarchy() {
             {/* Information Card */}
             <div className="flex-1 bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-[0_2px_6px_rgba(0,0,0,0.02)]">
               <div className="flex justify-between items-start gap-1">
-                <h3 className="font-extrabold text-sm text-[#8B1A1A]">
+                <h3 className="font-extrabold text-sm text-slate-800">
                   {tLabel(step.role, step.tamilRole)}
                 </h3>
                 <span style={{ color: step.color, background: step.color + '14', border: `1px solid ${step.color}30` }} className="text-[9px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full shrink-0">

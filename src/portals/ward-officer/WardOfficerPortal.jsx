@@ -8,27 +8,27 @@ import WardDashboard from './WardDashboard';
 import TicketInbox from './TicketInbox';
 
 export default function WardOfficerPortal() {
-  const { t } = useTranslation();
+ const { t } = useTranslation();
 
-  const sidebarLinks = [
-    {
-      label: t('dashboard'),
-      path: '/ward-officer',
-      icon: <BarChart2 />
-    },
-    {
-      label: 'Ticket Inbox',
-      path: '/ward-officer/inbox',
-      icon: <FileText />
-    }
-  ];
+ const sidebarLinks = [
+ {
+ label: t('dashboard'),
+ path: '/ward-officer',
+ icon: <BarChart2 />
+ },
+ {
+ label: 'Ticket Inbox',
+ path: '/ward-officer/inbox',
+ icon: <FileText />
+ }
+ ];
 
-  return (
-    <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Ward Officer Portal">
-      <Routes>
-        <Route path="/" element={<WardDashboard />} />
-        <Route path="/inbox" element={<TicketInbox />} />
-      </Routes>
-    </PortalLayout>
-  );
+ return (
+ <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Ward Officer Portal">
+ <Routes>
+ <Route path="/" element={<WardDashboard />} />
+ <Route path="/inbox" element={<TicketInbox />} />
+ </Routes>
+ </PortalLayout>
+ );
 }
