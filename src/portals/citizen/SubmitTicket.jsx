@@ -29,6 +29,7 @@ export default function SubmitTicket() {
 
   // GeoCamera modal state
   const [showCamera, setShowCamera] = useState(false);
+  const [assignedWard, setAssignedWard] = useState('');
 
   // Address values from localStorage
   const [livingAddress, setLivingAddress] = useState('');
@@ -43,7 +44,29 @@ export default function SubmitTicket() {
     setLivingAddress(lAddr);
     setLivingDistrict(lDist);
     setLivingWard(lWard);
+    setLivingWard(lWard);
   }, []);
+
+  async function assignWardFromCoords(lat, lng) {
+    try {
+      const response = await fetch(`/api/ward-lookup?lat=${lat}&lng=${lng}`);
+      const data = await response.json();
+      if (data?.ward) {
+        setAssignedWard(data.ward);
+      } else {
+        setAssignedWard(localStorage.getItem('jn_living_ward') || 'Ward not detected');
+      }
+    } catch (err) {
+      console.warn('Ward lookup failed, using home ward fallback');
+      setAssignedWard(localStorage.getItem('jn_living_ward') || 'Ward not detected');
+    }
+  }
+
+  useEffect(() => {
+    if (locationCaptured && location) {
+      assignWardFromCoords(location.lat, location.lng);
+    }
+  }, [locationCaptured, location]);
 
   const categoryKeys = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
@@ -123,7 +146,7 @@ export default function SubmitTicket() {
     }
 
     // Determine target ward and district for routing
-    const targetWard = locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142');
+    const targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
     const targetDistrict = locationMode === 'home' ? livingDistrict : (localStorage.getItem('jn_district') || 'Chennai');
 
     const ticketId = Math.floor(1000 + Math.random() * 9000).toString();
@@ -469,9 +492,11 @@ export default function SubmitTicket() {
                   <input
                     type="text"
                     value={
-                      locationMode === 'home' 
-                        ? tLabel(`Ward ${livingWard}, ${livingDistrict} (Home Residence)`, `வார்டு ${livingWard}, ${livingDistrict} (வசிப்பிடம்)`)
-                        : tLabel(`Ward ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (GPS Transit)`, `வார்டு ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (ஜிபிஎஸ் வழி)`)
+                      assignedWard 
+                        ? tLabel(`${assignedWard} (Auto-detected)`, `${assignedWard} (தானாக கண்டறியப்பட்டது)`)
+                        : locationMode === 'home' 
+                          ? tLabel(`Ward ${livingWard}, ${livingDistrict} (Home Residence)`, `வார்டு ${livingWard}, ${livingDistrict} (வசிப்பிடம்)`)
+                          : tLabel(`Ward ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (GPS Transit)`, `வார்டு ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (ஜிபிஎஸ் வழி)`)
                     }
                     disabled
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-500 font-extrabold text-xs cursor-not-allowed select-none opacity-80"

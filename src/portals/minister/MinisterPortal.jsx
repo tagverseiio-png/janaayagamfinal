@@ -5,6 +5,7 @@ import { BarChart2, ShieldAlert, Zap, AlertTriangle } from 'lucide-react';
 
 import PortalLayout from '../../shared/components/PortalLayout';
 import MinisterDashboard from './MinisterDashboard';
+import MinisterDeptView from './MinisterDeptView';
 import CrisisMode from './CrisisMode';
 import EscalateCm from './EscalateCm';
 
@@ -38,7 +39,7 @@ export default function MinisterPortal() {
  <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Cabinet Minister Portal">
  <Routes>
  <Route path="/" element={<MinisterDashboard />} />
- <Route path="/dept" element={<MinisterDashboard deptView={true} />} />
+ <Route path="/dept" element={<MinisterDeptView />} />
  <Route path="/crisis" element={<CrisisMode />} />
  <Route path="/escalate" element={<EscalateCm />} />
  </Routes>

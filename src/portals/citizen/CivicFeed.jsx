@@ -31,6 +31,7 @@ export default function CivicFeed() {
   const [activeStory, setActiveStory] = useState(null);
   const [sortOption, setSortOption] = useState('Recent'); // 'Recent' | 'Most Upvoted' | 'Nearby'
   const [visibleCount, setVisibleCount] = useState(6);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // Dynamic comments tracking
   const [expandedComments, setExpandedComments] = useState({});
@@ -593,15 +594,31 @@ export default function CivicFeed() {
                     {tLabel(item.status.toUpperCase(), item.status.toUpperCase())}
                   </span>
 
-                  {/* Three dot actions mock */}
-                  <button 
-                    onClick={() => {
-                      toast.info(tLabel("Options: Share Link copied successfully!", "இணைப்பு நகலெடுக்கப்பட்டது!"));
-                    }}
-                    className="p-1 text-slate-400 hover:text-slate-600"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+                  {/* Three dot actions dropdown */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                    {openMenuId === item.id && (
+                      <div className="absolute right-0 top-6 w-32 bg-white rounded-lg shadow-lg border border-slate-100 z-10 text-xs font-bold py-1 overflow-hidden">
+                        <button 
+                          onClick={() => { setOpenMenuId(null); copyLink(item.id); }}
+                          className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700"
+                        >
+                          {tLabel("Copy Link", "இணைப்பை நகலெடு")}
+                        </button>
+                        <button 
+                          onClick={() => { setOpenMenuId(null); toast.info(tLabel('Reported for review', 'மதிப்பாய்வுக்கு புகாரளிக்கப்பட்டது')); }}
+                          className="w-full text-left px-3 py-2 hover:bg-slate-50 text-red-600"
+                        >
+                          {tLabel("Report Post", "பதிலைப் புகாரளி")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -8,11 +8,12 @@ import TicketCard from '../../shared/components/TicketCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
+import { collectorSeedData } from '../../data/collectorSeedData';
 
 export default function CollectorDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState([]);
+ const [tickets, setTickets] = useState(collectorSeedData.tickets);
  const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'map'
  const [loadingTable, setLoadingTable] = useState(true);
  
@@ -22,8 +23,8 @@ export default function CollectorDashboard() {
  const [expandedTaluk, setExpandedTaluk] = useState(null);
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ // Force seed data
+ setTickets(collectorSeedData.tickets);
 
  const timer = setTimeout(() => {
  setLoadingTable(false);

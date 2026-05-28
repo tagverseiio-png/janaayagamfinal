@@ -5,61 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FileText, Landmark, ShieldAlert, AlertTriangle, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
+import { droSeedData } from '../../data/droSeedData';
 
 export default function DroDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState([]);
+ const [tickets, setTickets] = useState(droSeedData.tickets);
 
- useEffect(() => {
- // Fetch all tickets
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- }, []);
+ // Map over talukData from seed
+ const talukData = droSeedData.talukData;
 
- // Filter for Revenue category only
- const revenueTickets = tickets.filter(ticket => ticket.category.toLowerCase() === 'revenue');
- const openRevenueTickets = revenueTickets.filter(ticket => ticket.status !== 'resolved' && ticket.status !== 'closed');
-
- // Count sub-types (with a fallback mapping if not explicitly set in the ticket object)
- const getSubtype = (ticket) => {
- if (ticket.sub_type) return ticket.sub_type;
- const desc = ticket.description.toLowerCase();
- if (desc.includes('patta')) return 'Patta';
- if (desc.includes('encroach') || desc.includes('occupy') || desc.includes('land grab')) return 'Encroachment';
- if (desc.includes('boundary') || desc.includes('dispute') || desc.includes('fence')) return 'Boundary Dispute';
- return 'Land Records'; // Default fallback
- };
-
- const totalOpenRevenue = openRevenueTickets.length;
- 
- const pattaOpen = openRevenueTickets.filter(t => getSubtype(t) === 'Patta').length;
- const encroachmentOpen = openRevenueTickets.filter(t => getSubtype(t) === 'Encroachment').length;
-
- // District Taluk Table Data
- // We can compute these dynamically based on taluk in tickets, and provide highly polished defaults.
- const talukData = [
- { 
- name: 'Velachery', 
- open: openRevenueTickets.filter(t => t.taluk === 'Velachery' || t.ward >= 140 && t.ward <= 143).length + 4, 
- avgDays: 5 
- },
- { 
- name: 'Sholinganallur', 
- open: openRevenueTickets.filter(t => t.taluk === 'Sholinganallur' || t.ward >= 144 && t.ward <= 147).length + 8, 
- avgDays: 9 
- },
- { 
- name: 'Guindy', 
- open: openRevenueTickets.filter(t => t.taluk === 'Guindy').length + 3, 
- avgDays: 4 
- },
- { 
- name: 'Mylapore', 
- open: openRevenueTickets.filter(t => t.taluk === 'Mylapore').length + 2, 
- avgDays: 6 
- }
- ];
+ const { totalOpenRevenue, pattaIssues, encroachmentIssues } = droSeedData.stats;
 
  return (
  <motion.div 
@@ -91,13 +47,13 @@ export default function DroDashboard() {
  />
  <StatCard 
  label={t('patta_issues')}
- value={pattaOpen}
+ value={pattaIssues}
  icon={<Landmark className="text-amber-500 w-5 h-5" />}
  color="orange"
  />
  <StatCard 
  label={t('encroachment_issues')}
- value={encroachmentOpen}
+ value={encroachmentIssues}
  icon={<ShieldAlert className="text-rose-500 w-5 h-5" />}
  color="blue"
  />

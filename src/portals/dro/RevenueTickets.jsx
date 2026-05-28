@@ -2,26 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { 
  FileText, Landmark, ShieldAlert, ArrowUpRight, MessageSquare, AlertCircle, X, ShieldCheck
 } from 'lucide-react';
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import { droSeedData } from '../../data/droSeedData';
 
 export default function RevenueTickets({ flaggedOnly = false }) {
  const { t } = useTranslation();
- const [tickets, setTickets] = useState([]);
+ const navigate = useNavigate();
+ const [tickets, setTickets] = useState(droSeedData.tickets);
  const [activeSubtype, setActiveSubtype] = useState('all');
  const [activeTicket, setActiveTicket] = useState(null);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ const loadTickets = () => {
+ // Force seed data
+ setTickets(droSeedData.tickets);
  };
 
  useEffect(() => {
- fetchTickets();
+ loadTickets();
  }, [flaggedOnly]);
 
  const handleSaveTickets = (updated) => {

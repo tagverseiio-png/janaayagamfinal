@@ -1,3 +1,57 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fix for Leaflet Map Z-Index Bleeding */
+.leaflet-container {
+  position: relative;
+  z-index: 0 !important;
+}
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-map-pane svg,
+.leaflet-map-pane canvas {
+  z-index: 0 !important;
+}
+
+.leaflet-control {
+  z-index: 1 !important;
+}
+
+/* Fix for Bottom Nav Bar Overlap */
+.main-scroll-container {
+  padding-bottom: 80px;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* State page map container fix */
+.state-map-container,
+.map-view-container {
+  height: 300px !important;   /* hard cap */
+  max-height: 300px !important;
+  width: 100%;
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Prevent Leaflet from escaping its container */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 0 !important;
+}
+
+.state-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 80px;  /* bottom nav clearance */
+}

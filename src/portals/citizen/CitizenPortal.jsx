@@ -150,7 +150,7 @@ export default function CitizenPortal() {
         </header>
 
         {/* ══ 2. MAIN SCROLLABLE CONTENT AREA ══ */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
           <Routes>
             <Route path="/" element={<CitizenDashboard />} />
             <Route path="/submit" element={<SubmitTicket />} />

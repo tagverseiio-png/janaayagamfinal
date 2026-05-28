@@ -8,6 +8,7 @@ import CmDashboard from './CmDashboard';
 import CmEmergency from './CmEmergency';
 import CmEscalations from './CmEscalations';
 import CabinetReport from './CabinetReport';
+import StatePage from './StatePage';
 
 export default function CmPortal() {
  const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function CmPortal() {
  },
  {
  label: t('state_tickets'),
- path: '/cm/overview',
+ path: '/cm/state',
  icon: <ShieldAlert />
  },
  {
@@ -44,7 +45,7 @@ export default function CmPortal() {
  <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Hon'ble Chief Minister (CM) Control Center">
  <Routes>
  <Route path="/" element={<CmDashboard />} />
- <Route path="/overview" element={<CmDashboard overviewMode={true} />} />
+ <Route path="/state" element={<StatePage />} />
  <Route path="/emergency" element={<CmEmergency />} />
  <Route path="/escalations" element={<CmEscalations />} />
  <Route path="/report" element={<CabinetReport />} />

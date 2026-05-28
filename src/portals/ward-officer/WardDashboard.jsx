@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TnMap from '../../shared/components/TnMap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,39 +6,29 @@ import { motion } from 'framer-motion';
 import { AlertOctagon, AlertTriangle, CheckCircle2, Flame, Inbox, ShieldAlert, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
 import TicketCard from '../../shared/components/TicketCard';
+import { wardSeedData } from '../../data/wardSeedData';
 
 export default function WardDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState([]);
+ const [stats, setStats] = useState(wardSeedData.stats);
+ const [tickets, setTickets] = useState(wardSeedData.tickets);
 
- useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- }, []);
+ // Compute derived stats from tickets:
+ const totalOpen = tickets.filter(t => t.status !== 'RESOLVED').length;
+ const overdueSLA = tickets.filter(t => t.slaBreached).length;
+ const resolvedToday = tickets.filter(t => t.status === 'RESOLVED').length;
+ const escalatedToBDO = tickets.filter(t => t.status === 'ESCALATED').length;
 
- // SLA calculations
- const now = new Date();
- 
- const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress');
- const totalOpenCount = openTickets.length;
- 
- const overdueCount = openTickets.filter(t => t.sla_deadline && new Date(t.sla_deadline) < now).length;
- 
- const resolvedTodayCount = tickets.filter(t => t.status === 'resolved').length;
- const escalatedCount = tickets.filter(t => t.status === 'escalated').length;
-
- // Priority Inbox: open tickets sorted by SLA urgency (earliest deadline first)
- const priorityTickets = [...openTickets]
- .sort((a, b) => new Date(a.sla_deadline || 0) - new Date(b.sla_deadline || 0))
- .slice(0, 5);
+ // Priority Inbox: open tickets
+ const priorityTickets = tickets.filter(t => t.status !== 'RESOLVED').slice(0, 5);
 
  const getAlertText = () => {
  const isTamil = t('app_name') === 'ஜனநாயகம்';
  if (isTamil) {
- return `${overdueCount} புகார்கள் காலக்கெடு தாண்டியது! உடனே நடவடிக்கை எடுங்கள்.`;
+ return `${overdueSLA} புகார்கள் காலக்கெடு தாண்டியது! உடனே நடவடிக்கை எடுங்கள்.`;
  }
- return `${overdueCount} tickets are overdue! Act now.`;
+ return `${overdueSLA} tickets are overdue! Act now.`;
  };
 
  return (
@@ -58,7 +48,7 @@ export default function WardDashboard() {
  </div>
 
  {/* Red Alert Banner for Overdue Tickets */}
- {overdueCount > 0 && (
+ {overdueSLA > 0 && (
  <motion.div 
  initial={{ scale: 0.95, opacity: 0 }}
  animate={{ scale: 1, opacity: 1 }}
@@ -81,26 +71,26 @@ export default function WardDashboard() {
  {/* KPI Cards Grid */}
  <div className="stat-grid">
  <StatCard 
- label="Total Open"
- value={totalOpenCount}
+ label="TOTAL OPEN" 
+ value={totalOpen} 
  icon={<Inbox className="w-5 h-5 text-blue-500" />}
  color="blue"
  />
  <StatCard 
- label="Overdue (SLA Breached)"
- value={overdueCount}
+ label="OVERDUE (SLA BREACHED)" 
+ value={overdueSLA} 
  icon={<AlertTriangle className="w-5 h-5 text-rose-600" />}
  color="red"
  />
  <StatCard 
- label="Resolved Today"
- value={resolvedTodayCount}
+ label="RESOLVED TODAY" 
+ value={resolvedToday} 
  icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />}
  color="green"
  />
  <StatCard 
- label="Escalated to BDO"
- value={escalatedCount}
+ label="ESCALATED TO BDO" 
+ value={escalatedToBDO} 
  icon={<Flame className="w-5 h-5 text-amber-500" />}
  color="orange"
  />
