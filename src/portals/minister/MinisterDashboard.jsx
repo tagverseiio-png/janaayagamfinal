@@ -310,7 +310,7 @@ export default function MinisterDashboard({ deptView = false }) {
  </p>
  </div>
  <ErrorBoundary>
- <TnMap lang={i18n.language} citizenMode={false} zoom={7} />
+ <TnMap lang={i18n.language} citizenMode={false} zoom={7} categoryFilter={selectedDept} />
  </ErrorBoundary>
  </motion.div>
  )}

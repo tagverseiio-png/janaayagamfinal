@@ -9,23 +9,24 @@ import TnMap from '../../shared/components/TnMap';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
 
 export default function CmDashboard({ overviewMode = false }) {
- const { t, i18n } = useTranslation();
- const navigate = useNavigate();
- const [tickets, setTickets] = useState([]);
- const [selectedDistrict, setSelectedDistrict] = useState(null); // Sidebar slide-over panel
- const [cmEscalations, setCmEscalations] = useState([]);
- const [ministerEscalations, setMinisterEscalations] = useState([]);
- const [activeTab, setActiveTab] = useState('grid'); // 'grid' or 'map'
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [tickets, setTickets] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState(null); // Sidebar slide-over panel
+  const [cmEscalations, setCmEscalations] = useState([]);
+  const [ministerEscalations, setMinisterEscalations] = useState([]);
+  const [activeTab, setActiveTab] = useState(overviewMode ? 'map' : 'grid'); // 'grid' or 'map'
 
- const districtsList = [
- 'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
- 'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
- 'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
- 'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
- 'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
- ];
+  const districtsList = [
+  'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
+  'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
+  'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
+  'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
+  'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
+  ];
 
  useEffect(() => {
+
  const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
  setTickets(list);
 
@@ -35,6 +36,12 @@ export default function CmDashboard({ overviewMode = false }) {
  const minEsc = JSON.parse(localStorage.getItem('jn_minister_escalations') || '[]');
  setMinisterEscalations(minEsc);
  }, []);
+
+ useEffect(() => {
+    if (activeTab === 'map') {
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+    }
+  }, [activeTab]);
 
  const now = new Date();
  const activeTickets = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed');
@@ -106,7 +113,15 @@ export default function CmDashboard({ overviewMode = false }) {
  <motion.div 
  initial={{ opacity: 0, y: 15 }}
  animate={{ opacity: 1, y: 0 }}
- className="space-y-6 pb-12 relative"
+ className="pb-12 relative"
+ style={{
+   display: 'flex',
+   flexDirection: 'column',
+   height: '100%',
+   overflowY: 'auto',
+   gap: '16px',
+   padding: '16px'
+ }}
  >
  {/* Official Saffron & Green CM Header */}
  <div className="bg-white border-l-8 border-l-[#FF6600] border-t-4 border-t-[#138808] border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden">
@@ -362,6 +377,7 @@ export default function CmDashboard({ overviewMode = false }) {
  )}
  </div>
  </>
+
  ) : (
  <motion.div 
  initial={{ opacity: 0, y: 15 }}
@@ -376,9 +392,20 @@ export default function CmDashboard({ overviewMode = false }) {
  {t('app_name') === 'ஜனநாயகம்' ? 'செயலில் உள்ள குறைதீர்க்கும் எண்ணிக்கையை வரைபடத்தில் கண்காணிக்கவும்' : 'Supervise statewide district ticket distribution and active pressure indicators'}
  </p>
  </div>
- <ErrorBoundary>
- <TnMap lang={i18n.language} citizenMode={false} zoom={7} />
- </ErrorBoundary>
+  <ErrorBoundary>
+    <div className="state-map-container" style={{
+      height: '300px',
+      minHeight: '300px', 
+      maxHeight: '300px',
+      width: '100%',
+      flexShrink: 0,
+      position: 'relative',
+      zIndex: 0,
+      overflow: 'hidden'
+    }}>
+      <TnMap lang={i18n.language} citizenMode={false} zoom={7} />
+    </div>
+  </ErrorBoundary>
  </motion.div>
  )}
  

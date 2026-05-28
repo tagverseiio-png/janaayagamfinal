@@ -4,6 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Landmark, AlertTriangle, Activity, Users, Building, Radio } from 'lucide-react';
 import TnMap from '../../shared/components/TnMap';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const grievancePoints = [
+  { lat: 13.0827, lng: 80.2707, count: 12, type: 'critical', area: 'Chennai Central' },
+  { lat: 13.0569, lng: 80.2425, count: 8, type: 'high', area: 'Adyar' },
+  { lat: 13.1067, lng: 80.2206, count: 5, type: 'medium', area: 'Ambattur' },
+  { lat: 13.0878, lng: 80.2785, count: 15, type: 'critical', area: 'Royapuram' },
+  { lat: 13.0525, lng: 80.2500, count: 3, type: 'low', area: 'Velachery' },
+  { lat: 13.0732, lng: 80.2609, count: 7, type: 'high', area: 'T. Nagar' },
+];
+
+const getColor = (type) => {
+  if (type === 'critical') return '#ef4444';
+  if (type === 'high') return '#f97316';
+  if (type === 'medium') return '#eab308';
+  return '#22c55e';
+};
 
 export default function CitizenDashboard() {
   const { i18n } = useTranslation();
@@ -162,8 +180,42 @@ export default function CitizenDashboard() {
         </div>
 
         {/* Map */}
-        <div className="rounded-xl overflow-hidden border border-slate-100">
-          <TnMap lang={i18n.language} citizenMode={true} height="220px" />
+        <div style={{
+          height: '200px',
+          width: '100%',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 0,
+          marginBottom: '12px'
+        }}>
+          <MapContainer
+            center={[13.0827, 80.2707]}
+            zoom={11}
+            style={{ height: '100%', width: '100%' }}
+            zoomControl={false}
+            scrollWheelZoom={false}
+            dragging={false}
+            attributionControl={true}
+          >
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              attribution='© Carto'
+            />
+            {grievancePoints.map((point, i) => (
+              <CircleMarker
+                key={i}
+                center={[point.lat, point.lng]}
+                radius={point.count * 0.8 + 6}
+                fillColor={getColor(point.type)}
+                color="white"
+                weight={2}
+                fillOpacity={0.85}
+              >
+                <Popup>{point.area}: {point.count} issues</Popup>
+              </CircleMarker>
+            ))}
+          </MapContainer>
         </div>
 
         {/* Stats Row Below Map (3 Columns) */}

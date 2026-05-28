@@ -6,36 +6,19 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, Flame, Clock, MapPin, Landmark, ArrowRight, ShieldAlert, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
 import TicketCard from '../../shared/components/TicketCard';
+import { mlaSeedData } from '../../data/mlaSeedData';
 
 export default function MlaDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState([]);
+ const [stats, setStats] = useState(mlaSeedData.stats);
+ const [tickets, setTickets] = useState(mlaSeedData.tickets);
 
- useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- }, []);
+ // Use hardcoded seed stats for KPIs
+ const { totalOpen, criticalIssues, resolved, escalated, pending7Days } = stats;
 
- const now = new Date();
- const openWardsTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress');
- 
- // Calculate dynamic stats
- const totalOpen = openWardsTickets.length;
- const criticalCount = openWardsTickets.filter(t => t.priority === 'critical').length;
- const resolvedCount = tickets.filter(t => t.status === 'resolved').length;
- const escalatedCount = tickets.filter(t => t.status === 'escalated').length;
- 
- const pending7DaysCount = openWardsTickets.filter(t => {
- const age = now - new Date(t.created_at);
- return age > 7 * 24 * 60 * 60 * 1000; // > 7 days
- }).length;
-
- // Priority feed: critical or unresolved > 7 days
- const priorityFeed = openWardsTickets.filter(t => {
- const age = now - new Date(t.created_at);
- return t.priority === 'critical' || age > 7 * 24 * 60 * 60 * 1000;
- }).slice(0, 5);
+ // Priority feed: from mock tickets
+ const priorityFeed = tickets;
 
  const headingText = t('app_name') === 'ஜனநாயகம்'
  ? 'சட்டமன்ற உறுப்பினர் தொகுதி டாஷ்போர்டு'
@@ -74,7 +57,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Critical Issues"
- value={criticalCount}
+ value={criticalIssues}
  icon={<ShieldAlert className="text-rose-500 w-4.5 h-4.5" />}
  color="red"
  />
@@ -82,7 +65,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Resolved"
- value={resolvedCount}
+ value={resolved}
  icon={<CheckCircle className="text-emerald-500 w-4.5 h-4.5" />}
  color="green"
  />
@@ -90,7 +73,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Escalated"
- value={escalatedCount}
+ value={escalated}
  icon={<Flame className="text-amber-500 w-4.5 h-4.5" />}
  color="orange"
  />
@@ -98,7 +81,7 @@ export default function MlaDashboard() {
  <div className="col-span-2 sm:col-span-1">
  <StatCard 
  label="Pending > 7 Days"
- value={pending7DaysCount}
+ value={pending7Days}
  icon={<Clock className="text-slate-500 w-4.5 h-4.5" />}
  color="slate"
  />

@@ -8,10 +8,12 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import { collectorSeedData } from '../../data/collectorSeedData';
 
 export default function DistrictTickets({ escalatedOnly = false }) {
  const { t } = useTranslation();
- const [tickets, setTickets] = useState([]);
+ const navigate = useNavigate();
+ const [tickets, setTickets] = useState(collectorSeedData.tickets);
  
  // Filters state
  const [filterTaluk, setFilterTaluk] = useState('all');
@@ -27,14 +29,51 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  
  const [escalateModalOpen, setEscalateModalOpen] = useState(false);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- };
+  const [filters, setFilters] = useState({
+    taluk: null,
+    ward: null,
+    category: null,
+    status: null,
+    priority: null
+  });
 
- useEffect(() => {
- fetchTickets();
- }, [escalatedOnly]);
+  const fetchTickets = (currentFilters = {}) => {
+    // Simulated API call with filters
+    let list = JSON.parse(localStorage.getItem('jn_tickets') || JSON.stringify(collectorSeedData.tickets));
+    
+    // Simulate server-side filtering if params exist (excluding 'all' or null)
+    if (currentFilters.taluk && currentFilters.taluk !== 'all') {
+      list = list.filter(t => t.taluk === currentFilters.taluk || 
+                             (currentFilters.taluk === 'Velachery' && t.ward >= 140 && t.ward <= 143) ||
+                             (currentFilters.taluk === 'Sholinganallur' && t.ward >= 144 && t.ward <= 147));
+    }
+    if (currentFilters.ward && currentFilters.ward !== 'all') list = list.filter(t => String(t.ward) === currentFilters.ward);
+    if (currentFilters.category && currentFilters.category !== 'all') list = list.filter(t => t.category.toLowerCase() === currentFilters.category);
+    if (currentFilters.status && currentFilters.status !== 'all') list = list.filter(t => t.status === currentFilters.status);
+    if (currentFilters.priority && currentFilters.priority !== 'all') list = list.filter(t => t.priority === currentFilters.priority);
+
+    setTickets(list);
+  };
+
+  useEffect(() => {
+    // On mount, load all tickets without filter params
+    fetchTickets({ taluk: null, ward: null, category: null, status: null, priority: null });
+  }, [escalatedOnly]);
+
+  // Only apply filters when user explicitly changes a dropdown:
+  function handleFilterChange(filterKey, value) {
+    const updatedFilters = { ...filters, [filterKey]: value };
+    setFilters(updatedFilters);
+    
+    // Update individual state for controlled dropdowns
+    if (filterKey === 'taluk') setFilterTaluk(value);
+    if (filterKey === 'ward') setFilterWard(value);
+    if (filterKey === 'category') setFilterCategory(value);
+    if (filterKey === 'status') setFilterStatus(value);
+    if (filterKey === 'priority') setFilterPriority(value);
+
+    fetchTickets(updatedFilters);
+  }
 
  const handleSaveTickets = (updated) => {
  localStorage.setItem('jn_tickets', JSON.stringify(updated));
@@ -138,36 +177,8 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  }
  };
 
- // Filtering Logic
+ // Filtering Logic (Now handled by simulated fetchTickets)
  const filteredTickets = tickets.filter(ticket => {
- // Escalate page check
- if (escalatedOnly && ticket.status !== 'escalated') return false;
-
- // Taluk filtering
- if (filterTaluk !== 'all') {
- if (filterTaluk === 'Velachery') {
- const inWard = ticket.ward >= 140 && ticket.ward <= 143;
- if (ticket.taluk !== 'Velachery' && !inWard) return false;
- } else if (filterTaluk === 'Sholinganallur') {
- const inWard = ticket.ward >= 144 && ticket.ward <= 147;
- if (ticket.taluk !== 'Sholinganallur' && !inWard) return false;
- } else if (ticket.taluk !== filterTaluk) {
- return false;
- }
- }
-
- // Ward filtering
- if (filterWard !== 'all' && String(ticket.ward) !== filterWard) return false;
-
- // Category filtering
- if (filterCategory !== 'all' && ticket.category.toLowerCase() !== filterCategory) return false;
-
- // Status filtering
- if (filterStatus !== 'all' && ticket.status !== filterStatus) return false;
-
- // Priority filtering
- if (filterPriority !== 'all' && ticket.priority !== filterPriority) return false;
-
  return true;
  });
 
@@ -203,7 +214,7 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Taluk</span>
  <select
  value={filterTaluk}
- onChange={(e) => setFilterTaluk(e.target.value)}
+ onChange={(e) => handleFilterChange('taluk', e.target.value)}
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Taluks</option>
@@ -216,7 +227,7 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Ward</span>
  <select
  value={filterWard}
- onChange={(e) => setFilterWard(e.target.value)}
+ onChange={(e) => handleFilterChange('ward', e.target.value)}
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Wards</option>
@@ -229,7 +240,7 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Sector</span>
  <select
  value={filterCategory}
- onChange={(e) => setFilterCategory(e.target.value)}
+ onChange={(e) => handleFilterChange('category', e.target.value)}
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Sectors</option>
@@ -242,7 +253,7 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Status</span>
  <select
  value={filterStatus}
- onChange={(e) => setFilterStatus(e.target.value)}
+ onChange={(e) => handleFilterChange('status', e.target.value)}
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Statuses</option>
@@ -259,7 +270,7 @@ export default function DistrictTickets({ escalatedOnly = false }) {
  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Priority</span>
  <select
  value={filterPriority}
- onChange={(e) => setFilterPriority(e.target.value)}
+ onChange={(e) => handleFilterChange('priority', e.target.value)}
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Priorities</option>

@@ -36,72 +36,79 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
 
  // 2. Fetch Geolocation and Reverse Geocode
  useEffect(() => {
- if (!navigator.geolocation) {
- setGpsStatus('GPS Unsupported');
- return;
- }
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setCoords({ lat, lng });
+          setGpsStatus('GPS Locked');
 
- navigator.geolocation.getCurrentPosition(
- async (position) => {
- const lat = position.coords.latitude;
- const lng = position.coords.longitude;
- setCoords({ lat, lng });
- setGpsStatus('GPS Locked');
-
- // Reverse Geocoding via Nominatim OpenStreetMap
- try {
- const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
- headers: { 'User-Agent': 'JanaNayagam-Grievance-App' }
- });
- if (res.ok) {
- const data = await res.json();
- const addr = data.address;
+          // Reverse Geocoding via Nominatim OpenStreetMap
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+              headers: { 'User-Agent': 'JanaNayagam-Grievance-App' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data.address;
  
- const road = addr.road || addr.suburb || addr.neighbourhood || 'Unknown Road';
- const area = addr.county || addr.city_district || addr.state_district || 'District';
- const city = addr.city || addr.town || addr.village || 'Tamil Nadu';
- const pincode = addr.postcode ? ` - ${addr.postcode}` : '';
+              const road = addr.road || addr.suburb || addr.neighbourhood || 'Unknown Road';
+              const area = addr.county || addr.city_district || addr.state_district || 'District';
+              const city = addr.city || addr.town || addr.village || 'Tamil Nadu';
+              const pincode = addr.postcode ? ` - ${addr.postcode}` : '';
 
- setAddressLine1(road);
- setAddressLine2(`${area}, ${city}${pincode}`);
- }
- } catch (e) {
- console.warn("Reverse Geocoding Failed:", e);
- setAddressLine1(`Lat: ${lat.toFixed(4)}°N`);
- setAddressLine2(`Lng: ${lng.toFixed(4)}°E`);
- }
- },
- (err) => {
- console.warn("GPS Access Error:", err);
- setGpsStatus('GPS Defaulted');
- setAddressLine1('123, Gandhi Nagar, Madurai');
- setAddressLine2('Madurai, Tamil Nadu, 625001');
- },
- { enableHighAccuracy: true, timeout: 5000 }
- );
+              setAddressLine1(road);
+              setAddressLine2(`${area}, ${city}${pincode}`);
+            }
+          } catch (e) {
+            console.warn("Reverse Geocoding Failed:", e);
+            setAddressLine1(`Lat: ${lat.toFixed(4)}°N`);
+            setAddressLine2(`Lng: ${lng.toFixed(4)}°E`);
+          }
+        },
+        (err) => {
+          console.warn("GPS Access Error:", err);
+          setGpsStatus('GPS Defaulted');
+          setAddressLine1('123, Gandhi Nagar, Madurai');
+          setAddressLine2('Madurai, Tamil Nadu, 625001');
+        },
+        { enableHighAccuracy: false, timeout: 5000 }
+      );
+    } else {
+      console.warn('Geolocation not supported, using mock data');
+      setGpsStatus('GPS Defaulted');
+      setAddressLine1('123, Gandhi Nagar, Madurai');
+      setAddressLine2('Madurai, Tamil Nadu, 625001');
+    }
  }, []);
 
  // 3. Initialize Camera Stream with Mock Fallback
  useEffect(() => {
- let activeStream = null;
+    let activeStream = null;
 
- async function startCamera() {
- try {
- const mediaStream = await navigator.mediaDevices.getUserMedia({
- video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
- });
- activeStream = mediaStream;
- setStream(mediaStream);
- if (videoRef.current) {
- videoRef.current.srcObject = mediaStream;
- }
- } catch (err) {
- console.warn("Camera hardware access failed, launching Mock Mode:", err);
- setCameraError(true);
- }
- }
+    async function startCamera() {
+      if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+        try {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+          });
+          activeStream = mediaStream;
+          setStream(mediaStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+          }
+        } catch (err) {
+          console.warn("Camera hardware access failed, launching Mock Mode:", err.message);
+          setCameraError(true);
+        }
+      } else {
+        console.warn("Camera not supported, launching Mock Mode");
+        setCameraError(true);
+      }
+    }
 
- startCamera();
+    startCamera();
 
  return () => {
  if (activeStream) {

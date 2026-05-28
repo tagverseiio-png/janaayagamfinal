@@ -327,7 +327,7 @@ function BdoAnalytics() {
 
  {/* Horizontal Scroll Chart Container */}
  <div className="overflow-x-auto -webkit-overflow-scrolling-touch hide-scrollbar border border-slate-100 rounded-2xl p-4 bg-slate-50 ">
- <div className="min-w-[500px] h-60 relative flex items-end justify-around pb-6 pt-4 px-4">
+ <div style={{ width: '100%', height: '300px', minHeight: '300px' }} className="min-w-[500px] relative flex items-end justify-around pb-6 pt-4 px-4">
  {/* Mock premium animated bar chart */}
  {[
  { cat: 'Roads', count: 12, pct: '60%' },

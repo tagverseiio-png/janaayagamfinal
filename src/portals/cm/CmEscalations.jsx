@@ -19,6 +19,7 @@ export default function CmEscalations() {
  const [directiveText, setDirectiveText] = useState('');
  
  const [overrideModalOpen, setOverrideModalOpen] = useState(false);
+ const [escalateModalOpen, setEscalateModalOpen] = useState(false);
 
  const fetchTickets = () => {
  const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
@@ -102,6 +103,27 @@ export default function CmEscalations() {
  );
  };
 
+ // 4. Escalate to PMO/Central Government or Cabinet
+ const handleCentralEscalation = () => {
+ const updated = tickets.map(ticket => {
+ if (ticket.id === activeTicket.id) {
+ return { 
+ ...ticket, 
+ status: 'escalated_pmo',
+ notes: 'Escalated to Central Government / PMO by Chief Minister.'
+ };
+ }
+ return ticket;
+ });
+
+ handleSaveTickets(updated);
+ setEscalateModalOpen(false);
+ toast.success(t('app_name') === 'ஜனநாயகம்' 
+ ? 'மத்திய அரசுக்கு புகார் வெற்றிகரமாக அனுப்பப்பட்டது' 
+ : 'Grievance escalated to PMO/Central Authorities successfully'
+ );
+ };
+
  // Catch generic actions from TicketCard
  const handleActionClick = (ticketId, actionType) => {
  const ticket = tickets.find(t => t.id === ticketId);
@@ -115,6 +137,12 @@ export default function CmEscalations() {
  if (actionType === 'close') {
  setActiveTicket(ticket);
  setOverrideModalOpen(true);
+ return;
+ }
+
+ if (actionType === 'escalate') {
+ setActiveTicket(ticket);
+ setEscalateModalOpen(true);
  return;
  }
  };
@@ -315,7 +343,7 @@ export default function CmEscalations() {
 
  {/* Details modal */}
  <AnimatePresence>
- {activeTicket && !directiveModalOpen && !overrideModalOpen && (
+ {activeTicket && !directiveModalOpen && !overrideModalOpen && !escalateModalOpen && (
  <motion.div
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}

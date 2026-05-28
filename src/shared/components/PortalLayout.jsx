@@ -117,9 +117,9 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  case 'minister':
  return [
  { label: tLabel('Home', 'முகப்பு'), path: '/minister', icon: <Home className="w-5.5 h-5.5" /> },
- { label: tLabel('View', 'பார்வை'), path: '/minister/tickets', icon: <FileText className="w-5.5 h-5.5" /> },
+ { label: tLabel('View', 'பார்வை'), path: '/minister/dept', icon: <FileText className="w-5.5 h-5.5" /> },
  { label: tLabel('Crisis', 'நெருக்கடி'), path: '/minister/crisis', icon: <AlertTriangle className="w-5.5 h-5.5" /> },
- { label: tLabel('CM', 'முதல்வர்'), path: '/minister/directives', icon: <Shield className="w-5.5 h-5.5" /> },
+ { label: tLabel('CM', 'முதல்வர்'), path: '/minister/escalate', icon: <Shield className="w-5.5 h-5.5" /> },
  { label: tLabel('Profile', 'சுயவிவரம்'), path: '/minister/profile', icon: <User className="w-5.5 h-5.5" /> }
  ];
  case 'cm':
@@ -368,7 +368,7 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  </div>
 
  {/* ══ MOBILE SCROLLABLE CONTENT BODY ══ */}
- <main className="md:hidden flex-1 overflow-y-auto pt-14 pb-20 portal-content">
+ <main className="md:hidden flex-1 overflow-y-auto pt-14 pb-28 portal-content">
  <div className="w-full">
  {isProfileRoute ? (
  <ProfilePage />
