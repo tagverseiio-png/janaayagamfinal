@@ -7,6 +7,7 @@ export const DEPT_HIERARCHY = {
     { role: 'Area Engineer', label: 'Area Engineer Approval' },
     { role: 'GM', label: 'GM Final Review' },
     { role: 'Executive Director', label: 'Executive Director Clearance' },
+    { role: 'Director', label: 'Director Final Approval' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Electricity: [
@@ -17,6 +18,7 @@ export const DEPT_HIERARCHY = {
     { role: 'Asst AE', label: 'Assistant Area Engineer Review' },
     { role: 'Area Engineer', label: 'Area Engineer Approval' },
     { role: 'Super Agent', label: 'Super Agent Clearance' },
+    { role: 'GM', label: 'GM Final Review' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Roads: [
@@ -32,8 +34,8 @@ export const DEPT_HIERARCHY = {
   Sanitation: [
     { role: 'Citizen', label: 'Issue Filed' },
     { role: 'Ward Officer', label: 'Ward Officer Response' },
-    { role: 'Sanitary Inspector', label: 'SI Site Inspection' },
-    { role: 'DSI', label: 'Division Sanitary Inspector Review' },
+    { role: 'DSI', label: 'DSI Site Inspection' },
+    { role: 'Sanitary Inspector', label: 'Sanitary Inspector Review' },
     { role: 'Health Inspector', label: 'Health Inspector Assessment' },
     { role: 'City Health Officer', label: 'CHO Approval' },
     { role: 'Commissioner', label: 'Commissioner Clearance' },
@@ -45,7 +47,6 @@ export const DEPT_HIERARCHY = {
     { role: 'Revenue Inspector', label: 'RI Field Inspection' },
     { role: 'Tahsildar', label: 'Tahsildar Review' },
     { role: 'RDO', label: 'RDO Assessment' },
-    { role: 'DRO', label: 'DRO Final Review' },
     { role: 'Collector', label: 'Collector Approval' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
@@ -114,4 +115,29 @@ export const getProgressPercent = (category, assignedTo) => {
   const hierarchy = DEPT_HIERARCHY[normalizeDept(category)];
   const idx = getCurrentStep(category, assignedTo);
   return Math.round((idx / (hierarchy.length - 1)) * 100);
+};
+
+// Abbreviated / legacy role names → their canonical chain role
+const ROLE_ALIASES = { SI: 'Sanitary Inspector', DE: 'Deputy Engineer', DAE: 'Deputy AE', RI: 'Revenue Inspector' };
+
+// Resolve any assignedTo to a real role in the department chain.
+// Out-of-chain roles (e.g. escalated to BDO/Collector/Minister) map to the top dept role.
+export const canonicalRole = (category, role) => {
+  const chain = DEPT_HIERARCHY[normalizeDept(category)];
+  const aliased = ROLE_ALIASES[role] || role;
+  if (chain.some(s => s.role === aliased)) return aliased;
+  return chain[chain.length - 2].role;
+};
+
+// Build a timeline aligned to the chain from the current owner role
+export const buildTimeline = (category, assignedTo, createdAt) => {
+  const chain = DEPT_HIERARCHY[normalizeDept(category)];
+  const cur = getCurrentStep(category, assignedTo);
+  const resolved = assignedTo === 'Resolved';
+  return chain.map((s, i) => ({
+    role: s.role,
+    label: s.label,
+    completedAt: (i < cur || (resolved && i === cur)) ? createdAt : null,
+    status: i < cur ? 'done' : i === cur ? (resolved ? 'done' : 'current') : 'pending',
+  }));
 };
