@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { getPlacesByPincode, getDistrictByPincode } from '../data/pincodeData';
 
 /* ─── 38 Districts of Tamil Nadu ─────────────────────────────────────── */
 const districts = [
@@ -47,202 +48,9 @@ const districts = [
   { name: "Harur", tamil: "ஹாரூர்" }
 ];
 
-/* ─── Available Roles in System ──────────────────────────────────────── */
-const roles = [
-  { id: 'citizen', name: 'Citizen', tamil: 'குடிமகன்' },
-  { id: 'vao', name: 'VAO', tamil: 'கிராம நிர்வாக அலுவலர் (VAO)' },
-  { id: 'ward_officer', name: 'Ward Officer', tamil: 'வார்டு அதிகாரி' },
-  { id: 'bdo', name: 'BDO', tamil: 'வட்டார வளர்ச்சி அலுவலர் (BDO)' },
-  { id: 'dro', name: 'DRO', tamil: 'வருவாய் கோட்டாட்சியர் (DRO)' },
-  { id: 'collector', name: 'District Collector', tamil: 'மாவட்ட ஆட்சியர்' },
-  { id: 'dept_secretary', name: 'Dept Secretary', tamil: 'துறைச் செயலாளர்' },
-  { id: 'minister', name: 'Minister', tamil: 'அமைச்சர்' },
-  { id: 'mla', name: 'MLA', tamil: 'சட்டமன்ற உறுப்பினர் (MLA)' },
-  { id: 'cm', name: 'CM', tamil: 'முதலமைச்சர் (CM)' },
-];
 
-/* ─── Hardcoded Pincode Local Data ───────────────────────────────────── */
-const pincodeData = {
-  "600001": { district: "Chennai", area: ["Park Town", "Chennai GPO", "Fort St George"] },
-  "600002": { district: "Chennai", area: ["Royapettah", "Greams Road"] },
-  "600003": { district: "Chennai", area: ["Mylapore", "Mandaveli"] },
-  "600004": { district: "Chennai", area: ["Nungambakkam", "Thousand Lights"] },
-  "600005": { district: "Chennai", area: ["Egmore", "Kilpauk"] },
-  "600006": { district: "Chennai", area: ["Chetpet", "Poonamallee High Road"] },
-  "600010": { district: "Chennai", area: ["Saidapet", "Guindy"] },
-  "600011": { district: "Chennai", area: ["Adyar", "Kotturpuram"] },
-  "600014": { district: "Chennai", area: ["Alwarpet", "Teynampet"] },
-  "600015": { district: "Chennai", area: ["Anna Nagar West"] },
-  "600016": { district: "Chennai", area: ["Anna Nagar East"] },
-  "600017": { district: "Chennai", area: ["Aminjikarai", "Shenoy Nagar"] },
-  "600018": { district: "Chennai", area: ["Kodambakkam", "Vadapalani"] },
-  "600020": { district: "Chennai", area: ["Perambur", "Kolathur"] },
-  "600021": { district: "Chennai", area: ["Royapuram", "Tondiarpet"] },
-  "600026": { district: "Chennai", area: ["Velachery", "Medavakkam"] },
-  "600028": { district: "Chennai", area: ["Tambaram", "Chromepet"] },
-  "600030": { district: "Chennai", area: ["Porur", "Valasaravakkam"] },
-  "600033": { district: "Chennai", area: ["Ambattur", "Padi"] },
-  "600040": { district: "Chennai", area: ["Sholinganallur", "Perungudi"] },
-  "600042": { district: "Chennai", area: ["Pallavaram", "Pammal"] },
-  "600045": { district: "Chennai", area: ["Madipakkam", "Nanganallur"] },
-  "600050": { district: "Chennai", area: ["Villivakkam", "Ayanavaram"] },
-  "600053": { district: "Chennai", area: ["Avadi", "Pattabiram"] },
-  "600058": { district: "Chennai", area: ["Manali", "Madhavaram"] },
-  "600060": { district: "Chennai", area: ["Thiruvottiyur"] },
-  "600063": { district: "Chennai", area: ["Virugambakkam", "Ashok Nagar"] },
-  "600073": { district: "Chennai", area: ["KK Nagar", "Arumbakkam"] },
-  "600078": { district: "Chennai", area: ["Pallikaranai", "Kovilambakkam"] },
-  "600091": { district: "Chennai", area: ["Sholinganallur IT Park", "OMR"] },
-  "600096": { district: "Chennai", area: ["Thoraipakkam", "Karapakkam"] },
-  "600100": { district: "Chennai", area: ["Injambakkam", "Akkarai"] },
 
-  "641001": { district: "Coimbatore", area: ["Coimbatore Central", "Gandhipuram"] },
-  "641002": { district: "Coimbatore", area: ["RS Puram", "Saibaba Colony"] },
-  "641003": { district: "Coimbatore", area: ["Peelamedu", "Avinashi Road"] },
-  "641004": { district: "Coimbatore", area: ["Singanallur", "Ramanathapuram"] },
-  "641005": { district: "Coimbatore", area: ["Ukkadam", "Podanur"] },
-  "641006": { district: "Coimbatore", area: ["Vadavalli", "Kalapatti"] },
-  "641007": { district: "Coimbatore", area: ["Kuniyamuthur", "Kuniamuthur"] },
-  "641008": { district: "Coimbatore", area: ["Sowripalayam", "Ganapathy"] },
-  "641035": { district: "Coimbatore", area: ["Sulur", "Ettimadai"] },
-  "641045": { district: "Coimbatore", area: ["Mettupalayam Road", "Selvapuram"] },
 
-  "625001": { district: "Madurai", area: ["Madurai Central", "Tallakulam"] },
-  "625002": { district: "Madurai", area: ["Anna Nagar Madurai", "KK Nagar Madurai"] },
-  "625003": { district: "Madurai", area: ["Palanganatham", "Vilangudi"] },
-  "625004": { district: "Madurai", area: ["Arasaradi", "Thiruppalai"] },
-  "625005": { district: "Madurai", area: ["Anaiyur", "Surveyor Colony"] },
-  "625006": { district: "Madurai", area: ["Goripalayam", "Nagamalai Pudukottai"] },
-  "625007": { district: "Madurai", area: ["Simmakkal", "Teppakulam"] },
-  "625009": { district: "Madurai", area: ["Sellur", "Kochadai"] },
-  "625014": { district: "Madurai", area: ["Othakadai", "Thirumangalam"] },
-  "625020": { district: "Madurai", area: ["Melur", "Usilampatti"] },
-
-  "636001": { district: "Salem", area: ["Salem Main", "Shevapet"] },
-  "636002": { district: "Salem", area: ["Suramangalam", "Hasthampatti"] },
-  "636003": { district: "Salem", area: ["Ammapet", "Alagapuram"] },
-  "636004": { district: "Salem", area: ["Fairlands", "Gugai"] },
-  "636005": { district: "Salem", area: ["Kondalampatti", "Yercaud Road"] },
-  "636007": { district: "Salem", area: ["Attur", "Vazhapadi"] },
-  "636008": { district: "Salem", area: ["Omalur", "Mettur"] },
-
-  "620001": { district: "Trichy", area: ["Trichy Main", "Palakkarai"] },
-  "620002": { district: "Trichy", area: ["Woraiyur", "KK Nagar Trichy"] },
-  "620003": { district: "Trichy", area: ["Ariyamangalam", "Thathanur"] },
-  "620005": { district: "Trichy", area: ["Ponmalai", "Golden Rock"] },
-  "620006": { district: "Trichy", area: ["Srirangam", "Thiruvanaikoil"] },
-  "620017": { district: "Trichy", area: ["Manachanallur", "Samayapuram"] },
-  "620018": { district: "Trichy", area: ["Thuvakudi", "Panjappur"] },
-  "620021": { district: "Trichy", area: ["Thillai Nagar", "Crawford"] },
-
-  "632001": { district: "Vellore", area: ["Vellore Main", "Sainathapuram"] },
-  "632002": { district: "Vellore", area: ["Gandhi Nagar Vellore", "Kosapet"] },
-  "632004": { district: "Vellore", area: ["Sathuvachari", "Bagayam"] },
-  "632006": { district: "Vellore", area: ["Katpadi", "Virudhambut"] },
-  "632007": { district: "Vellore", area: ["Gudiyatham", "Ambur"] },
-  "632008": { district: "Vellore", area: ["Vaniyambadi", "Jolarpet"] },
-
-  "627001": { district: "Tirunelveli", area: ["Tirunelveli Main", "Palayamkottai"] },
-  "627002": { district: "Tirunelveli", area: ["Melapalayam", "Vannarpet"] },
-  "627003": { district: "Tirunelveli", area: ["Pettai", "Manakadu"] },
-  "627005": { district: "Tirunelveli", area: ["Krishnapuram", "Rajagopalapuram"] },
-  "627007": { district: "Tirunelveli", area: ["Ambasamudram", "Cheranmahadevi"] },
-  "627011": { district: "Tirunelveli", area: ["Tenkasi", "Sankarankovil"] },
-
-  "613001": { district: "Thanjavur", area: ["Thanjavur Main", "Medical College Road"] },
-  "613002": { district: "Thanjavur", area: ["Kumbakonam", "Papanasam"] },
-  "613003": { district: "Thanjavur", area: ["Vallam", "Budalur"] },
-  "613005": { district: "Thanjavur", area: ["Pattukottai", "Aranthangi"] },
-
-  "638001": { district: "Erode", area: ["Erode Main", "Veerappanchatiram"] },
-  "638002": { district: "Erode", area: ["Surampatti", "Arisipalayam"] },
-  "638003": { district: "Erode", area: ["Chithode", "Modakurichi"] },
-  "638004": { district: "Erode", area: ["Bhavani", "Gobichettipalayam"] },
-  "638005": { district: "Erode", area: ["Perundurai", "Kangayam"] },
-
-  "641601": { district: "Tiruppur", area: ["Tiruppur Main", "Velampalayam"] },
-  "641602": { district: "Tiruppur", area: ["Anupparpalayam", "Rayapuram"] },
-  "641603": { district: "Tiruppur", area: ["Avinashi", "Uthukuli"] },
-  "641604": { district: "Tiruppur", area: ["Palladam", "Kangayam Road"] },
-
-  "630001": { district: "Sivaganga", area: ["Sivaganga Main", "Manamadurai"] },
-  "630002": { district: "Sivaganga", area: ["Karaikudi", "Devakottai"] },
-
-  "623001": { district: "Ramanathapuram", area: ["Ramanathapuram Main", "Rameswaram"] },
-  "623002": { district: "Ramanathapuram", area: ["Paramakudi", "Mudukulathur"] },
-
-  "625531": { district: "Theni", area: ["Theni Main", "Periyakulam"] },
-  "625532": { district: "Theni", area: ["Uthamapalayam", "Bodinayakanur"] },
-
-  "643001": { district: "Nilgiris", area: ["Ooty", "Udhagamandalam"] },
-  "643002": { district: "Nilgiris", area: ["Coonoor", "Wellington"] },
-  "643003": { district: "Nilgiris", area: ["Kotagiri", "Gudalur"] },
-
-  "621212": { district: "Perambalur", area: ["Perambalur Main", "Ariyalur"] },
-
-  "614001": { district: "Nagapattinam", area: ["Nagapattinam Main", "Velankanni"] },
-  "614002": { district: "Nagapattinam", area: ["Mayiladuthurai", "Sirkazhi"] },
-
-  "629001": { district: "Kanyakumari", area: ["Nagercoil Main", "Marthandam"] },
-  "629002": { district: "Kanyakumari", area: ["Thuckalay", "Colachel"] },
-  "629003": { district: "Kanyakumari", area: ["Padmanabhapuram", "Kanyakumari Town"] },
-
-  "628001": { district: "Thoothukudi", area: ["Thoothukudi Main", "Harbour"] },
-  "628002": { district: "Thoothukudi", area: ["Tiruchendur", "Srivaikundam"] },
-  "628003": { district: "Thoothukudi", area: ["Kovilpatti", "Vilathikulam"] },
-
-  "626001": { district: "Virudhunagar", area: ["Virudhunagar Main", "Sivakasi"] },
-  "626002": { district: "Virudhunagar", area: ["Rajapalayam", "Srivilliputhur"] },
-
-  "622001": { district: "Pudukkottai", area: ["Pudukkottai Main", "Aranthangi"] },
-  "622002": { district: "Pudukkottai", area: ["Karambakudi", "Gandarvakottai"] },
-
-  "631001": { district: "Kancheepuram", area: ["Kancheepuram Main", "Uthiramerur"] },
-  "631002": { district: "Kancheepuram", area: ["Chengalpattu", "Madurantakam"] },
-  "631003": { district: "Kancheepuram", area: ["Tambaram West", "Vandalur"] },
-
-  "604001": { district: "Villupuram", area: ["Villupuram Main", "Tindivanam"] },
-  "604002": { district: "Villupuram", area: ["Gingee", "Kallakurichi"] },
-
-  "606001": { district: "Cuddalore", area: ["Cuddalore Main", "Panruti"] },
-  "606002": { district: "Cuddalore", area: ["Chidambaram", "Kattumannarkoil"] },
-
-  "635001": { district: "Krishnagiri", area: ["Krishnagiri Main", "Hosur"] },
-  "635002": { district: "Krishnagiri", area: ["Denkanikottai", "Uthangarai"] },
-
-  "636701": { district: "Dharmapuri", area: ["Dharmapuri Main", "Palacode"] },
-  "636702": { district: "Dharmapuri", area: ["Harur", "Pennagaram"] },
-
-  "637001": { district: "Namakkal", area: ["Namakkal Main", "Rasipuram"] },
-  "637002": { district: "Namakkal", area: ["Tiruchengode", "Komarapalayam"] },
-
-  "639001": { district: "Karur", area: ["Karur Main", "Kulithalai"] },
-  "639002": { district: "Karur", area: ["Manapparai", "Aravakurichi"] },
-
-  "612001": { district: "Nagapattinam", area: ["Mayiladuthurai Main", "Tharangambadi"] },
-
-  "632301": { district: "Ranipet", area: ["Ranipet Main", "Arcot"] },
-  "632302": { district: "Ranipet", area: ["Walajah", "Arakkonam"] },
-
-  "635601": { district: "Tirupattur", area: ["Tirupattur Main", "Vaniyambadi"] },
-  "635602": { district: "Tirupattur", area: ["Jolarpet", "Natrampalli"] },
-
-  "603001": { district: "Chengalpattu", area: ["Chengalpattu Main", "Thiruporur"] },
-  "603002": { district: "Chengalpattu", area: ["Maraimalai Nagar", "Vandalur"] },
-
-  "607001": { district: "Kallakurichi", area: ["Kallakurichi Main", "Ulundurpet"] },
-
-  "627801": { district: "Tenkasi", area: ["Tenkasi Main", "Courtallam"] },
-  "627802": { district: "Tenkasi", area: ["Shenkottai", "Kadayanallur"] },
-};
-
-function lookupPincode(pincode) {
-  const result = pincodeData[pincode];
-  if (result) {
-    return { found: true, district: result.district, areas: result.area };
-  }
-  return { found: false };
-}
 
 /* ─── Hardcoded Wards Mapping by District ────────────────────────────── */
 const wardsByDistrict = {
@@ -328,8 +136,7 @@ export default function LoginPage() {
 
   // Form selections
   const [district, setDistrict] = useState('Chennai');
-  const [selectedRole, setSelectedRole] = useState('citizen');
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+
 
   // Pincode Auto-Suggest Ward flow states
   const [pincode, setPincode] = useState('');
@@ -407,12 +214,14 @@ export default function LoginPage() {
     // Simulate a brief loading delay to showcase premium UX spinner
     await new Promise(resolve => setTimeout(resolve, 450));
 
-    const result = lookupPincode(pin);
-    if (result.found) {
-      setAreas(result.areas);
+    const districtName = getDistrictByPincode(pin);
+    const placeList = getPlacesByPincode(pin).map(p => p.place);
+    
+    if (districtName && placeList.length > 0) {
+      setAreas(placeList);
       setPincodeStatus('success');
-      setDistrict(result.district);
-      setApiDistrictInfo(`${result.district}, Tamil Nadu`);
+      setDistrict(districtName);
+      setApiDistrictInfo(`${districtName}, Tamil Nadu`);
       setIsDistrictLocked(true);
       toast.success(tLabel("Pincode located!", "பின்கோடு கண்டறியப்பட்டது!"));
     } else {
@@ -493,7 +302,7 @@ export default function LoginPage() {
     const uuid = 'jn-' + Math.random().toString(36).substr(2, 9) + '-' + Math.random().toString(36).substr(2, 5);
 
     // Save mock flow values to localStorage
-    localStorage.setItem('jn_role', selectedRole);
+    localStorage.setItem('jn_role', 'citizen');
     localStorage.setItem('jn_name', 'KARTHIK RAJ S.');
     localStorage.setItem('jn_ward', wardNumber);
     localStorage.setItem('jn_district', district);
@@ -507,36 +316,32 @@ export default function LoginPage() {
     localStorage.setItem('jn_living_lat', coords.lat.toString());
     localStorage.setItem('jn_living_lng', coords.lng.toString());
 
-    if (selectedRole === 'citizen') {
-      if (!localStorage.getItem('jn_aadhaar_address')) {
-        localStorage.setItem('jn_aadhaar_address', "123, Gandhi Nagar, Madurai - 625001");
-        localStorage.setItem('jn_aadhaar_district', "Madurai");
-        localStorage.setItem('jn_aadhaar_ward', "Ward 45");
-      }
-      
-      // Auto-set the Living Address since they chose it on login!
-      const completeAddress = `${selectedArea}, ${district}, Tamil Nadu - ${pincode}`;
-      localStorage.setItem('jn_living_address', completeAddress);
-      localStorage.setItem('jn_living_district', district);
-      localStorage.setItem('jn_living_ward', `Ward ${wardNumber}`);
-      localStorage.setItem('jn_living_lat', coords.lat.toString());
-      localStorage.setItem('jn_living_lng', coords.lng.toString());
-      
-      const today = new Date();
-      const nextDate = new Date();
-      nextDate.setDate(today.getDate() + 90);
-      localStorage.setItem('jn_location_last_updated', today.toISOString());
-      localStorage.setItem('jn_location_next_update', nextDate.toISOString());
+    if (!localStorage.getItem('jn_aadhaar_address')) {
+      localStorage.setItem('jn_aadhaar_address', "123, Gandhi Nagar, Madurai - 625001");
+      localStorage.setItem('jn_aadhaar_district', "Madurai");
+      localStorage.setItem('jn_aadhaar_ward', "Ward 45");
     }
+    
+    // Auto-set the Living Address since they chose it on login!
+    const completeAddress = `${selectedArea}, ${district}, Tamil Nadu - ${pincode}`;
+    localStorage.setItem('jn_living_address', completeAddress);
+    localStorage.setItem('jn_living_district', district);
+    localStorage.setItem('jn_living_ward', `Ward ${wardNumber}`);
+    localStorage.setItem('jn_living_lat', coords.lat.toString());
+    localStorage.setItem('jn_living_lng', coords.lng.toString());
+    
+    const today = new Date();
+    const nextDate = new Date();
+    nextDate.setDate(today.getDate() + 90);
+    localStorage.setItem('jn_location_last_updated', today.toISOString());
+    localStorage.setItem('jn_location_next_update', nextDate.toISOString());
 
     toast.success(tLabel(
-      `Identity Verified: Welcome ${selectedRole.toUpperCase()}`,
-      `அடையாளம் சரிபார்க்கப்பட்டது: நல்வரவு ${selectedRole.toUpperCase()}`
+      `Identity Verified: Welcome CITIZEN`,
+      `அடையாளம் சரிபார்க்கப்பட்டது: நல்வரவு குடிமகன்`
     ));
 
-    // Redirect to proper role portal path
-    const formattedRole = selectedRole.replace('_', '-');
-    navigate(`/${formattedRole}`);
+    navigate('/citizen');
   };
 
   const toggleLanguage = () => {
@@ -860,35 +665,9 @@ export default function LoginPage() {
                     </motion.div>
                   )}
 
-                  {/* STEP 4 — Role Selector (Full Width Dropdown) */}
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                      {tLabel('SELECT YOUR ROLE', 'பங்கினைத் தேர்ந்தெடுக்கவும்')}
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                        onBlur={() => setTimeout(() => setRoleDropdownOpen(false), 200)}
-                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl text-slate-700 font-extrabold text-sm flex justify-between items-center outline-none focus:border-[#8B1A1A] transition-all"
-                      >
-                        <span>{roles.find(r => r.id === selectedRole)?.name}</span>
-                        <span>▾</span>
-                      </button>
-                      {roleDropdownOpen && (
-                        <div className="absolute z-[9999] w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-64 overflow-y-auto">
-                          {roles.map((r) => (
-                            <div
-                              key={r.id}
-                              onClick={() => { setSelectedRole(r.id); setRoleDropdownOpen(false); }}
-                              className={`px-4 py-3 cursor-pointer text-sm font-bold hover:bg-slate-50 ${selectedRole === r.id ? 'bg-[#8B1A1A]/10 text-[#8B1A1A]' : 'text-slate-700'}`}
-                            >
-                              {isTa ? r.tamil : r.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+
+                  <div className="text-green-600 font-bold text-sm text-center mb-2">
+                    ✓ Logging in as: Citizen
                   </div>
 
                   {/* Submit Button */}
@@ -905,6 +684,17 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
           </form>
+        </div>
+
+        {/* OFFICIAL LOGIN LINK */}
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <p className="text-xs text-slate-400 mb-2">Government Official or Elected Representative?</p>
+          <button
+            onClick={() => navigate('/employee-login')}
+            className="text-[#8B1A1A] font-bold text-sm underline underline-offset-2"
+          >
+            Access Official Portal →
+          </button>
         </div>
 
         {/* BOTTOM SECURED NOTE */}

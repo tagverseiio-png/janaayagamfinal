@@ -14,8 +14,9 @@ export default function SubmitTicket() {
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
 
-  // Step state: 0 = Location Choice, 1 = Category & Form
+  // Step state: 0 = Location Choice, 1 = Category & Form, 2 = Success
   const [step, setStep] = useState(0);
+  const [submittedTicketId, setSubmittedTicketId] = useState('');
   const [locationMode, setLocationMode] = useState('home'); // 'home' or 'gps'
 
   // Form states
@@ -172,12 +173,8 @@ export default function SubmitTicket() {
     list.push(newTicket);
     localStorage.setItem('jn_tickets', JSON.stringify(list));
 
-    toast.success(tLabel(
-      `Complaint sent to Ward Officer! Ticket ID: #JN-${ticketId}`,
-      `புகார் வார்டு அதிகாரிக்கு அனுப்பப்பட்டது! புகார் எண்: #JN-${ticketId}`
-    ));
-    
-    navigate('/citizen/tickets');
+    setSubmittedTicketId(`JN-${ticketId}`);
+    setStep(2);
   };
 
   return (
@@ -514,6 +511,49 @@ export default function SubmitTicket() {
                 </button>
 
               </form>
+            </motion.div>
+          )}
+
+          {/* STEP 2: Success Screen */}
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 text-center space-y-6 mt-8"
+            >
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-800">✅ Complaint Filed Successfully!</h2>
+              <p className="text-slate-500 text-sm">Your grievance has been routed to the respective department officer.</p>
+              
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 my-6">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Your Ticket ID</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-3xl font-black text-[#8B1A1A] tracking-wider">{submittedTicketId}</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(submittedTicketId);
+                      toast.success('Ticket ID copied to clipboard');
+                    }}
+                    className="p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 shadow-sm cursor-pointer"
+                    title="Copy"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-500 mb-4 font-bold">Track your complaint at:</p>
+                <button
+                  onClick={() => navigate('/track', { state: { ticketId: submittedTicketId } })}
+                  className="w-full bg-[#8B1A1A] hover:bg-[#6b1414] text-white font-extrabold text-sm py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Track Now →
+                </button>
+              </div>
             </motion.div>
           )}
 

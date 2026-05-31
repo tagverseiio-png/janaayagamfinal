@@ -6,32 +6,33 @@ import { AlertTriangle, CheckCircle, Smartphone, Clock, Radio } from 'lucide-rea
 import StatCard from '../../shared/components/StatCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import { SEED_TICKETS, getTicketsByWard, STATE_STATS } from '../../data/seedData';
 
 export default function VaoDashboard() {
  const { t, i18n } = useTranslation();
  const [tickets, setTickets] = useState([]);
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ setTickets(SEED_TICKETS);
  }, []);
 
  // Compute stats
- const openCount = tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
+ const wardTickets = getTicketsByWard('Ward 142');
+ const openCount = wardTickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
  
  const todayStr = new Date().toISOString().split('T')[0];
- const raisedTodayCount = tickets.filter(t => t.raised_by === 'VAO' && t.created_at.startsWith(todayStr)).length;
+ const raisedTodayCount = tickets.filter(t => t.assignedTo === 'VAO' && t.createdAt && t.createdAt.startsWith(todayStr)).length;
  
- const resolvedCount = tickets.filter(t => t.status === 'resolved').length;
+ const resolvedCount = tickets.filter(t => t.status === 'Resolved').length;
 
  // Filter/Sort recent tickets
  const recentTickets = [...tickets]
- .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+ .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
  .slice(0, 5);
 
- const formatSla = (sla_deadline) => {
- if (!sla_deadline) return '-';
- const diff = new Date(sla_deadline) - new Date();
+ const formatSla = (slaDeadline) => {
+ if (!slaDeadline) return '-';
+ const diff = new Date(slaDeadline) - new Date();
  if (diff <= 0) return t('breached');
  const hrs = Math.floor(diff / (1000 * 60 * 60));
  return `${hrs}h left`;
@@ -115,15 +116,15 @@ export default function VaoDashboard() {
 
         <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center select-none">
           <div>
-            <p className="text-sm font-black text-slate-800">1,204</p>
+            <p className="text-sm font-black text-slate-800">{STATE_STATS.totalActive}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ACTIVE</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#4CAF50]">8,432</p>
+            <p className="text-sm font-black text-[#4CAF50]">{STATE_STATS.totalResolved}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">RESOLVED</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#F44336]">89</p>
+            <p className="text-sm font-black text-[#F44336]">{STATE_STATS.totalEscalated}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ESCALATED</p>
           </div>
         </div>
@@ -171,13 +172,13 @@ export default function VaoDashboard() {
  </span>
  </td>
  <td className="px-4 py-4 whitespace-nowrap">
- {ticket.citizen_name || 'Anonymous'}
+ {ticket.citizenName || 'Anonymous'}
  </td>
  <td className="px-4 py-4">
  <StatusBadge status={ticket.status} />
  </td>
  <td className="px-5 py-4 whitespace-nowrap text-slate-500 font-medium">
- {formatSla(ticket.sla_deadline)}
+ {formatSla(ticket.slaDeadline)}
  </td>
  </tr>
  ))

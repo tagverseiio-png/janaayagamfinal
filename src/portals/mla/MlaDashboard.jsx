@@ -6,16 +6,12 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, Flame, Clock, MapPin, Landmark, ArrowRight, ShieldAlert, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
 import TicketCard from '../../shared/components/TicketCard';
-import { mlaSeedData } from '../../data/mlaSeedData';
+import { SEED_TICKETS, DISTRICT_STATS } from '../../data/seedData';
 
 export default function MlaDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [stats, setStats] = useState(mlaSeedData.stats);
- const [tickets, setTickets] = useState(mlaSeedData.tickets);
-
- // Use hardcoded seed stats for KPIs
- const { totalOpen, criticalIssues, resolved, escalated, pending7Days } = stats;
+ const [tickets, setTickets] = useState(SEED_TICKETS.filter(t => t.ward >= 'Ward 140' && t.ward <= 'Ward 147'));
 
  // Priority feed: from mock tickets
  const priorityFeed = tickets;
@@ -31,7 +27,7 @@ export default function MlaDashboard() {
  className="space-y-6"
  >
  {/* Government Colored Top Ribbed Greeting */}
- <div className="bg-gradient-to-r from-[#1B5E20] to-[#2E7D32] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+ <div style={{ background: '#8B1A1A' }} className="rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
  <span className="text-[9px] font-black uppercase tracking-widest bg-white/15 px-2.5 py-1 rounded border border-white/20">
  Legislative Assembly Representative
@@ -49,7 +45,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Total Open"
- value={totalOpen}
+ value={DISTRICT_STATS.totalOpen.toLocaleString()}
  icon={<AlertTriangle className="text-[#8B1A1A] w-4.5 h-4.5" />}
  color="blue"
  />
@@ -57,7 +53,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Critical Issues"
- value={criticalIssues}
+ value={DISTRICT_STATS.criticalTickets.toLocaleString()}
  icon={<ShieldAlert className="text-rose-500 w-4.5 h-4.5" />}
  color="red"
  />
@@ -65,7 +61,7 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Resolved"
- value={resolved}
+ value={DISTRICT_STATS.resolvedMonth.toLocaleString()}
  icon={<CheckCircle className="text-emerald-500 w-4.5 h-4.5" />}
  color="green"
  />
@@ -73,15 +69,15 @@ export default function MlaDashboard() {
  <div className="col-span-1">
  <StatCard 
  label="Escalated"
- value={escalated}
+ value={DISTRICT_STATS.escalatedToState.toLocaleString()}
  icon={<Flame className="text-amber-500 w-4.5 h-4.5" />}
  color="orange"
  />
  </div>
  <div className="col-span-2 sm:col-span-1">
  <StatCard 
- label="Pending > 7 Days"
- value={pending7Days}
+ label="SLA Breach Rate"
+ value={`${DISTRICT_STATS.slaBreachRate}%`}
  icon={<Clock className="text-slate-500 w-4.5 h-4.5" />}
  color="slate"
  />

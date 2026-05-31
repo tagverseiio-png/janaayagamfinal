@@ -9,12 +9,15 @@ import PortalLayout from '../../shared/components/PortalLayout';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
 import TnMap from '../../shared/components/TnMap';
 import GeoCamera from '../../shared/components/GeoCamera';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { getCategoryCount } from '../../data/seedData';
 
 // Subcomponent: BdoDashboard
-function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCamera, noteTitle, setNoteTitle, noteText, setNoteText, notePhoto }) {
+function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCamera, noteTitle, setNoteTitle, noteText, setNoteText, notePhoto, handlePhotoUpload }) {
  const { i18n } = useTranslation();
  const isTa = i18n.language === 'ta';
  const tLabel = (en, ta) => isTa ? ta : en;
+ const fileInputRef = React.useRef(null);
 
  return (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -77,9 +80,16 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
  </label>
  
  <div className="flex items-center gap-3">
+ <input 
+    type="file" 
+    accept="image/*" 
+    ref={fileInputRef} 
+    onChange={handlePhotoUpload} 
+    className="hidden" 
+ />
  <button
  type="button"
- onClick={() => setShowGeoCamera(true)}
+ onClick={() => fileInputRef.current?.click()}
  className="bg-white border border-[#8B1A1A]/30 text-[#8B1A1A] hover:bg-red-50 rounded-xl px-4 py-2.5 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-sm"
  >
  <Camera className="w-4 h-4" />
@@ -327,31 +337,15 @@ function BdoAnalytics() {
 
  {/* Horizontal Scroll Chart Container */}
  <div className="overflow-x-auto -webkit-overflow-scrolling-touch hide-scrollbar border border-slate-100 rounded-2xl p-4 bg-slate-50 ">
- <div style={{ width: '100%', height: '300px', minHeight: '300px' }} className="min-w-[500px] relative flex items-end justify-around pb-6 pt-4 px-4">
- {/* Mock premium animated bar chart */}
- {[
- { cat: 'Roads', count: 12, pct: '60%' },
- { cat: 'Water', count: 18, pct: '90%' },
- { cat: 'Electricity', count: 8, pct: '40%' },
- { cat: 'Sanitation', count: 15, pct: '75%' },
- { cat: 'Revenue', count: 5, pct: '25%' }
- ].map((bar, idx) => (
- <div key={idx} className="flex flex-col items-center gap-3 w-16 relative group">
- <span className="text-[10px] font-black text-[#8B1A1A] mb-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-4 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm z-10">
- {bar.count}
- </span>
- <div 
- style={{ height: bar.pct }} 
- className="w-8 bg-gradient-to-t from-[#8B1A1A] to-rose-500 rounded-t-lg shadow-md transition-all duration-500 hover:brightness-110 cursor-pointer"
- />
- <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">
- {bar.cat}
- </span>
- </div>
- ))}
-
- {/* Grid lines */}
- <div className="absolute inset-x-0 bottom-6 border-b border-slate-200 " />
+ <div style={{ width: '100%', height: '300px', minHeight: '300px' }} className="min-w-[500px] relative pb-6 pt-4 px-4">
+    <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={getCategoryCount()}>
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+            <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+            <Bar dataKey="count" fill="#8B1A1A" radius={[4, 4, 0, 0]} />
+        </BarChart>
+    </ResponsiveContainer>
  </div>
  </div>
  </div>
@@ -430,6 +424,15 @@ export default function BdoPortal() {
  const [noteLat, setNoteLat] = useState('');
  const [noteLng, setNoteLng] = useState('');
  const [showGeoCamera, setShowGeoCamera] = useState(false);
+
+ const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNotePhoto(URL.createObjectURL(file));
+      setNoteLat('13.0827');
+      setNoteLng('80.2707');
+    }
+ };
 
  const loadBdoNotes = () => {
  const list = JSON.parse(localStorage.getItem('jn_bdo_notes') || '[]');
@@ -555,6 +558,7 @@ export default function BdoPortal() {
  noteText={noteText}
  setNoteText={setNoteText}
  notePhoto={notePhoto}
+ handlePhotoUpload={handlePhotoUpload}
  />
  } 
  />

@@ -6,6 +6,7 @@ import StatCard from '../../shared/components/StatCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
+import { SEED_TICKETS, STATE_STATS } from '../../data/seedData';
 
 export default function SecretaryDashboard() {
  const { t, i18n } = useTranslation();
@@ -25,8 +26,7 @@ export default function SecretaryDashboard() {
  ];
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ setTickets(SEED_TICKETS);
 
  const timer = setTimeout(() => {
  setLoadingTable(false);
@@ -77,7 +77,7 @@ export default function SecretaryDashboard() {
  className="space-y-6"
  >
  {/* IAS emblem banner */}
- <div className="bg-gradient-to-r from-[#003366] to-[#1B5E20] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+ <div style={{ background: '#8B1A1A' }} className="rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
  <span className="text-[9px] font-black uppercase tracking-widest bg-white/15 px-2.5 py-1 rounded border border-white/20">
  State Secretariat • Departmental Administration
@@ -166,24 +166,30 @@ export default function SecretaryDashboard() {
  </AnimatePresence>
 
  {/* KPI Stats Cards */}
- <div className="stat-grid-3">
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
  <StatCard 
- label="Statewide Open (Selected Sector)"
- value={totalOpenInDept}
+ label="Statewide Open"
+ value={STATE_STATS.totalOpen.toLocaleString()}
  icon={<AlertTriangle className="text-[#8B1A1A] w-5 h-5" />}
  color="blue"
  />
  <StatCard 
- label="Total Resolved"
- value={totalResolvedInDept}
- icon={<Landmark className="text-emerald-600 w-5 h-5" />}
- color="green"
+ label="Critical Tickets"
+ value={STATE_STATS.criticalTickets.toLocaleString()}
+ icon={<ShieldAlert className="text-rose-600 w-5 h-5" />}
+ color="red"
  />
  <StatCard 
- label="Avg State Resolution Time"
- value={`${avgResolutionTime} Days`}
- icon={<Layers className="text-[#8B1A1A] w-5 h-5" />}
- color="slate"
+ label="SLA Breach Rate"
+ value={`${STATE_STATS.slaBreachRate}%`}
+ icon={<Layers className="text-amber-600 w-5 h-5" />}
+ color="orange"
+ />
+ <StatCard 
+ label="Resolved (Month)"
+ value={STATE_STATS.resolvedMonth.toLocaleString()}
+ icon={<Landmark className="text-emerald-600 w-5 h-5" />}
+ color="green"
  />
  </div>
 

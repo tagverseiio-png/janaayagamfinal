@@ -6,6 +6,7 @@ import StatCard from '../../shared/components/StatCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
+import { SEED_TICKETS, STATE_STATS } from '../../data/seedData';
 
 export default function MinisterDashboard({ deptView = false }) {
  const { t, i18n } = useTranslation();
@@ -24,8 +25,7 @@ export default function MinisterDashboard({ deptView = false }) {
  ];
 
  const fetchState = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ setTickets(SEED_TICKETS);
 
  const escList = JSON.parse(localStorage.getItem('jn_minister_escalations') || '[]');
  setEscalations(escList);
@@ -98,7 +98,7 @@ export default function MinisterDashboard({ deptView = false }) {
  className="space-y-6 pb-12"
  >
  {/* Cabinet Header Banner */}
- <div className="bg-gradient-to-r from-[#003366] to-[#9a0002] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+ <div style={{ background: '#8B1A1A' }} className="rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
  <span className="text-[9px] font-black uppercase tracking-widest bg-white/15 px-2.5 py-1 rounded border border-white/20">
  State Cabinet Minister • Policy Execution Control
@@ -163,38 +163,38 @@ export default function MinisterDashboard({ deptView = false }) {
  {/* 6 Department Stat Cards */}
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
  <StatCard 
- label="Total statewide open"
- value={totalDeptOpen}
+ label="Statewide Open"
+ value={STATE_STATS.totalOpen.toLocaleString()}
  icon={<AlertTriangle className="text-[#8B1A1A] w-4.5 h-4.5" />}
  color="blue"
  />
  <StatCard 
- label="Overdue SLA"
- value={overdueCount}
- icon={<Clock className="text-rose-500 w-4.5 h-4.5" />}
- color="red"
- />
- <StatCard 
  label="Critical Priority"
- value={criticalCount}
+ value={STATE_STATS.criticalTickets.toLocaleString()}
  icon={<ShieldAlert className="text-amber-500 w-4.5 h-4.5" />}
  color="orange"
  />
  <StatCard 
+ label="SLA Breach Rate"
+ value={`${STATE_STATS.slaBreachRate}%`}
+ icon={<Clock className="text-rose-500 w-4.5 h-4.5" />}
+ color="red"
+ />
+ <StatCard 
  label="Statewide Resolved"
- value={resolvedCount}
+ value={STATE_STATS.resolvedMonth.toLocaleString()}
  icon={<CheckCircle className="text-emerald-500 w-4.5 h-4.5" />}
  color="green"
  />
  <StatCard 
- label="Active Directives"
- value={activeDirectives}
+ label="Escalated to State"
+ value={STATE_STATS.escalatedToState.toLocaleString()}
  icon={<Landmark className="text-slate-500 w-4.5 h-4.5" />}
  color="slate"
  />
  <StatCard 
- label="CM Escalated"
- value={escalatedToCm}
+ label="Resolved Today"
+ value={STATE_STATS.resolvedToday.toLocaleString()}
  icon={<Flame className="text-indigo-500 w-4.5 h-4.5" />}
  color="indigo"
  />
