@@ -37,7 +37,7 @@ export default function CitizenDashboard() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-4 pb-24 px-4 pt-4"
+      className="space-y-4 pb-24 px-4 pt-4 max-w-5xl mx-auto"
     >
       
       {/* ══ 0. LIVING LOCATION EMPTY WARNING BANNER ══ */}
@@ -74,7 +74,7 @@ export default function CitizenDashboard() {
             <span className="inline-block text-[9px] font-black tracking-widest bg-red-800/60 border border-red-500/20 text-white rounded-full px-2.5 py-0.5 uppercase">
               {tLabel('Govt of Tamil Nadu', 'தமிழ்நாடு அரசு')}
             </span>
-            <h2 className="text-[19px] sm:text-xl font-black leading-tight max-w-[240px]">
+            <h2 className="text-[19px] sm:text-xl font-black leading-tight max-w-[240px] md:max-w-none">
               {tLabel('CM Public Grievance Redressal System', 'முதல்வரின் பொது மக்கள் குறைதீர்ப்பு தளம்')}
             </h2>
           </div>
@@ -84,8 +84,8 @@ export default function CitizenDashboard() {
         </div>
       </div>
 
-      {/* ══ 2. QUICK ACTION GRID (2x2) ══ */}
-      <div className="grid grid-cols-2 gap-3 select-none">
+      {/* ══ 2. QUICK ACTION GRID (2x2 on mobile, 4 cols on desktop) ══ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
         
         {/* Card 1: File Issue */}
         <button
@@ -180,15 +180,7 @@ export default function CitizenDashboard() {
         </div>
 
         {/* Map */}
-        <div style={{
-          height: '200px',
-          width: '100%',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          position: 'relative',
-          zIndex: 0,
-          marginBottom: '12px'
-        }}>
+        <div className="rounded-xl overflow-hidden relative mb-3" style={{ height: 'clamp(200px, 30vw, 350px)', width: '100%', zIndex: 0 }}>
           <MapContainer
             center={[13.0827, 80.2707]}
             zoom={11}

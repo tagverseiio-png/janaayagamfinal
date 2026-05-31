@@ -105,8 +105,8 @@ export default function CitizenPortal() {
   return (
     <div style={{ backgroundColor: '#F0EBE3' }} className="min-h-screen font-sans">
       
-      {/* 📱 Mock smartphone container - Centered on desktop, full-width on mobile */}
-      <div className="max-w-md mx-auto min-h-screen bg-[#F0EBE3] flex flex-col border-x border-slate-200/50 shadow-2xl relative pb-[66px]">
+      {/* Responsive container */}
+      <div className="min-h-screen bg-[#F0EBE3] flex flex-col relative pb-[66px]">
         
         {/* ══ 1. HEADER ══ */}
         <header className="bg-white px-4 py-3 flex justify-between items-center shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border-b border-slate-100 z-50">
@@ -167,14 +167,14 @@ export default function CitizenPortal() {
           <button
             onClick={() => navigate('/citizen/submit')}
             style={{ backgroundColor: '#8B1A1A' }}
-            className="fixed bottom-[80px] right-4 sm:right-[calc(50vw-200px)] w-14 h-14 rounded-full text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.2)] active:scale-95 transition-transform z-40 select-none cursor-pointer"
+            className="fixed bottom-[80px] right-6 w-14 h-14 rounded-full text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.2)] active:scale-95 transition-transform z-40 select-none cursor-pointer"
           >
             <span className="text-3xl font-light leading-none">+</span>
           </button>
         )}
 
         {/* ══ 3. FIXED BOTTOM TAB BAR ══ */}
-        <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0 fixed-bottom-nav">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
           
           {/* Tab 1: Live Map */}
           <button
