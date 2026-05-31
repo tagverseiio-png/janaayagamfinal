@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SEED_TICKETS } from '../../data/seedData';
-import { DEPT_HIERARCHY, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
+import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
 
 export default function TrackTicket() {
   const location = useLocation();
@@ -29,9 +29,10 @@ export default function TrackTicket() {
     else setError('Ticket not found. Check your Ticket ID.');
   };
 
-  const hierarchy = ticket ? (DEPT_HIERARCHY[ticket.category] || DEPT_HIERARCHY['Water']) : [];
-  const currentStep = ticket ? getCurrentStep(ticket.category, ticket.assignedTo) : 0;
-  const progress = ticket ? getProgressPercent(ticket.category, ticket.assignedTo) : 0;
+  const deptKey = ticket ? (ticket.department || ticket.category) : null;
+  const hierarchy = ticket ? DEPT_HIERARCHY[normalizeDept(deptKey)] : [];
+  const currentStep = ticket ? getCurrentStep(deptKey, ticket.assignedTo) : 0;
+  const progress = ticket ? getProgressPercent(deptKey, ticket.assignedTo) : 0;
 
   const statusColor = { Open: 'bg-yellow-100 text-yellow-700', 'In Progress': 'bg-blue-100 text-blue-700', Escalated: 'bg-red-100 text-red-700', Resolved: 'bg-green-100 text-green-700' };
   const priorityColor = { Critical: 'text-red-600', High: 'text-orange-500', Medium: 'text-yellow-600', Low: 'text-green-600' };
@@ -131,7 +132,7 @@ export default function TrackTicket() {
             {/* Hierarchy Timeline */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4">
               <p className="text-[10px] text-slate-400 font-black tracking-widest mb-6 border-b pb-2 uppercase">
-                OFFICIAL {ticket.category} DEPARTMENT PIPELINE
+                OFFICIAL {normalizeDept(deptKey)} DEPARTMENT PIPELINE
               </p>
 
               <div className="relative">
