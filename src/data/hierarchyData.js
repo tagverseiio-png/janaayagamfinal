@@ -85,16 +85,33 @@ export const DEPT_HIERARCHY = {
   ],
 };
 
+// Map a citizen category (any case) to a department hierarchy key
+export const normalizeDept = (category) => {
+  if (!category) return 'Water';
+  const key = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  return DEPT_HIERARCHY[key] ? key : 'Water';
+};
+
+// First official a freshly filed ticket is routed to (index 0 is the Citizen)
+export const getFirstResponder = (category) => DEPT_HIERARCHY[normalizeDept(category)][1].role;
+
+// Next role up the chain after the current holder (never past 'Resolved')
+export const getNextRole = (category, currentRole) => {
+  const h = DEPT_HIERARCHY[normalizeDept(category)];
+  const idx = h.findIndex(s => s.role === currentRole);
+  return h[Math.min((idx < 0 ? 1 : idx) + 1, h.length - 1)].role;
+};
+
 // Get current step index based on ticket assignedTo role
 export const getCurrentStep = (category, assignedTo) => {
-  const hierarchy = DEPT_HIERARCHY[category] || DEPT_HIERARCHY['Water'];
+  const hierarchy = DEPT_HIERARCHY[normalizeDept(category)];
   const idx = hierarchy.findIndex(h => h.role === assignedTo);
   return idx === -1 ? 1 : idx;
 };
 
 // Get progress percentage
 export const getProgressPercent = (category, assignedTo) => {
-  const hierarchy = DEPT_HIERARCHY[category] || DEPT_HIERARCHY['Water'];
+  const hierarchy = DEPT_HIERARCHY[normalizeDept(category)];
   const idx = getCurrentStep(category, assignedTo);
   return Math.round((idx / (hierarchy.length - 1)) * 100);
 };

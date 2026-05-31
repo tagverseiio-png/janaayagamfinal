@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle } from 'lucide-react';
 import CategoryIcon from '../../shared/components/CategoryIcon';
 import GeoCamera from '../../shared/components/GeoCamera';
+import { normalizeDept, getFirstResponder } from '../../data/hierarchyData';
 
 export default function SubmitTicket() {
   const { i18n } = useTranslation();
@@ -154,6 +155,9 @@ export default function SubmitTicket() {
     const newTicket = {
       id: ticketId,
       category,
+      department: normalizeDept(category),
+      assignedTo: getFirstResponder(category),
+      timeline: [{ role: 'Citizen', label: 'Issue Filed', completedAt: new Date().toLocaleString(), status: 'done' }],
       description,
       status: 'open',
       priority: 'medium',

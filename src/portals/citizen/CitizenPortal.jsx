@@ -39,6 +39,8 @@ export default function CitizenPortal() {
         {
           id: '1042',
           category: 'roads',
+          department: 'Roads',
+          assignedTo: 'Ward Officer',
           description: 'Huge pothole near the Velachery main junction causing extreme traffic delays and minor accidents.',
           status: 'open',
           priority: 'critical',
@@ -51,6 +53,8 @@ export default function CitizenPortal() {
         {
           id: '1043',
           category: 'water',
+          department: 'Water',
+          assignedTo: 'AEO',
           description: 'No drinking water supply in RS Puram street for the past 4 days. Local residents are suffering.',
           status: 'in_progress',
           priority: 'high',
@@ -63,6 +67,8 @@ export default function CitizenPortal() {
         {
           id: '1044',
           category: 'electricity',
+          department: 'Electricity',
+          assignedTo: 'Resolved',
           description: 'Severe voltage fluctuations in Ward 142 causing damages to household appliances.',
           status: 'resolved',
           priority: 'medium',

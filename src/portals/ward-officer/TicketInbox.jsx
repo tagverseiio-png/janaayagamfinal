@@ -9,6 +9,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import GeoCamera from '../../shared/components/GeoCamera';
 import { getTicketsByStatus, SEED_TICKETS } from '../../data/seedData';
+import { DEPT_HIERARCHY, normalizeDept, getNextRole } from '../../data/hierarchyData';
 
 export default function TicketInbox() {
  const { t } = useTranslation();
@@ -187,22 +188,32 @@ export default function TicketInbox() {
  }
  };
 
- // Escalation submit
+ // Escalation submit — advance the ticket to the next role in its department chain
  const handleEscalateConfirm = () => {
+ const dept = activeTicket.department || activeTicket.category;
+ const current = activeTicket.assignedTo;
+ const nextRole = getNextRole(dept, current);
+ const chain = DEPT_HIERARCHY[normalizeDept(dept)];
+ const curIdx = chain.findIndex(s => s.role === current);
+
  const updated = tickets.map(t => {
  if (t.id === activeTicket.id) {
- return { ...t, status: 'escalated' };
+ const timeline = [...(t.timeline || [])];
+ if (curIdx > 0) timeline[curIdx] = { role: current, label: chain[curIdx].label, completedAt: new Date().toLocaleString(), status: 'done' };
+ return { ...t, status: 'escalated', assignedTo: nextRole, timeline };
  }
  return t;
  });
  handleSaveTickets(updated);
  setEscalateModalOpen(false);
- toast.success('Complaint escalated to Block Development Officer (BDO)');
+ toast.success(`Complaint escalated to ${nextRole}`);
  };
 
  const getEscalateConfirmText = () => {
+ const dept = activeTicket?.department || activeTicket?.category;
+ const nextRole = activeTicket ? getNextRole(dept, activeTicket.assignedTo) : '';
  const isTamil = t('app_name') === 'ஜனநாயகம்';
- return isTamil ? 'நிச்சயமா? இது BDO-க்கு அனுப்பப்படும்.' : 'Are you sure? This escalates to BDO.';
+ return isTamil ? `நிச்சயமா? இது ${nextRole}-க்கு அனுப்பப்படும்.` : `Are you sure? This escalates to ${nextRole}.`;
  };
 
  // Notify MLA handler
@@ -366,7 +377,7 @@ export default function TicketInbox() {
  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200 bg-rose-50 text-[10.5px] font-black uppercase text-rose-600 hover:bg-rose-100 shadow-sm"
  >
  <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
- <span>Escalate BDO</span>
+ <span>Escalate → {getNextRole(ticket.department || ticket.category, ticket.assignedTo)}</span>
  </button>
 
  {/* 5. Notify MLA Button */}
