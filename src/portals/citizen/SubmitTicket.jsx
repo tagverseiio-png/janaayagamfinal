@@ -181,7 +181,7 @@ export default function SubmitTicket() {
     <div className="pb-24">
       {/* ── GeoCamera Overlay modal ── */}
       {showCamera && (
-        <div className="fixed inset-0 z-[200] max-w-md mx-auto bg-black">
+        <div className="fixed inset-0 z-[200] bg-black">
           <GeoCamera 
             onCapture={handleCameraCapture} 
             onClose={() => setShowCamera(false)} 
