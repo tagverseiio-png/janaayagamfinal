@@ -257,7 +257,7 @@ export default function RaiseOnBehalf() {
  >
  <MapPin className="w-4 h-4 text-[#9a0002]" />
  <span>
- {locationCapturing ? 'Locking...' : locationCaptured ? 'GPS Coordinates Locked ✓' : 'Lock Live GPS'}
+ {locationCapturing ? 'Locking...' : locationCaptured ? 'Location Secured ✓' : 'Lock Live GPS'}
  </span>
  </button>
 

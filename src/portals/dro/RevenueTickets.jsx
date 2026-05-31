@@ -9,18 +9,18 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import { droSeedData } from '../../data/droSeedData';
+import { getTicketsByCategory } from '../../data/seedData';
 
 export default function RevenueTickets({ flaggedOnly = false }) {
  const { t } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState(droSeedData.tickets);
+ const [tickets, setTickets] = useState(getTicketsByCategory('Revenue'));
  const [activeSubtype, setActiveSubtype] = useState('all');
  const [activeTicket, setActiveTicket] = useState(null);
 
  const loadTickets = () => {
  // Force seed data
- setTickets(droSeedData.tickets);
+ setTickets(getTicketsByCategory('Revenue'));
  };
 
  useEffect(() => {
@@ -34,7 +34,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
 
  // Helper to resolve/assign sub-type dynamically if not present
  const getSubtype = (ticket) => {
- if (ticket.sub_type) return ticket.sub_type;
+ if (ticket.subType) return ticket.subType;
  const desc = ticket.description.toLowerCase();
  if (desc.includes('patta')) return 'Patta';
  if (desc.includes('encroach') || desc.includes('occupy') || desc.includes('land grab')) return 'Encroachment';
@@ -49,8 +49,8 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  return { 
  ...ticket, 
  status: 'escalated',
- flagged_collector: true,
- flagged_collector_at: new Date().toISOString()
+ flaggedCollector: true,
+ flaggedCollectorAt: new Date().toISOString()
  };
  }
  return ticket;
@@ -89,7 +89,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
 
  // 2. Filter by flaggedOnly status if accessed through Flagged link
  const listAfterFlagged = flaggedOnly 
- ? revenueList.filter(t => t.flagged_collector === true)
+ ? revenueList.filter(t => t.flaggedCollector === true)
  : revenueList;
 
  // 3. Filter by active sub-type tab
@@ -150,7 +150,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  ) : (
  <div className="grid grid-cols-1 gap-6">
  {filteredTickets.map(ticket => {
- const hasBeenFlagged = !!ticket.flagged_collector;
+ const hasBeenFlagged = !!ticket.flaggedCollector;
  return (
  <div 
  key={ticket.id} 
@@ -232,7 +232,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  <div className="flex gap-2.5 items-center">
  <StatusBadge status={activeTicket.status} />
  <span className="text-[10.5px] font-bold text-slate-400 font-mono">
- Date: {new Date(activeTicket.created_at).toLocaleString()}
+ Date: {new Date(activeTicket.createdAt).toLocaleString()}
  </span>
  </div>
 
@@ -243,7 +243,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  </p>
  </div>
 
- {activeTicket.flagged_collector && (
+ {activeTicket.flaggedCollector && (
  <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-start gap-2.5">
  <ShieldAlert className="w-5 h-5 text-[#9a0002] shrink-0 mt-0.5" />
  <div className="space-y-1">
@@ -262,7 +262,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  </div>
  <div className="bg-slate-50 border p-3 rounded-xl">
  <span className="text-[9px] text-slate-400 uppercase tracking-wider block mb-0.5">Reporter</span>
- <span className="text-slate-800 ">{activeTicket.citizen_name || 'Anonymous'}</span>
+ <span className="text-slate-800 ">{activeTicket.citizenName || 'Anonymous'}</span>
  </div>
  </div>
 

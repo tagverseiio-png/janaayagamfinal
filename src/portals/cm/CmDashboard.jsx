@@ -7,6 +7,7 @@ import StatCard from '../../shared/components/StatCard';
 import TicketCard from '../../shared/components/TicketCard';
 import TnMap from '../../shared/components/TnMap';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
+import { SEED_TICKETS, STATE_STATS } from '../../data/seedData';
 
 export default function CmDashboard({ overviewMode = false }) {
   const { t, i18n } = useTranslation();
@@ -27,8 +28,7 @@ export default function CmDashboard({ overviewMode = false }) {
 
  useEffect(() => {
 
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+ setTickets(SEED_TICKETS);
 
  const cmEsc = JSON.parse(localStorage.getItem('jn_cm_escalations') || '[]');
  setCmEscalations(cmEsc);
@@ -172,37 +172,37 @@ export default function CmDashboard({ overviewMode = false }) {
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
  <StatCard 
  label="Statewide Open"
- value={totalOpenStatewide}
+ value={STATE_STATS.totalOpen.toLocaleString()}
  icon={<AlertTriangle className="text-[#8B1A1A] w-4.5 h-4.5" />}
  color="blue"
  />
  <StatCard 
  label="Critical Priority"
- value={criticalTickets}
+ value={STATE_STATS.criticalTickets.toLocaleString()}
  icon={<ShieldAlert className="text-rose-500 w-4.5 h-4.5" />}
  color="red"
  />
  <StatCard 
- label="Breach Districts"
- value={breachedDistrictsCount}
+ label="SLA Breach Rate"
+ value={`${STATE_STATS.slaBreachRate}%`}
  icon={<Clock className="text-amber-500 w-4.5 h-4.5" />}
  color="orange"
  />
  <StatCard 
  label="Resolved Month"
- value={resolvedThisMonth}
+ value={STATE_STATS.resolvedMonth.toLocaleString()}
  icon={<CheckCircle className="text-emerald-500 w-4.5 h-4.5" />}
  color="green"
  />
  <StatCard 
- label="CM Escalations"
- value={escalationsPending}
+ label="Escalated to State"
+ value={STATE_STATS.escalatedToState.toLocaleString()}
  icon={<Flame className="text-indigo-500 w-4.5 h-4.5" />}
  color="indigo"
  />
  <StatCard 
- label="Active Sectors"
- value={deptsWithIssuesCount}
+ label="Resolved Today"
+ value={STATE_STATS.resolvedToday.toLocaleString()}
  icon={<Users className="text-slate-500 w-4.5 h-4.5" />}
  color="slate"
  />

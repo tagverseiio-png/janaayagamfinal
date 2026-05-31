@@ -8,12 +8,12 @@ import TicketCard from '../../shared/components/TicketCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
-import { collectorSeedData } from '../../data/collectorSeedData';
+import { getTicketsByDistrict } from '../../data/seedData';
 
-export default function CollectorDashboard() {
+ export default function CollectorDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState(collectorSeedData.tickets);
+ const [tickets, setTickets] = useState(getTicketsByDistrict('Chennai'));
  const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'map'
  const [loadingTable, setLoadingTable] = useState(true);
  
@@ -24,7 +24,7 @@ export default function CollectorDashboard() {
 
  useEffect(() => {
  // Force seed data
- setTickets(collectorSeedData.tickets);
+ setTickets(getTicketsByDistrict('Chennai'));
 
  const timer = setTimeout(() => {
  setLoadingTable(false);
@@ -41,13 +41,13 @@ export default function CollectorDashboard() {
  
  // SLA Breach Calculation
  const breachedTickets = activeTickets.filter(t => {
- if (!t.sla_deadline) return false;
- return now > new Date(t.sla_deadline);
+ if (!t.slaDeadline) return false;
+ return now > new Date(t.slaDeadline);
  });
  const breachRate = totalOpen > 0 ? Math.round((breachedTickets.length / totalOpen) * 100) : 0;
  
- const escalatedToState = tickets.filter(t => t.flagged_state === true).length;
- const resolvedCount = tickets.filter(t => t.status === 'resolved').length;
+ const escalatedToState = tickets.filter(t => t.flaggedState === true).length;
+ const resolvedCount = tickets.filter(t => t.status === 'Resolved').length;
 
  // Mock initial taluk configuration that integrates dynamic counts
  const baseTaluks = [
@@ -120,7 +120,7 @@ export default function CollectorDashboard() {
  }).length;
 
  const resolvedInTaluk = tickets.filter(ticket => {
- if (ticket.status !== 'resolved' && ticket.status !== 'closed') return false;
+ if (ticket.status !== 'Resolved' && ticket.status !== 'Closed') return false;
  if (ticket.taluk === t.name) return true;
  if (t.id === 'velachery') return ticket.ward >= 140 && ticket.ward <= 143;
  if (t.id === 'sholinganallur') return ticket.ward >= 144 && ticket.ward <= 147;
@@ -173,7 +173,7 @@ export default function CollectorDashboard() {
 
  // Critical Escalations Feed: Filter flagged collector or critical
  const escalationsFeed = activeTickets.filter(ticket => {
- return ticket.priority === 'critical' || ticket.flagged_collector === true;
+ return ticket.priority === 'Critical' || ticket.flaggedCollector === true;
  }).slice(0, 5);
 
  return (
@@ -183,7 +183,7 @@ export default function CollectorDashboard() {
  className="space-y-6 pb-12"
  >
  {/* IAS emblem header banner */}
- <div className="bg-gradient-to-r from-[#003366] to-[#0055aa] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+ <div style={{ background: '#8B1A1A' }} className="rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
  <span className="text-[9px] font-black uppercase tracking-widest bg-white/15 px-2.5 py-1 rounded border border-white/20">
  Chennai District Grievance Monitoring Control
@@ -394,7 +394,7 @@ export default function CollectorDashboard() {
  <div className="grid grid-cols-1 gap-4">
  {escalationsFeed.map(ticket => (
  <div key={ticket.id} className="relative">
- {ticket.flagged_collector && (
+ {ticket.flaggedCollector && (
  <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider animate-pulse">
  <ShieldAlert className="w-3.5 h-3.5" />
  <span>DRO Flagged</span>

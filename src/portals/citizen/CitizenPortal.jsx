@@ -205,7 +205,7 @@ export default function CitizenPortal() {
           {/* Tab 3: Track (Centre circular raised button) */}
           <div className="flex flex-col items-center justify-center flex-1 relative -mt-3.5">
             <button
-              onClick={() => navigate('/citizen/tickets')}
+              onClick={() => navigate('/track')}
               className={`w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(139,26,26,0.4)] transition-all transform active:scale-95 cursor-pointer ${
                 isTrackActive 
                   ? 'bg-[#8B1A1A] border-4 border-[#F0EBE3] text-white' 

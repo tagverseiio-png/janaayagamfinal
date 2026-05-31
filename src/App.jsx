@@ -5,19 +5,13 @@ import { useTranslation } from 'react-i18next';
 
 // Import LoginPage
 import LoginPage from './pages/LoginPage';
+import EmployeeLoginPage from './pages/EmployeeLoginPage';
+import EmployeeDashboard from './pages/EmployeeDashboard';
 import { seedAllDummyData } from './utils/seedData';
 
 // Import Portal Components
 import CitizenPortal from './portals/citizen/CitizenPortal';
-import VaoPortal from './portals/vao/VaoPortal';
-import WardOfficerPortal from './portals/ward-officer/WardOfficerPortal';
-import BdoPortal from './portals/bdo/BdoPortal';
-import DroPortal from './portals/dro/DroPortal';
-import CollectorPortal from './portals/collector/CollectorPortal';
-import DeptSecretaryPortal from './portals/dept-secretary/DeptSecretaryPortal';
-import MinisterPortal from './portals/minister/MinisterPortal';
-import CmPortal from './portals/cm/CmPortal';
-import MlaPortal from './portals/mla/MlaPortal';
+import TrackTicket from './portals/citizen/TrackTicket';
 
 // Route Guard for Protected Routes
 const ProtectedRoute = ({ requiredRole, children }) => {
@@ -26,6 +20,13 @@ const ProtectedRoute = ({ requiredRole, children }) => {
     return children;
   }
   return <Navigate to="/" replace />;
+};
+
+const EmployeeProtectedRoute = ({ children }) => {
+  if (!localStorage.getItem('jn_emp_role')) {
+    return <Navigate to="/employee-login" replace />;
+  }
+  return children;
 };
 
 export default function App() {
@@ -67,8 +68,24 @@ export default function App() {
         <Routes>
           {/* Public Login Route */}
           <Route path="/" element={<LoginPage />} />
+          <Route path="/employee-login" element={<EmployeeLoginPage />} />
 
-          {/* Protected Portal Routes for all 9 Roles */}
+          {/* Employee Protected Routes */}
+          <Route path="/cm-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/collector-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/dro-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/bdo-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/vao-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/ward-officer-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/ri-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          
+          {/* Catch-all for all 43 departments and roles */}
+          <Route path="/dept/:department/:role" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+
+          {/* Protected Portal Route for Citizen */}
           <Route 
             path="/citizen/*" 
             element={
@@ -78,86 +95,7 @@ export default function App() {
             } 
           />
           
-          <Route 
-            path="/vao/*" 
-            element={
-              <ProtectedRoute requiredRole="vao">
-                <VaoPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/ward-officer/*" 
-            element={
-              <ProtectedRoute requiredRole="ward_officer">
-                <WardOfficerPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/bdo/*" 
-            element={
-              <ProtectedRoute requiredRole="bdo">
-                <BdoPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/mla/*" 
-            element={
-              <ProtectedRoute requiredRole="mla">
-                <MlaPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/dro/*" 
-            element={
-              <ProtectedRoute requiredRole="dro">
-                <DroPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/collector/*" 
-            element={
-              <ProtectedRoute requiredRole="collector">
-                <CollectorPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/dept-secretary/*" 
-            element={
-              <ProtectedRoute requiredRole="dept_secretary">
-                <DeptSecretaryPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/minister/*" 
-            element={
-              <ProtectedRoute requiredRole="minister">
-                <MinisterPortal />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/cm/*" 
-            element={
-              <ProtectedRoute requiredRole="cm">
-                <CmPortal />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/track" element={<TrackTicket />} />
 
           {/* Fallback to Login page */}
           <Route path="*" element={<Navigate to="/" replace />} />
