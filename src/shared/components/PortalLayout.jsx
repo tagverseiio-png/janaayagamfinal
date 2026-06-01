@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'sonner';
 import { 
  Shield, LogOut, Menu, X, Landmark, User, Bell, Map, Home, AlertTriangle, FileText, 
@@ -12,12 +12,12 @@ import ProfilePage from './ProfilePage';
 import LocationSettings from './LocationSettings';
 
 export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
- const { t, i18n } = useTranslation();
+ const { t, lang, toggleLang } = useLanguage();
  const navigate = useNavigate();
  const location = useLocation();
  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
- const isTa = i18n.language === 'ta';
+ const isTa = lang === 'ta';
  const tLabel = (en, ta) => isTa ? ta : en;
 
  const userName = localStorage.getItem('jn_name') || 'Officer Name';
@@ -40,11 +40,16 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  }
  }, [roleLabel]);
 
- const handleLogout = () => {
- localStorage.clear();
- toast.success(tLabel('Logged out successfully', 'வெற்றிகரமாக வெளியேறப்பட்டது'));
- navigate('/', { replace: true });
- };
+  const handleLogout = () => {
+  localStorage.removeItem('jn_emp_role');
+  localStorage.removeItem('jn_emp_dept');
+  localStorage.removeItem('jn_emp_jurisdiction');
+  localStorage.removeItem('jn_emp_constituency');
+  localStorage.removeItem('jn_emp_district');
+  localStorage.removeItem('jn_lang');
+  toast.success(tLabel('Logged out successfully', 'வெற்றிகரமாக வெளியேறப்பட்டது'));
+  navigate('/', { replace: true });
+  };
 
  // Get count of tickets from localStorage for badges
  const [ticketCount, setTicketCount] = useState(0);
@@ -242,13 +247,13 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  <span className="text-slate-500 font-bold">{tLabel('Language', 'மொழி')}</span>
  <div className="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200/50">
  <button
- onClick={() => { i18n.changeLanguage('en'); toast.success('Switched to English'); }}
+ onClick={() => { toggleLang('en'); toast.success('Switched to English'); }}
  className={`px-2 py-1 rounded text-[10px] font-black ${!isTa ? 'bg-[#8B1A1A] text-white' : 'text-slate-500'}`}
  >
  EN
  </button>
  <button
- onClick={() => { i18n.changeLanguage('ta'); toast.success('தமிழுக்கு மாற்றப்பட்டது'); }}
+ onClick={() => { toggleLang('ta'); toast.success('தமிழுக்கு மாற்றப்பட்டது'); }}
  className={`px-2 py-1 rounded text-[10px] font-black ${isTa ? 'bg-[#8B1A1A] text-white' : 'text-slate-500'}`}
  >
  தமிழ்

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { useTranslation } from 'react-i18next';
+
 
 // Import LoginPage
 import LoginPage from './pages/LoginPage';
@@ -12,6 +12,7 @@ import { seedAllDummyData } from './utils/seedData';
 // Import Portal Components
 import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
+import CmDashboard from './portals/cm/CmDashboard';
 
 // Route Guard for Protected Routes
 const ProtectedRoute = ({ requiredRole, children }) => {
@@ -30,7 +31,6 @@ const EmployeeProtectedRoute = ({ children }) => {
 };
 
 export default function App() {
-  const { i18n } = useTranslation();
   const [isMobile, setIsMobile] = React.useState(false);
 
   useEffect(() => {
@@ -48,14 +48,7 @@ export default function App() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Sync Tamil Mode Font Class
-  useEffect(() => {
-    if (i18n.language === 'ta') {
-      document.body.classList.add('tamil-mode');
-    } else {
-      document.body.classList.remove('tamil-mode');
-    }
-  }, [i18n.language]);
+
 
   return (
     <>
@@ -71,7 +64,7 @@ export default function App() {
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
 
           {/* Employee Protected Routes */}
-          <Route path="/cm-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/cm-dashboard" element={<EmployeeProtectedRoute><CmDashboard overviewMode={false} /></EmployeeProtectedRoute>} />
           <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SEED_TICKETS } from '../../data/seedData';
 import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function TrackTicket() {
+  const { t } = useLanguage();
   const location = useLocation();
   const initialTicketId = location.state?.ticketId || '';
   
@@ -43,8 +45,8 @@ export default function TrackTicket() {
 
         {/* Search Box */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4 mt-8">
-          <h2 className="text-[#8B1A1A] font-extrabold text-lg tracking-widest mb-1 uppercase">Track Your Complaint</h2>
-          <p className="text-slate-500 text-xs mb-4">Enter your Ticket ID to see real-time status</p>
+          <h2 className="text-[#8B1A1A] font-extrabold text-lg tracking-widest mb-1 uppercase">{t('trackComplaint')}</h2>
+          <p className="text-slate-500 text-xs mb-4">{t('enterTicketId')}</p>
           <div className="flex gap-2">
             <input
               value={ticketId}

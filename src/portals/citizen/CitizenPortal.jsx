@@ -95,9 +95,14 @@ export default function CitizenPortal() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    toast.info(tLabel('Logged out successfully', 'வெற்றிகரமாக வெளியேறப்பட்டது'));
-    navigate('/');
+    localStorage.removeItem('jn_emp_role');
+    localStorage.removeItem('jn_emp_dept');
+    localStorage.removeItem('jn_emp_jurisdiction');
+    localStorage.removeItem('jn_emp_constituency');
+    localStorage.removeItem('jn_emp_district');
+    localStorage.removeItem('jn_lang');
+    toast.success(tLabel('Logged out successfully', 'வெற்றிகரமாக வெளியேறப்பட்டது'));
+    navigate('/', { replace: true });
   };
 
   // Active Tab Helpers

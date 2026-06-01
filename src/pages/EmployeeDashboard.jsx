@@ -4,8 +4,10 @@ import { Shield, LogOut, CheckCircle, AlertTriangle, Clock, MapPin, Search } fro
 import { toast } from 'sonner';
 import TnMap from '../shared/components/TnMap';
 import { mockTickets } from '../data/mockData';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function EmployeeDashboard() {
+  const { t, lang, toggleLang } = useLanguage();
   const navigate = useNavigate();
   const [role, setRole] = useState('Official');
   const [department, setDepartment] = useState('');
@@ -35,10 +37,11 @@ export default function EmployeeDashboard() {
     localStorage.removeItem('jn_emp_role');
     localStorage.removeItem('jn_emp_dept');
     localStorage.removeItem('jn_emp_jurisdiction');
-    localStorage.removeItem('jn_role');
-    localStorage.removeItem('jn_name');
+    localStorage.removeItem('jn_emp_constituency');
+    localStorage.removeItem('jn_emp_district');
+    localStorage.removeItem('jn_lang');
     toast.success('Logged out successfully');
-    navigate('/employee-login');
+    navigate('/');
   };
 
   const handleAction = (id, action) => {
@@ -104,16 +107,26 @@ export default function EmployeeDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => {
+              const newLang = lang === 'en' ? 'ta' : 'en';
+              toggleLang(newLang);
+              toast.success(newLang === 'en' ? 'Switched to English' : 'தமிழுக்கு மாற்றப்பட்டது');
+            }}
+            className="text-xs font-extrabold px-3 py-1.5 rounded-lg border border-[#8B1A1A]/20 bg-white hover:bg-slate-50 text-[#8B1A1A] shadow-sm transition-all"
+          >
+            {lang === 'en' ? 'தமிழ்' : 'English'}
+          </button>
           <div className="text-right hidden md:block">
             <p className="text-sm font-extrabold text-slate-800">KARTHIK RAJ S.</p>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase">Verified Official</p>
+            <p className="text-[10px] font-bold text-emerald-600 uppercase">{t('verifiedOfficial')}</p>
           </div>
           <button 
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl font-bold text-sm transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <span className="hidden sm:inline">{t('logout')}</span>
           </button>
         </div>
       </header>
@@ -123,19 +136,19 @@ export default function EmployeeDashboard() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Tickets</span>
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">{t('totalTickets')}</span>
             <div className="mt-2 text-3xl font-black text-slate-800">{stats.total}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Open</span>
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {t('open')}</span>
             <div className="mt-2 text-3xl font-black text-[#FF9800]">{stats.open}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Resolved</span>
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> {t('resolved')}</span>
             <div className="mt-2 text-3xl font-black text-[#4CAF50]">{stats.resolved}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Escalated</span>
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> {t('escalated')}</span>
             <div className="mt-2 text-3xl font-black text-[#F44336]">{stats.escalated}</div>
           </div>
         </div>
@@ -144,7 +157,7 @@ export default function EmployeeDashboard() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
             <MapPin className="w-5 h-5 text-[#8B1A1A]" />
-            <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm">Jurisdiction Live Map</h2>
+            <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm">{t('jurisdictionLiveMap')}</h2>
           </div>
           <div className="h-[400px] w-full bg-slate-50 relative">
             <TnMap lang="en" citizenMode={false} zoom={7} />
@@ -156,11 +169,11 @@ export default function EmployeeDashboard() {
           <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm flex items-center gap-2">
               <Shield className="w-4 h-4 text-[#8B1A1A]" />
-              Recent Ticket Queue
+              {t('recentTicketQueue')}
             </h2>
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input type="text" placeholder="Search tickets..." className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none focus:border-[#8B1A1A]" />
+              <input type="text" placeholder={t('searchTickets')} className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none focus:border-[#8B1A1A]" />
             </div>
           </div>
           
@@ -168,11 +181,11 @@ export default function EmployeeDashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 bg-white">
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket ID</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue & Location</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('ticketId')}</th>
+                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('category')}</th>
+                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('issueLocation')}</th>
+                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('status')}</th>
+                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -205,9 +218,9 @@ export default function EmployeeDashboard() {
                     <td className="py-4 px-5 text-right space-x-2">
                       {ticket.status !== 'Resolved' && (
                         <>
-                          <button onClick={() => handleAction(ticket.id, 'Accept')} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-bold transition-colors">Accept</button>
-                          <button onClick={() => handleAction(ticket.id, 'Resolve')} className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-bold transition-colors">Resolve</button>
-                          <button onClick={() => handleAction(ticket.id, 'Escalate')} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-colors">Escalate</button>
+                          <button onClick={() => handleAction(ticket.id, 'Accept')} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-bold transition-colors">{t('accept')}</button>
+                          <button onClick={() => handleAction(ticket.id, 'Resolve')} className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-bold transition-colors">{t('resolve')}</button>
+                          <button onClick={() => handleAction(ticket.id, 'Escalate')} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-colors">{t('escalate')}</button>
                         </>
                       )}
                     </td>

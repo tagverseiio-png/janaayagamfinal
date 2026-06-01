@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'sonner';
 import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getPlacesByPincode, getDistrictByPincode } from '../data/pincodeData';
@@ -126,7 +126,7 @@ const districtCoords = {
 const defaultCoords = { lat: 10.8505, lng: 78.6677 };
 
 export default function LoginPage() {
-  const { i18n } = useTranslation();
+  const { t, lang, toggleLang } = useLanguage();
   const navigate = useNavigate();
 
   const [rawAadhaar, setRawAadhaar] = useState('');
@@ -148,7 +148,7 @@ export default function LoginPage() {
   const [isDistrictLocked, setIsDistrictLocked] = useState(true);
   const [selectedWard, setSelectedWard] = useState('');
 
-  const isTa = i18n.language === 'ta';
+  const isTa = lang === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
 
   // Masking implementation for Aadhaar: mask first 8 digits with '•'
@@ -345,8 +345,8 @@ export default function LoginPage() {
   };
 
   const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'ta' : 'en';
-    i18n.changeLanguage(newLang);
+    const newLang = lang === 'en' ? 'ta' : 'en';
+    toggleLang(newLang);
     toast.success(newLang === 'en' ? 'Switched to English' : 'தமிழுக்கு மாற்றப்பட்டது');
   };
 
@@ -369,7 +369,7 @@ export default function LoginPage() {
           onClick={toggleLanguage}
           className="text-xs font-extrabold px-3 py-1.5 rounded-lg border border-[#8B1A1A]/20 bg-white hover:bg-slate-50 text-[#8B1A1A] shadow-sm transition-all"
         >
-          {i18n.language === 'en' ? 'தமிழ்' : 'English'}
+          {lang === 'en' ? 'தமிழ்' : 'English'}
         </button>
       </header>
 
@@ -401,14 +401,14 @@ export default function LoginPage() {
               <div className="w-full bg-[#FFF0F0] text-[#8B1A1A] rounded-full py-2.5 px-4 flex items-center justify-center gap-2 select-none border border-[#FFD8D8]">
                 <Shield className="w-4 h-4 text-[#8B1A1A] fill-[#8B1A1A]/10" />
                 <span className="font-extrabold text-[13px] tracking-wider">
-                  {tLabel('GOVT KYC LINKING', 'அரசு கேஒய்சி இணைப்பு')}
+                  {t('govtKycLinking')}
                 </span>
               </div>
 
               {/* Aadhaar Input Field */}
               <div className="space-y-1">
                 <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                  {tLabel('AADHAAR NUMBER', 'ஆதார் எண்')}
+                  {t('aadhaarNumber')}
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
@@ -438,7 +438,7 @@ export default function LoginPage() {
                       onClick={handleSendOTP}
                       className="px-4 bg-[#8B1A1A] hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all"
                     >
-                      {tLabel('Send OTP', 'அனுப்பு')}
+                      {t('sendOtp')}
                     </button>
                   )}
                 </div>
@@ -488,7 +488,7 @@ export default function LoginPage() {
                   {/* STEP 2 — Aadhaar Verified Name */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                      {tLabel('AADHAAR VERIFIED NAME', 'சரிபார்க்கப்பட்ட பெயர் (ஆதார்)')}
+                      {t('aadhaarVerifiedName')}
                     </label>
                     <div className="relative">
                       <input
@@ -514,7 +514,7 @@ export default function LoginPage() {
                   {/* PINCODE input */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                      {tLabel('PINCODE', 'பின்கோடு')}
+                      {t('pincode')}
                     </label>
                     
                     <div className="relative">
@@ -688,12 +688,12 @@ export default function LoginPage() {
 
         {/* OFFICIAL LOGIN LINK */}
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <p className="text-xs text-slate-400 mb-2">Government Official or Elected Representative?</p>
+          <p className="text-xs text-slate-400 mb-2">{t('officialPortal').split('?')[0]}?</p>
           <button
             onClick={() => navigate('/employee-login')}
             className="text-[#8B1A1A] font-bold text-sm underline underline-offset-2"
           >
-            Access Official Portal →
+            {t('officialPortal').split('?')[1]?.trim() || 'Access Official Portal'} →
           </button>
         </div>
 

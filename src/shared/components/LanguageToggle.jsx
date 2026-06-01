@@ -1,14 +1,12 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'sonner';
 
 export default function LanguageToggle() {
- const { i18n } = useTranslation();
- const currentLang = i18n.language || 'en';
+ const { lang: currentLang, toggleLang } = useLanguage();
 
  const switchLanguage = (lng) => {
- i18n.changeLanguage(lng);
- localStorage.setItem('jn_lng', lng);
+ toggleLang(lng);
  toast.success(lng === 'en' ? 'Switched to English' : 'தமிழுக்கு மாற்றப்பட்டது');
  };
 

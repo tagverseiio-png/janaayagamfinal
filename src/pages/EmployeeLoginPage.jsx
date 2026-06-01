@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, CheckCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '../context/LanguageContext';
 import { TN_CONSTITUENCIES, TN_DISTRICTS, getConstituenciesByDistrict } from '../data/constituencies';
 
 const DEPARTMENTS = [
@@ -98,6 +99,7 @@ const circlesByDistrict = {
 };
 
 export default function EmployeeLoginPage() {
+  const { t, lang, toggleLang } = useLanguage();
   const navigate = useNavigate();
 
   // Step 1 & 2
@@ -371,6 +373,16 @@ export default function EmployeeLoginPage() {
           <Shield className="w-5 h-5 text-[#8B1A1A]" />
           <span className="text-xs font-black text-[#8B1A1A] tracking-wider uppercase">JanaNayagam</span>
         </div>
+        <button
+          onClick={() => {
+            const newLang = lang === 'en' ? 'ta' : 'en';
+            toggleLang(newLang);
+            toast.success(newLang === 'en' ? 'Switched to English' : 'தமிழுக்கு மாற்றப்பட்டது');
+          }}
+          className="text-xs font-extrabold px-3 py-1.5 rounded-lg border border-[#8B1A1A]/20 bg-white hover:bg-slate-50 text-[#8B1A1A] shadow-sm transition-all"
+        >
+          {lang === 'en' ? 'தமிழ்' : 'English'}
+        </button>
       </header>
 
       {/* Main Centered Container */}
@@ -579,7 +591,7 @@ export default function EmployeeLoginPage() {
             onClick={() => navigate('/')}
             className="text-slate-400 font-bold text-sm underline underline-offset-2"
           >
-            ← Back to Citizen Portal
+            ← {t('backToCitizen')}
           </button>
         </div>
       </main>

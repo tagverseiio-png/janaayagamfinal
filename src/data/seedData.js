@@ -51,6 +51,12 @@ const RAW_SEED_TICKETS = [
   { id: 'JN-1048', category: 'Revenue', description: 'Widow pension stopped without reason', status: 'In Progress', priority: 'High', district: 'Coimbatore', taluk: 'Pollachi Taluk', ward: 'Ward 21', citizenName: 'Ponni K', assignedTo: 'VAO', slaDeadline: '2026-06-01', createdAt: '2026-05-22', lat: 10.6600, lng: 77.0000, timeline: [ { role: 'Citizen', label: 'Issue Filed', completedAt: '2026-05-28 03:30 PM', status: 'done' }, { role: 'VAO', label: 'Village Verification & Site Inspection', completedAt: '2026-05-28 03:50 PM', status: 'done' }, { role: 'AEO', label: 'AEO Assessment', completedAt: null, status: 'current' }, { role: 'Deputy AE', label: 'Deputy Area Engineer Review', completedAt: null, status: 'pending' } ] },
   { id: 'JN-1049', category: 'Water', description: 'No drinking water in school for 2 weeks', status: 'Escalated', priority: 'Critical', district: 'Tiruchirappalli', taluk: 'Lalgudi Taluk', ward: 'Ward 4', citizenName: 'Headmaster Rajan', assignedTo: 'BDO', slaDeadline: '2026-05-31', createdAt: '2026-05-21', lat: 10.8700, lng: 78.8200, timeline: [ { role: 'Citizen', label: 'Issue Filed', completedAt: '2026-05-28 03:30 PM', status: 'done' }, { role: 'VAO', label: 'Village Verification & Site Inspection', completedAt: '2026-05-28 03:50 PM', status: 'done' }, { role: 'AEO', label: 'AEO Assessment', completedAt: null, status: 'current' }, { role: 'Deputy AE', label: 'Deputy Area Engineer Review', completedAt: null, status: 'pending' } ] },
   { id: 'JN-1050', category: 'Electricity', description: 'High tension wire sagging over houses', status: 'Escalated', priority: 'Critical', district: 'Vellore', taluk: 'Katpadi Taluk', ward: 'Ward 6', citizenName: 'Subbaiah M', assignedTo: 'AE', slaDeadline: '2026-05-30', createdAt: '2026-05-20', lat: 12.9165, lng: 79.1325, timeline: [ { role: 'Citizen', label: 'Issue Filed', completedAt: '2026-05-28 03:30 PM', status: 'done' }, { role: 'VAO', label: 'Village Verification & Site Inspection', completedAt: '2026-05-28 03:50 PM', status: 'done' }, { role: 'AEO', label: 'AEO Assessment', completedAt: null, status: 'current' }, { role: 'Deputy AE', label: 'Deputy Area Engineer Review', completedAt: null, status: 'pending' } ] },
+  { id: 'JN-1051', category: 'Health', description: 'Govt hospital no doctors available', status: 'Open', priority: 'High', district: 'Chennai', taluk: 'Mylapore Taluk', ward: 'Ward 120', citizenName: 'Ravi M', assignedTo: 'Medical Officer', slaDeadline: '2026-06-05', createdAt: '2026-05-27', lat: 13.0339, lng: 80.2619 },
+  { id: 'JN-1052', category: 'Health', description: 'No medicines in PHC', status: 'In Progress', priority: 'Critical', district: 'Madurai', taluk: 'Melur Taluk', ward: 'Ward 15', citizenName: 'Selvi K', assignedTo: 'Medical Superintendent', slaDeadline: '2026-06-02', createdAt: '2026-05-25', lat: 9.9252, lng: 78.1198 },
+  { id: 'JN-1053', category: 'Education', description: 'Govt school roof leaking', status: 'Open', priority: 'High', district: 'Salem', taluk: 'Attur Taluk', ward: 'Ward 9', citizenName: 'Kumar R', assignedTo: 'BEO', slaDeadline: '2026-06-06', createdAt: '2026-05-28', lat: 11.6643, lng: 78.1460 },
+  { id: 'JN-1054', category: 'Education', description: 'No teachers for math class', status: 'Open', priority: 'Medium', district: 'Coimbatore', taluk: 'Pollachi Taluk', ward: 'Ward 22', citizenName: 'Devi S', assignedTo: 'DEO', slaDeadline: '2026-06-08', createdAt: '2026-05-27', lat: 11.0168, lng: 76.9558 },
+  { id: 'JN-1055', category: 'Welfare', description: 'Old age pension not disbursed', status: 'Escalated', priority: 'High', district: 'Tiruchirappalli', taluk: 'Lalgudi Taluk', ward: 'Ward 4', citizenName: 'Muniamma R', assignedTo: 'CDO', slaDeadline: '2026-06-01', createdAt: '2026-05-22', lat: 10.7905, lng: 78.7047 },
+  { id: 'JN-1056', category: 'Welfare', description: 'Disability certificate pending', status: 'In Progress', priority: 'Medium', district: 'Vellore', taluk: 'Katpadi Taluk', ward: 'Ward 12', citizenName: 'Raja P', assignedTo: 'Deputy CDO', slaDeadline: '2026-06-07', createdAt: '2026-05-26', lat: 12.9165, lng: 79.1325 }
 ];
 
 // Normalize every seed ticket onto its PDF department chain: canonical owner role + aligned timeline
@@ -126,6 +132,66 @@ export const getTicketsByWard = (ward) => SEED_TICKETS.filter(t => t.ward === wa
 export const getTicketsByCategory = (category) => SEED_TICKETS.filter(t => t.category === category);
 
 export const getCategoryCount = () => {
-  const cats = ['Water', 'Electricity', 'Roads', 'Sanitation', 'Revenue'];
+  const cats = ['Water', 'Electricity', 'Roads', 'Sanitation', 'Revenue', 'Health', 'Education', 'Welfare'];
   return cats.map(c => ({ name: c, count: SEED_TICKETS.filter(t => t.category === c).length }));
 };
+
+export const RESOLUTION_TREND = [
+  { day: 'Mon', resolved: 245, filed: 280 },
+  { day: 'Tue', resolved: 312, filed: 290 },
+  { day: 'Wed', resolved: 289, filed: 310 },
+  { day: 'Thu', resolved: 356, filed: 320 },
+  { day: 'Fri', resolved: 401, filed: 380 },
+  { day: 'Sat', resolved: 298, filed: 250 },
+  { day: 'Sun', resolved: 187, filed: 160 },
+];
+
+export const EMERGENCY_CONTACTS = [
+  { dept: 'Disaster Management', officer: 'Chief Secretary', phone: '044-2856-XXXX' },
+  { dept: 'State Police Control', officer: 'DGP Office', phone: '100' },
+  { dept: 'Fire & Rescue', officer: 'Director', phone: '101' },
+  { dept: 'Health Emergency', officer: 'Health Secretary', phone: '108' },
+];
+
+export const DISTRICT_COORDINATES = {
+  'Ariyalur': [11.1400, 79.0786],
+  'Chengalpattu': [12.6841, 79.9833],
+  'Chennai': [13.0827, 80.2707],
+  'Coimbatore': [11.0168, 76.9558],
+  'Cuddalore': [11.7480, 79.7714],
+  'Dharmapuri': [12.1211, 78.1582],
+  'Dindigul': [10.3673, 77.9803],
+  'Erode': [11.3410, 77.7172],
+  'Kallakurichi': [11.7380, 78.9639],
+  'Kancheepuram': [12.8342, 79.7036],
+  'Kanniyakumari': [8.0883, 77.5385],
+  'Karur': [10.9504, 78.0833],
+  'Krishnagiri': [12.5186, 78.2137],
+  'Madurai': [9.9252, 78.1198],
+  'Mayiladuthurai': [11.1085, 79.6548],
+  'Nagapattinam': [10.7672, 79.8449],
+  'Namakkal': [11.2189, 78.1674],
+  'Nilgiris': [11.4916, 76.7337],
+  'Perambalur': [11.2342, 78.8808],
+  'Pudukkottai': [10.3797, 78.8205],
+  'Ramanathapuram': [9.3639, 78.8321],
+  'Ranipet': [12.9272, 79.3331],
+  'Salem': [11.6643, 78.1460],
+  'Sivaganga': [9.8433, 78.4809],
+  'Tenkasi': [8.9564, 77.3152],
+  'Thanjavur': [10.7870, 79.1378],
+  'Theni': [10.0104, 77.4768],
+  'Thoothukudi': [8.7642, 78.1348],
+  'Tiruchirappalli': [10.7905, 78.7047],
+  'Tirunelveli': [8.7139, 77.7567],
+  'Tirupathur': [12.4939, 78.5672],
+  'Tiruppur': [11.1085, 77.3411],
+  'Tiruvallur': [13.1418, 79.9071],
+  'Tiruvannamalai': [12.2253, 79.0747],
+  'Tiruvarur': [10.7725, 79.6384],
+  'Vellore': [12.9165, 79.1325],
+  'Villupuram': [11.9401, 79.4861], // Handle Villupuram/Viluppuram alias
+  'Viluppuram': [11.9401, 79.4861],
+  'Virudhunagar': [9.5872, 77.9624]
+};
+

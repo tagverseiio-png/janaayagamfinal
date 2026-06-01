@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
 import { Landmark, AlertTriangle, Activity, Users, Building, Radio } from 'lucide-react';
 import TnMap from '../../shared/components/TnMap';
@@ -24,10 +24,10 @@ const getColor = (type) => {
 };
 
 export default function CitizenDashboard() {
-  const { i18n } = useTranslation();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
 
-  const isTa = i18n.language === 'ta';
+  const isTa = lang === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
 
   const livingAddr = localStorage.getItem('jn_living_address');
@@ -97,7 +97,7 @@ export default function CitizenDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {tLabel('File Issue', 'புகார் பதிவிடு')}
+              {t('fileIssue')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
               {tLabel('Report new problem', 'புதிய புகார் அளிக்கவும்')}
@@ -115,7 +115,7 @@ export default function CitizenDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {tLabel('Track Status', 'புகார் நிலை')}
+              {t('trackStatus')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
               {tLabel('View active complaints', 'உங்கள் புகார்களைக் காண்க')}
@@ -133,7 +133,7 @@ export default function CitizenDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {tLabel('Civic Feed', 'குடிமை ஊட்டம்')}
+              {t('civicFeed')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
               {tLabel('See local problems', 'அயல் புகார்களை காண்க')}
@@ -151,7 +151,7 @@ export default function CitizenDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {tLabel('Hierarchy', 'அதிகார படிநிலை')}
+              {t('hierarchy')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
               {tLabel('Govt escalation flow', 'புகார் மேல்முறையீட்டு வழி')}
