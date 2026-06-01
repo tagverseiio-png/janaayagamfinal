@@ -347,53 +347,65 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm flex items-center gap-2">
-              <Shield className="w-4 h-4 text-blue-600" />
-              Live Operations Queue
-            </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <h3 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm">{department} Live Map</h3>
+            </div>
+            <div className="h-[350px] w-full bg-slate-50 relative">
+              <TnMap lang="en" citizenMode={false} zoom={7} />
+            </div>
           </div>
-          
-          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-white">
-                <tr className="border-b border-slate-100">
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket ID</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue & Location</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">SLA Deadline</th>
-                  <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {tickets.slice(0, 15).map(ticket => (
-                  <tr key={ticket.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-5">
-                      <span className="text-xs font-black text-blue-800 bg-blue-100 px-2 py-1 rounded-md">{ticket.id}</span>
-                    </td>
-                    <td className="py-4 px-5">
-                      <p className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.description}</p>
-                      <div className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3" /> {ticket.ward}, {ticket.district}
-                      </div>
-                    </td>
-                    <td className="py-4 px-5 text-xs font-bold text-slate-600">
-                      {new Date(ticket.slaDeadline).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-5">
-                      <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
-                        ticket.status === 'Open' ? 'bg-[#FF9800]/10 text-[#FF9800]' :
-                        ticket.status === 'Resolved' ? 'bg-[#4CAF50]/10 text-[#4CAF50]' :
-                        ticket.status === 'In Progress' ? 'bg-[#2196F3]/10 text-[#2196F3]' :
-                        'bg-[#F44336]/10 text-[#F44336]'
-                      }`}>
-                        {ticket.status}
-                      </span>
-                    </td>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-600" />
+                Live Operations Queue
+              </h2>
+            </div>
+            
+            <div className="overflow-x-auto max-h-[350px] overflow-y-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 bg-white">
+                  <tr className="border-b border-slate-100">
+                    <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket ID</th>
+                    <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue & Location</th>
+                    <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">SLA Deadline</th>
+                    <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {tickets.slice(0, 15).map(ticket => (
+                    <tr key={ticket.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-4 px-5">
+                        <span className="text-xs font-black text-blue-800 bg-blue-100 px-2 py-1 rounded-md">{ticket.id}</span>
+                      </td>
+                      <td className="py-4 px-5">
+                        <p className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.description}</p>
+                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3" /> {ticket.ward}, {ticket.district}
+                        </div>
+                      </td>
+                      <td className="py-4 px-5 text-xs font-bold text-slate-600">
+                        {new Date(ticket.slaDeadline).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 px-5">
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                          ticket.status === 'Open' ? 'bg-[#FF9800]/10 text-[#FF9800]' :
+                          ticket.status === 'Resolved' ? 'bg-[#4CAF50]/10 text-[#4CAF50]' :
+                          ticket.status === 'In Progress' ? 'bg-[#2196F3]/10 text-[#2196F3]' :
+                          'bg-[#F44336]/10 text-[#F44336]'
+                        }`}>
+                          {ticket.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
