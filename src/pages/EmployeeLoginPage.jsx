@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, CheckCircle, ArrowRight } from 'lucide-react';
+import { Shield, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../context/LanguageContext';
 import { TN_CONSTITUENCIES, TN_DISTRICTS, getConstituenciesByDistrict } from '../data/constituencies';
@@ -369,9 +369,17 @@ export default function EmployeeLoginPage() {
 
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center max-w-7xl w-full mx-auto shrink-0">
-        <div className="flex items-center gap-2 select-none">
-          <Shield className="w-5 h-5 text-[#8B1A1A]" />
-          <span className="text-xs font-black text-[#8B1A1A] tracking-wider uppercase">JanaNayagam</span>
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-[#8B1A1A] font-extrabold text-[11px] tracking-wider uppercase transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> BACK
+          </button>
+          <div className="flex items-center gap-2 select-none border-l border-slate-300 pl-4">
+            <Shield className="w-5 h-5 text-[#8B1A1A]" />
+            <span className="text-xs font-black text-[#8B1A1A] tracking-wider uppercase">JanaNayagam</span>
+          </div>
         </div>
         <button
           onClick={() => {
@@ -585,15 +593,7 @@ export default function EmployeeLoginPage() {
           </form>
         </div>
 
-        {/* BACK TO CITIZEN LINK */}
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button
-            onClick={() => navigate('/')}
-            className="text-slate-400 font-bold text-sm underline underline-offset-2"
-          >
-            ← {t('backToCitizen')}
-          </button>
-        </div>
+        {/* BACK TO CITIZEN LINK - Moved to header */}
       </main>
 
       {/* Footer bar */}

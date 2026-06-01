@@ -10,18 +10,33 @@ import TicketInbox from './TicketInbox';
 export default function WardOfficerPortal() {
  const { t } = useTranslation();
 
- const sidebarLinks = [
- {
- label: t('dashboard'),
- path: '/ward-officer',
- icon: <BarChart2 />
- },
- {
- label: 'Ticket Inbox',
- path: '/ward-officer/inbox',
- icon: <FileText />
- }
- ];
+  const sidebarLinks = [
+    {
+      label: t('dashboard'),
+      path: '/ward-officer',
+      icon: <BarChart2 />
+    },
+    {
+      label: 'Ward Tickets',
+      path: '/ward-officer/tickets',
+      icon: <FileText />
+    },
+    {
+      label: 'File Issue',
+      path: '/ward-officer/file-issue',
+      icon: <FileText />
+    },
+    {
+      label: 'Escalate',
+      path: '/ward-officer/escalate',
+      icon: <FileText />
+    },
+    {
+      label: 'Ward Report',
+      path: '/ward-officer/report',
+      icon: <FileText />
+    }
+  ];
 
  return (
  <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Ward Officer Portal">

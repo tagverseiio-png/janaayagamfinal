@@ -14,6 +14,7 @@ import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
 import CmDashboard from './portals/cm/CmDashboard';
 import MlaDashboard from './portals/mla/MlaDashboard';
+import MinisterDashboard from './portals/minister/MinisterDashboard';
 
 // Route Guard for Protected Routes
 const ProtectedRoute = ({ requiredRole, children }) => {
@@ -66,7 +67,7 @@ export default function App() {
 
           {/* Employee Protected Routes */}
           <Route path="/cm-dashboard" element={<EmployeeProtectedRoute><CmDashboard overviewMode={false} /></EmployeeProtectedRoute>} />
-          <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><MinisterDashboard /></EmployeeProtectedRoute>} />
           <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><MlaDashboard /></EmployeeProtectedRoute>} />
           <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/collector-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />

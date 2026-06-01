@@ -59,64 +59,78 @@ const RAW_SEED_TICKETS = [
   { id: 'JN-1056', category: 'Welfare', description: 'Disability certificate pending', status: 'In Progress', priority: 'Medium', district: 'Vellore', taluk: 'Katpadi Taluk', ward: 'Ward 12', citizenName: 'Raja P', assignedTo: 'Deputy CDO', slaDeadline: '2026-06-07', createdAt: '2026-05-26', lat: 12.9165, lng: 79.1325 }
 ];
 
+const categoriesList = ['Water', 'Electricity', 'Roads', 'Sanitation', 'Revenue', 'Health', 'Education', 'Welfare', 'Police'];
+const districtsList = [
+  'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
+  'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
+  'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
+  'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
+  'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Villupuram', 'Virudhunagar'
+];
+const priorities = ['Low', 'Medium', 'High', 'Critical'];
+const statuses = ['Open', 'In Progress', 'Resolved', 'Escalated'];
+
+for(let i=0; i<1500; i++) {
+  const createdDaysAgo = Math.floor(Math.random() * 30);
+  const slaDaysOffset = Math.floor(Math.random() * 10) - 3; 
+  const createdDate = new Date();
+  createdDate.setDate(createdDate.getDate() - createdDaysAgo);
+  const slaDate = new Date(createdDate);
+  slaDate.setDate(slaDate.getDate() + slaDaysOffset);
+  
+  const status = statuses[Math.floor(Math.random() * statuses.length)];
+  const resolvedDate = status === 'Resolved' ? new Date(createdDate.getTime() + Math.random() * 5 * 24 * 60 * 60 * 1000) : null;
+  
+  RAW_SEED_TICKETS.push({
+    id: `JN-200${i}`,
+    category: categoriesList[Math.floor(Math.random() * categoriesList.length)],
+    description: `Auto-generated grievance report for district issue.`,
+    status: status,
+    priority: priorities[Math.floor(Math.random() * priorities.length)],
+    district: districtsList[Math.floor(Math.random() * districtsList.length)],
+    taluk: 'Central Taluk',
+    ward: `Ward ${Math.floor(Math.random() * 150) + 1}`,
+    citizenName: 'Citizen ' + i,
+    assignedTo: 'AEO',
+    slaDeadline: slaDate.toISOString().split('T')[0],
+    createdAt: createdDate.toISOString().split('T')[0],
+    resolvedAt: resolvedDate ? resolvedDate.toISOString().split('T')[0] : null,
+    lat: 11.0 + (Math.random() * 2 - 1),
+    lng: 78.0 + (Math.random() * 2 - 1),
+  });
+}
+
 // Normalize every seed ticket onto its PDF department chain: canonical owner role + aligned timeline
 export const SEED_TICKETS = RAW_SEED_TICKETS.map(t => {
   const assignedTo = /resolved/i.test(t.status) ? 'Resolved' : canonicalRole(t.category, t.assignedTo);
   return { ...t, assignedTo, timeline: buildTimeline(t.category, assignedTo, t.createdAt) };
 });
 
-export const DISTRICT_STATS = {
-  'Ariyalur': { open: 6, resolved: 42, critical: 1, level: 'low' },
-  'Chennai': { open: 14, resolved: 245, critical: 8, level: 'medium' },
-  'Chengalpattu': { open: 17, resolved: 134, critical: 3, level: 'medium' },
-  'Coimbatore': { open: 39, resolved: 180, critical: 5, level: 'high' },
-  'Cuddalore': { open: 14, resolved: 98, critical: 2, level: 'medium' },
-  'Dharmapuri': { open: 4, resolved: 56, critical: 0, level: 'low' },
-  'Dindigul': { open: 3, resolved: 67, critical: 1, level: 'low' },
-  'Erode': { open: 12, resolved: 89, critical: 2, level: 'medium' },
-  'Kallakurichi': { open: 5, resolved: 45, critical: 1, level: 'low' },
-  'Kancheepuram': { open: 5, resolved: 78, critical: 1, level: 'low' },
-  'Kanniyakumari': { open: 1, resolved: 34, critical: 0, level: 'low' },
-  'Karur': { open: 12, resolved: 67, critical: 2, level: 'medium' },
-  'Krishnagiri': { open: 4, resolved: 45, critical: 1, level: 'low' },
-  'Madurai': { open: 27, resolved: 156, critical: 3, level: 'medium' },
-  'Mayiladuthurai': { open: 2, resolved: 34, critical: 0, level: 'low' },
-  'Nagapattinam': { open: 6, resolved: 43, critical: 1, level: 'low' },
-  'Namakkal': { open: 9, resolved: 56, critical: 1, level: 'medium' },
-  'Nilgiris': { open: 20, resolved: 78, critical: 3, level: 'medium' },
-  'Perambalur': { open: 2, resolved: 23, critical: 0, level: 'low' },
-  'Pudukkottai': { open: 8, resolved: 56, critical: 1, level: 'medium' },
-  'Ramanathapuram': { open: 7, resolved: 45, critical: 1, level: 'low' },
-  'Ranipet': { open: 20, resolved: 89, critical: 4, level: 'medium' },
-  'Salem': { open: 15, resolved: 134, critical: 2, level: 'medium' },
-  'Sivaganga': { open: 12, resolved: 67, critical: 2, level: 'medium' },
-  'Tenkasi': { open: 16, resolved: 89, critical: 3, level: 'medium' },
-  'Thanjavur': { open: 2, resolved: 56, critical: 0, level: 'low' },
-  'Theni': { open: 21, resolved: 67, critical: 4, level: 'high' },
-  'Thoothukudi': { open: 11, resolved: 78, critical: 2, level: 'medium' },
-  'Tiruchirappalli': { open: 33, resolved: 145, critical: 4, level: 'high' },
-  'Tirunelveli': { open: 6, resolved: 98, critical: 1, level: 'low' },
-  'Tirupathur': { open: 28, resolved: 67, critical: 5, level: 'high' },
-  'Tiruppur': { open: 9, resolved: 78, critical: 1, level: 'medium' },
-  'Tiruvallur': { open: 30, resolved: 112, critical: 5, level: 'high' },
-  'Tiruvannamalai': { open: 44, resolved: 134, critical: 7, level: 'high' },
-  'Tiruvarur': { open: 52, resolved: 89, critical: 8, level: 'high' },
-  'Vellore': { open: 49, resolved: 145, critical: 7, level: 'high' },
-  'Villupuram': { open: 25, resolved: 98, critical: 4, level: 'medium' },
-  'Virudhunagar': { open: 26, resolved: 89, critical: 4, level: 'medium' },
-};
+export const DISTRICT_STATS = {};
+districtsList.forEach(d => {
+  const dTickets = SEED_TICKETS.filter(t => t.district === d);
+  const open = dTickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
+  const resolved = dTickets.filter(t => t.status === 'Resolved').length;
+  const critical = dTickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length;
+  let level = 'low';
+  if (critical > 15) level = 'high';
+  else if (critical > 5) level = 'medium';
+  DISTRICT_STATS[d] = { open, resolved, critical, level };
+});
 
 export const STATE_STATS = {
-  totalOpen: 342,
-  totalResolved: 8432,
-  totalActive: 1204,
-  totalEscalated: 89,
-  criticalPriority: 24,
-  breachDistricts: 14,
+  get totalOpen() { return SEED_TICKETS.filter(t => t.status === 'Open' || t.status === 'In Progress').length; },
+  get totalResolved() { return SEED_TICKETS.filter(t => t.status === 'Resolved').length; },
+  get totalActive() { return SEED_TICKETS.filter(t => t.status !== 'Resolved').length; },
+  get totalEscalated() { return SEED_TICKETS.filter(t => t.status === 'Escalated').length; },
+  get criticalPriority() { return SEED_TICKETS.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length; },
+  get breachDistricts() { 
+    return Object.values(DISTRICT_STATS).filter(s => s.critical > 5).length;
+  },
   cmEscalations: 5,
-  activeSectors: 8,
-  totalDistricts: 38,
-  totalOpen680: 680,
+  activeSectors: categoriesList.length,
+  totalDistricts: districtsList.length,
+  get totalOpen680() { return this.totalOpen; },
   needAttention: 10,
 };
 

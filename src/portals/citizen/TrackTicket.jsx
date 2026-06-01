@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { SEED_TICKETS } from '../../data/seedData';
 import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
 import { useLanguage } from '../../context/LanguageContext';
@@ -7,6 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 export default function TrackTicket() {
   const { t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const initialTicketId = location.state?.ticketId || '';
   
   const [ticketId, setTicketId] = useState(initialTicketId);
@@ -43,8 +45,19 @@ export default function TrackTicket() {
     <div className="min-h-screen bg-[#F0EBE3] p-4">
       <div className="max-w-2xl mx-auto pb-20">
 
+        {/* Back Button */}
+        <div className="mt-4 mb-2">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-slate-500 hover:text-[#8B1A1A] font-extrabold text-sm transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t('back', 'Back')}
+          </button>
+        </div>
+
         {/* Search Box */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4 mt-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4 mt-4">
           <h2 className="text-[#8B1A1A] font-extrabold text-lg tracking-widest mb-1 uppercase">{t('trackComplaint')}</h2>
           <p className="text-slate-500 text-xs mb-4">{t('enterTicketId')}</p>
           <div className="flex gap-2">

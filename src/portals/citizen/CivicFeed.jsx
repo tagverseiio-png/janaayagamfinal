@@ -765,16 +765,6 @@ export default function CivicFeed() {
         )}
       </div>
 
-      {/* ══ 9. FLOATING ACTION BUTTON ══ */}
-      <button
-        onClick={() => navigate('/citizen/submit')}
-        style={{ backgroundColor: '#8B1A1A' }}
-        className="fixed bottom-[80px] right-4 sm:right-[calc(50vw-200px)] w-14 h-14 rounded-full text-white flex items-center justify-center shadow-[0_4px_16px_rgba(139,26,26,0.35)] active:scale-95 transition-transform z-40 select-none cursor-pointer"
-        title={tLabel("Report a new issue", "புதிய பிரச்சினை புகாரளிக்கவும்")}
-      >
-        <span className="text-3xl font-light leading-none">+</span>
-      </button>
-
     </div>
   );
 }

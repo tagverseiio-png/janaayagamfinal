@@ -156,12 +156,14 @@ export default function TicketCard({ ticket, role, onAction }) {
  >
  <span>{t('actions.escalate')}</span>
  </button>
+ {role !== 'mla' && (
  <button
  onClick={(e) => handleActionClick(e, 'close')}
  className="h-[34px] px-3 text-[13px] font-black uppercase rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1"
  >
  <span>{t('actions.close')}</span>
  </button>
+ )}
  </>
  )}
  </>
