@@ -8,12 +8,12 @@ import TicketCard from '../../shared/components/TicketCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
-import { getTicketsByDistrict } from '../../data/seedData';
+import api from '../../services/api';
 
  export default function CollectorDashboard() {
  const { t, i18n } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState(getTicketsByDistrict('Chennai'));
+ const [tickets, setTickets] = useState([]);
  const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'map'
  const [loadingTable, setLoadingTable] = useState(true);
  
@@ -23,13 +23,27 @@ import { getTicketsByDistrict } from '../../data/seedData';
  const [expandedTaluk, setExpandedTaluk] = useState(null);
 
  useEffect(() => {
- // Force seed data
- setTickets(getTicketsByDistrict('Chennai'));
-
- const timer = setTimeout(() => {
- setLoadingTable(false);
- }, 1500);
- return () => clearTimeout(timer);
+   const fetchTickets = async () => {
+     try {
+       const res = await api.get('/tickets');
+       const formatted = res.data.map(t => ({
+         ...t,
+         category: t.department?.name || 'Unknown',
+         district: t.jurisdiction?.name || 'Unknown',
+         id: t.ticketNumber,
+         taluk: 'Velachery', // Mocked taluk for now
+         ward: 142
+       }));
+       // For Collector Dashboard, filter by district (mocked to Chennai or current jurisdiction)
+       const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
+       setTickets(formatted.filter(t => t.district === districtName));
+       setLoadingTable(false);
+     } catch (err) {
+       console.error('Failed to fetch collector tickets:', err);
+       setLoadingTable(false);
+     }
+   };
+   fetchTickets();
  }, []);
 
  const now = new Date();

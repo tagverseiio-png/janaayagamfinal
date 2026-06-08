@@ -7,6 +7,7 @@ import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle } f
 import CategoryIcon from '../../shared/components/CategoryIcon';
 import GeoCamera from '../../shared/components/GeoCamera';
 import { normalizeDept, getFirstResponder } from '../../data/hierarchyData';
+import api from '../../services/api';
 
 export default function SubmitTicket() {
   const { i18n } = useTranslation();
@@ -134,7 +135,7 @@ export default function SubmitTicket() {
     toast.success(tLabel("Geo-tagged photo stamped successfully!", "புவி-குறிக்கப்பட்ட புகைப்படம் வெற்றிகரமாக இணைக்கப்பட்டது!"));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!category) {
@@ -150,35 +151,25 @@ export default function SubmitTicket() {
     // Determine target ward and district for routing
     const targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
     const targetDistrict = locationMode === 'home' ? livingDistrict : (localStorage.getItem('jn_district') || 'Chennai');
+    const targetJurisdictionId = locationMode === 'home' ? localStorage.getItem('jn_jurisdiction_id') : null;
 
-    const ticketId = Math.floor(1000 + Math.random() * 9000).toString();
-    const newTicket = {
-      id: ticketId,
-      category,
-      department: normalizeDept(category),
-      assignedTo: getFirstResponder(category),
-      timeline: [{ role: 'Citizen', label: 'Issue Filed', completedAt: new Date().toLocaleString(), status: 'done' }],
-      description,
-      status: 'open',
-      priority: 'medium',
-      created_at: new Date().toISOString(),
-      sla_deadline: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4-hour SLA
-      ward: targetWard,
-      district: targetDistrict,
-      citizen_name: localStorage.getItem('jn_name') || 'KARTHIK RAJ S.',
-      photo,
-      location,
-      is_geotagged: isGeotagged,
-      location_mode: locationMode
-    };
-
-    // Save to localStorage
-    const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
-    list.push(newTicket);
-    localStorage.setItem('jn_tickets', JSON.stringify(list));
-
-    setSubmittedTicketId(`JN-${ticketId}`);
-    setStep(2);
+    try {
+      const res = await api.post('/tickets', {
+        title: `${category.toUpperCase()} Issue in ${targetWard}`,
+        description,
+        departmentName: category,
+        jurisdictionName: targetDistrict,
+        jurisdictionId: targetJurisdictionId,
+        lat: location ? parseFloat(location.lat) : undefined,
+        lng: location ? parseFloat(location.lng) : undefined
+      });
+      
+      setSubmittedTicketId(res.data.ticketNumber);
+      setStep(2);
+    } catch (err) {
+      console.error('Failed to submit ticket:', err);
+      toast.error('Failed to submit ticket. Please try again.');
+    }
   };
 
   return (

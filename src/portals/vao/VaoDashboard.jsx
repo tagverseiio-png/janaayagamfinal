@@ -6,24 +6,48 @@ import { AlertTriangle, CheckCircle, Smartphone, Clock, Radio } from 'lucide-rea
 import StatCard from '../../shared/components/StatCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import { SEED_TICKETS, getTicketsByWard, STATE_STATS } from '../../data/seedData';
+import api from '../../services/api';
 
-export default function VaoDashboard() {
+
+ export default function VaoDashboard() {
  const { t, i18n } = useTranslation();
  const [tickets, setTickets] = useState([]);
+ const [STATE_STATS, setStats] = useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
 
  useEffect(() => {
- setTickets(SEED_TICKETS);
+   const fetchData = async () => {
+     try {
+       const res = await api.get('/tickets');
+       const formatted = res.data.map(t => ({
+         ...t,
+         category: t.department?.name || 'Unknown',
+         district: t.jurisdiction?.name || 'Unknown',
+         id: t.ticketNumber,
+         description: t.description,
+         ward: 'Ward 142' // Mocked ward
+       }));
+       setTickets(formatted);
+
+       const statsRes = await api.get('/dashboard/stats');
+       setStats(prev => ({
+         ...prev,
+         totalActive: statsRes.data.totalOpen,
+         totalResolved: statsRes.data.totalResolved,
+       }));
+     } catch (err) {
+       console.error('Failed to fetch VAO dashboard data:', err);
+     }
+   };
+   fetchData();
  }, []);
 
  // Compute stats
- const wardTickets = getTicketsByWard('Ward 142');
- const openCount = wardTickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
+ const openCount = tickets.filter(t => t.status === 'open').length;
  
  const todayStr = new Date().toISOString().split('T')[0];
- const raisedTodayCount = tickets.filter(t => t.assignedTo === 'VAO' && t.createdAt && t.createdAt.startsWith(todayStr)).length;
+ const raisedTodayCount = tickets.filter(t => t.createdAt && t.createdAt.startsWith(todayStr)).length;
  
- const resolvedCount = tickets.filter(t => t.status === 'Resolved').length;
+ const resolvedCount = tickets.filter(t => t.status === 'resolved').length;
 
  // Filter/Sort recent tickets
  const recentTickets = [...tickets]

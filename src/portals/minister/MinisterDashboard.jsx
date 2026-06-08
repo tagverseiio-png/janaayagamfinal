@@ -11,9 +11,8 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import StatCard from '../../shared/components/StatCard';
-import { 
-  SEED_TICKETS, DISTRICT_STATS, getTicketsByCategory 
-} from '../../data/seedData';
+import api from '../../services/api';
+
 
 export default function MinisterDashboard() {
   const { t, i18n } = useTranslation();
@@ -36,7 +35,26 @@ export default function MinisterDashboard() {
 
   const departments = ['Water', 'Electricity', 'Roads', 'Sanitation', 'Revenue', 'Health', 'Education', 'Welfare'];
 
-  const deptTickets = getTicketsByCategory(selectedDept);
+  const [deptTickets, setDeptTickets] = useState([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          id: t.ticketNumber,
+          description: t.description
+        }));
+        setDeptTickets(formatted.filter(t => t.category === selectedDept));
+      } catch (err) {
+        console.error('Failed to fetch minister tickets:', err);
+      }
+    };
+    fetchTickets();
+  }, [selectedDept]);
   
   const totalOpen = deptTickets.filter(t => t.status !== 'Resolved').length;
   const resolvedCount = deptTickets.filter(t => t.status === 'Resolved').length;

@@ -7,53 +7,53 @@ import { useNavigate } from 'react-router-dom';
 
 /* ─── 38 Tamil Nadu Districts Coordinate + Ticket Data ─────────────────── */
 const districts = [
- { name: "Chennai", tamil: "சென்னை", lat: 13.0827, lng: 80.2707, tickets: 85 },
- { name: "Coimbatore", tamil: "கோயம்புத்தூர்", lat: 11.0168, lng: 76.9558, tickets: 42 },
- { name: "Madurai", tamil: "மதுரை", lat: 9.9252, lng: 78.1198, tickets: 31 },
- { name: "Salem", tamil: "சேலம்", lat: 11.6643, lng: 78.1460, tickets: 18 },
- { name: "Trichy", tamil: "திருச்சி", lat: 10.7905, lng: 78.7047, tickets: 55 },
- { name: "Vellore", tamil: "வேலூர்", lat: 12.9165, lng: 79.1325, tickets: 12 },
- { name: "Tirunelveli", tamil: "திருநெல்வேலி", lat: 8.7139, lng: 77.7567, tickets: 28 },
- { name: "Erode", tamil: "ஈரோடு", lat: 11.3410, lng: 77.7172, tickets: 9 },
- { name: "Thanjavur", tamil: "தஞ்சாவூர்", lat: 10.7870, lng: 79.1378, tickets: 22 },
- { name: "Dindigul", tamil: "திண்டுக்கல்", lat: 10.3624, lng: 77.9695, tickets: 7 },
- { name: "Kancheepuram", tamil: "காஞ்சிபுரம்", lat: 12.8342, lng: 79.7036, tickets: 33 },
- { name: "Tiruppur", tamil: "திருப்பூர்", lat: 11.1085, lng: 77.3411, tickets: 19 },
- { name: "Thoothukudi", tamil: "தூத்துக்குடி", lat: 8.7642, lng: 78.1348, tickets: 24 },
- { name: "Nagercoil", tamil: "நாகர்கோவில்", lat: 8.1833, lng: 77.4119, tickets: 15 },
- { name: "Cuddalore", tamil: "கடலூர்", lat: 11.7480, lng: 79.7714, tickets: 11 },
- { name: "Villupuram", tamil: "விழுப்புரம்", lat: 11.9398, lng: 79.4862, tickets: 8 },
- { name: "Nagapattinam", tamil: "நாகப்பட்டினம்", lat: 10.7672, lng: 79.8449, tickets: 16 },
- { name: "Dharmapuri", tamil: "தர்மபுரி", lat: 12.1278, lng: 78.1584, tickets: 6 },
- { name: "Krishnagiri", tamil: "கிருஷ்ணகிரி", lat: 12.5186, lng: 78.2137, tickets: 14 },
- { name: "Namakkal", tamil: "நாமக்கல்", lat: 11.2189, lng: 78.1673, tickets: 10 },
- { name: "Karur", tamil: "கரூர்", lat: 10.9578, lng: 78.0777, tickets: 13 },
- { name: "Pudukkottai", tamil: "புதுக்கோட்டை", lat: 10.3797, lng: 78.8208, tickets: 20 },
- { name: "Sivaganga", tamil: "சிவகங்கை", lat: 9.8433, lng: 78.4833, tickets: 17 },
- { name: "Virudhunagar", tamil: "விருதுநகர்", lat: 9.5680, lng: 77.9624, tickets: 21 },
- { name: "Ramanathapuram", tamil: "ராமநாதபுரம்", lat: 9.3639, lng: 78.8394, tickets: 9 },
- { name: "Theni", tamil: "தேனி", lat: 10.0104, lng: 77.4768, tickets: 12 },
- { name: "Nilgiris", tamil: "நீலகிரி", lat: 11.4167, lng: 76.6944, tickets: 5 },
- { name: "Perambalur", tamil: "பெரம்பலூர்", lat: 11.2333, lng: 78.8833, tickets: 8 },
- { name: "Ariyalur", tamil: "அரியலூர்", lat: 11.1394, lng: 79.0728, tickets: 7 },
- { name: "Tiruvarur", tamil: "திருவாரூர்", lat: 10.7714, lng: 79.6381, tickets: 11 },
- { name: "Tiruvannamalai", tamil: "திருவண்ணாமலை", lat: 12.2253, lng: 79.0747, tickets: 25 },
- { name: "Kallakurichi", tamil: "கள்ளக்குறிச்சி", lat: 11.7383, lng: 78.9639, tickets: 9 },
- { name: "Ranipet", tamil: "ராணிப்பேட்டை", lat: 12.9275, lng: 79.3328, tickets: 7 },
- { name: "Tenkasi", tamil: "தென்காசி", lat: 8.9593, lng: 77.3150, tickets: 13 },
- { name: "Chengalpattu", tamil: "செங்கல்பட்டு", lat: 12.6841, lng: 79.9836, tickets: 18 },
- { name: "Mayiladuthurai", tamil: "மயிலாடுதுறை", lat: 11.1018, lng: 79.6517, tickets: 10 },
- { name: "Tirupattur", tamil: "திருப்பத்தூர்", lat: 12.4939, lng: 78.5678, tickets: 6 },
- { name: "Harur", tamil: "ஹாரூர்", lat: 12.0620, lng: 78.4842, tickets: 4 }
+ { name: "Chennai", tamil: "சென்னை", lat: 13.0827, lng: 80.2707, tickets: 0 },
+ { name: "Coimbatore", tamil: "கோயம்புத்தூர்", lat: 11.0168, lng: 76.9558, tickets: 0 },
+ { name: "Madurai", tamil: "மதுரை", lat: 9.9252, lng: 78.1198, tickets: 0 },
+ { name: "Salem", tamil: "சேலம்", lat: 11.6643, lng: 78.1460, tickets: 0 },
+ { name: "Trichy", tamil: "திருச்சி", lat: 10.7905, lng: 78.7047, tickets: 0 },
+ { name: "Vellore", tamil: "வேலூர்", lat: 12.9165, lng: 79.1325, tickets: 0 },
+ { name: "Tirunelveli", tamil: "திருநெல்வேலி", lat: 8.7139, lng: 77.7567, tickets: 0 },
+ { name: "Erode", tamil: "ஈரோடு", lat: 11.3410, lng: 77.7172, tickets: 0 },
+ { name: "Thanjavur", tamil: "தஞ்சாவூர்", lat: 10.7870, lng: 79.1378, tickets: 0 },
+ { name: "Dindigul", tamil: "திண்டுக்கல்", lat: 10.3624, lng: 77.9695, tickets: 0 },
+ { name: "Kancheepuram", tamil: "காஞ்சிபுரம்", lat: 12.8342, lng: 79.7036, tickets: 0 },
+ { name: "Tiruppur", tamil: "திருப்பூர்", lat: 11.1085, lng: 77.3411, tickets: 0 },
+ { name: "Thoothukudi", tamil: "தூத்துக்குடி", lat: 8.7642, lng: 78.1348, tickets: 0 },
+ { name: "Nagercoil", tamil: "நாகர்கோவில்", lat: 8.1833, lng: 77.4119, tickets: 0 },
+ { name: "Cuddalore", tamil: "கடலூர்", lat: 11.7480, lng: 79.7714, tickets: 0 },
+ { name: "Villupuram", tamil: "விழுப்புரம்", lat: 11.9398, lng: 79.4862, tickets: 0 },
+ { name: "Nagapattinam", tamil: "நாகப்பட்டினம்", lat: 10.7672, lng: 79.8449, tickets: 0 },
+ { name: "Dharmapuri", tamil: "தர்மபுரி", lat: 12.1278, lng: 78.1584, tickets: 0 },
+ { name: "Krishnagiri", tamil: "கிருஷ்ணகிரி", lat: 12.5186, lng: 78.2137, tickets: 0 },
+ { name: "Namakkal", tamil: "நாமக்கல்", lat: 11.2189, lng: 78.1673, tickets: 0 },
+ { name: "Karur", tamil: "கரூர்", lat: 10.9578, lng: 78.0777, tickets: 0 },
+ { name: "Pudukkottai", tamil: "புதுக்கோட்டை", lat: 10.3797, lng: 78.8208, tickets: 0 },
+ { name: "Sivaganga", tamil: "சிவகங்கை", lat: 9.8433, lng: 78.4833, tickets: 0 },
+ { name: "Virudhunagar", tamil: "விருதுநகர்", lat: 9.5680, lng: 77.9624, tickets: 0 },
+ { name: "Ramanathapuram", tamil: "ராமநாதபுரம்", lat: 9.3639, lng: 78.8394, tickets: 0 },
+ { name: "Theni", tamil: "தேனி", lat: 10.0104, lng: 77.4768, tickets: 0 },
+ { name: "Nilgiris", tamil: "நீலகிரி", lat: 11.4167, lng: 76.6944, tickets: 0 },
+ { name: "Perambalur", tamil: "பெரம்பலூர்", lat: 11.2333, lng: 78.8833, tickets: 0 },
+ { name: "Ariyalur", tamil: "அரியலூர்", lat: 11.1394, lng: 79.0728, tickets: 0 },
+ { name: "Tiruvarur", tamil: "திருவாரூர்", lat: 10.7714, lng: 79.6381, tickets: 0 },
+ { name: "Tiruvannamalai", tamil: "திருவண்ணாமலை", lat: 12.2253, lng: 79.0747, tickets: 0 },
+ { name: "Kallakurichi", tamil: "கள்ளக்குறிச்சி", lat: 11.7383, lng: 78.9639, tickets: 0 },
+ { name: "Ranipet", tamil: "ராணிப்பேட்டை", lat: 12.9275, lng: 79.3328, tickets: 0 },
+ { name: "Tenkasi", tamil: "தென்காசி", lat: 8.9593, lng: 77.3150, tickets: 0 },
+ { name: "Chengalpattu", tamil: "செங்கல்பட்டு", lat: 12.6841, lng: 79.9836, tickets: 0 },
+ { name: "Mayiladuthurai", tamil: "மயிலாடுதுறை", lat: 11.1018, lng: 79.6517, tickets: 0 },
+ { name: "Tirupattur", tamil: "திருப்பத்தூர்", lat: 12.4939, lng: 78.5678, tickets: 0 },
+ { name: "Harur", tamil: "ஹாரூர்", lat: 12.0620, lng: 78.4842, tickets: 0 }
 ];
 
 /* ─── Citizen Ward Coordinates (Local Ward Markers in Chennai) ─────── */
 const citizenWards = [
- { name: "Ward 142 (Anna Nagar)", tamil: "வார்டு 142 (அண்ணா நகர்)", lat: 13.0827, lng: 80.2707, tickets: 85, isUserWard: true },
- { name: "Ward 141 (Kilpauk)", tamil: "வார்டு 141 (கீழ்ப்பாக்கம்)", lat: 13.095, lng: 80.285, tickets: 42 },
- { name: "Ward 143 (Nungambakkam)", tamil: "வார்டு 143 (நுங்கம்பாக்கம்)", lat: 13.065, lng: 80.255, tickets: 19 },
- { name: "Ward 140 (Tondiarpet)", tamil: "வார்டு 140 (தண்டையார்பேட்டை)", lat: 13.115, lng: 80.295, tickets: 12 },
- { name: "Ward 144 (T. Nagar)", tamil: "வார்டு 144 (தி. நகர்)", lat: 13.045, lng: 80.245, tickets: 28 }
+ { name: "Ward 142 (Anna Nagar)", tamil: "வார்டு 142 (அண்ணா நகர்)", lat: 13.0827, lng: 80.2707, tickets: 0, isUserWard: true },
+ { name: "Ward 141 (Kilpauk)", tamil: "வார்டு 141 (கீழ்ப்பாக்கம்)", lat: 13.095, lng: 80.285, tickets: 0 },
+ { name: "Ward 143 (Nungambakkam)", tamil: "வார்டு 143 (நுங்கம்பாக்கம்)", lat: 13.065, lng: 80.255, tickets: 0 },
+ { name: "Ward 140 (Tondiarpet)", tamil: "வார்டு 140 (தண்டையார்பேட்டை)", lat: 13.115, lng: 80.295, tickets: 0 },
+ { name: "Ward 144 (T. Nagar)", tamil: "வார்டு 144 (தி. நகர்)", lat: 13.045, lng: 80.245, tickets: 0 }
 ];
 
 /* ─── Color Helper ─────────────────────────────────────────── */
@@ -389,7 +389,7 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
          <button onClick={() => setShowDetailsModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>×</button>
        </div>
        <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px' }}>
-         Showing ticket breakdowns for {selected.name}. Total active tickets: <strong>{selected.tickets}</strong>.
+         Showing ticket breakdowns for {selected.name}. Total active tickets: 0<strong>{selected.tickets}</strong>.
        </p>
        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#f8fafc', borderRadius: '12px' }}>

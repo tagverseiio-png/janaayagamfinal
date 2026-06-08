@@ -6,7 +6,8 @@ import StatCard from '../../shared/components/StatCard';
 import TnMap from '../../shared/components/TnMap';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
-import { SEED_TICKETS, STATE_STATS } from '../../data/seedData';
+import api from '../../services/api';
+
 
 export default function SecretaryDashboard() {
  const { t, i18n } = useTranslation();
@@ -25,14 +26,37 @@ export default function SecretaryDashboard() {
  'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
  ];
 
- useEffect(() => {
- setTickets(SEED_TICKETS);
+  const [STATE_STATS, setStats] = useState({ totalOpen: 0, totalResolved: 0, criticalTickets: 0, slaBreachRate: 0, resolvedMonth: 0 });
 
- const timer = setTimeout(() => {
- setLoadingTable(false);
- }, 1500);
- return () => clearTimeout(timer);
- }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsRes = await api.get('/dashboard/stats');
+        setStats(prev => ({
+          ...prev,
+          totalOpen: statsRes.data.totalOpen,
+          totalResolved: statsRes.data.totalResolved,
+          criticalTickets: statsRes.data.criticalPriority,
+          resolvedMonth: statsRes.data.totalResolved
+        }));
+
+        const ticketsRes = await api.get('/tickets');
+        const formatted = ticketsRes.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          id: t.ticketNumber,
+          description: t.description
+        }));
+        setTickets(formatted);
+        setLoadingTable(false);
+      } catch (err) {
+        console.error('Failed to fetch secretary data:', err);
+        setLoadingTable(false);
+      }
+    };
+    fetchData();
+  }, []);
 
  const activeTickets = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed');
 

@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Citizen {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  name      String
+  district  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tickets   Ticket[]
+}
+
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  employees   Employee[]
+  tickets     Ticket[]
+}
+
+model Jurisdiction {
+  id        String     @id @default(uuid())
+  level     String     // e.g., 'STATE', 'DISTRICT', 'TALUK', 'BLOCK', 'WARD', 'VILLAGE'
+  name      String     // e.g., 'Chennai', 'Ward 12'
+  parentId  String?    // Self-relation to build hierarchy
+  parent    Jurisdiction?  @relation("Hierarchy", fields: [parentId], references: [id])
+  children  Jurisdiction[] @relation("Hierarchy")
+  
+  employees Employee[]
+  tickets   Ticket[]
+}
+
+model Employee {
+  id             String        @id @default(uuid())
+  username       String        @unique
+  password       String
+  phone          String?
+  name           String
+  category       String        // 'Elected Representative', 'Administrative Officer', 'Department Official'
+  role           String        // e.g., 'District Collector', 'MLA', 'AE'
+  
+  departmentId   String?
+  department     Department?   @relation(fields: [departmentId], references: [id])
+  
+  jurisdictionId String?
+  jurisdiction   Jurisdiction? @relation(fields: [jurisdictionId], references: [id])
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  assignedTickets Ticket[]     @relation("AssignedTo")
+  ticketHistory   TicketHistory[]
+}
+
+model Ticket {
+  id             String       @id @default(uuid())
+  ticketNumber   String       @unique
+  title          String
+  description    String
+  status         String       @default("open") // open, assigned, in_progress, resolved, closed
+  priority       String       @default("normal") // low, normal, high, critical
+  lat            Float?
+  lng            Float?
+  
+  citizenId      String
+  citizen        Citizen      @relation(fields: [citizenId], references: [id])
+  
+  departmentId   String?
+  department     Department?  @relation(fields: [departmentId], references: [id])
+  
+  jurisdictionId String?
+  jurisdiction   Jurisdiction? @relation(fields: [jurisdictionId], references: [id])
+  
+  assignedToId   String?
+  assignedTo     Employee?    @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deadline       DateTime?
+
+  history        TicketHistory[]
+}
+
+model TicketHistory {
+  id           String    @id @default(uuid())
+  ticketId     String
+  ticket       Ticket    @relation(fields: [ticketId], references: [id])
+  
+  action       String    // e.g., 'created', 'status_changed', 'assigned', 'commented'
+  notes        String?
+  
+  employeeId   String?
+  employee     Employee? @relation(fields: [employeeId], references: [id])
+  
+  createdAt    DateTime  @default(now())
+}

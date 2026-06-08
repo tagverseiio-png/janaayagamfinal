@@ -129,7 +129,7 @@ export default function LoginPage() {
   const { t, lang, toggleLang } = useLanguage();
   const navigate = useNavigate();
 
-  const [rawAadhaar, setRawAadhaar] = useState('');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -151,47 +151,16 @@ export default function LoginPage() {
   const isTa = lang === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
 
-  // Masking implementation for Aadhaar: mask first 8 digits with '•'
-  const handleAadhaarChange = (e) => {
-    const inputVal = e.target.value.replace(/\s/g, ''); // Remove spaces
-    let newRaw = '';
-    let digitIndex = 0;
+  const isPhoneValid = phone.length === 10;
 
-    for (let i = 0; i < inputVal.length; i++) {
-      if (inputVal[i] === '•' || inputVal[i] === '●') {
-        newRaw += rawAadhaar[digitIndex] || '';
-        digitIndex++;
-      } else if (/\D/.test(inputVal[i])) {
-        // Ignore non-digits
-      } else {
-        newRaw += inputVal[i];
-        digitIndex++;
-      }
-    }
-
-    if (newRaw.length <= 16) {
-      setRawAadhaar(newRaw);
-    }
-  };
-
-  const getDisplayAadhaar = () => {
-    let display = '';
-    for (let i = 0; i < rawAadhaar.length; i++) {
-      if (i < 12) {
-        display += '•';
-      } else {
-        display += rawAadhaar[i];
-      }
-      if ((i === 3 || i === 7 || i === 11) && i < rawAadhaar.length - 1) {
-        display += ' ';
-      }
-    }
-    return display;
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').substring(0, 10);
+    setPhone(val);
   };
 
   const handleSendOTP = () => {
-    if (rawAadhaar.length !== 16) {
-      toast.error(tLabel('Please enter a valid 16-digit Aadhaar Number', 'தயவுசெய்து செல்லுபடியாகும் 16-இலக்க ஆதார் எண்ணை உள்ளிடவும்'));
+    if (!isPhoneValid) {
+      toast.error(tLabel('Please enter a valid 10-digit Mobile Number', 'தயவுசெய்து செல்லுபடியாகும் 10-இலக்க மொபைல் எண்ணை உள்ளிடவும்'));
       return;
     }
     setOtpSent(true);
@@ -405,22 +374,22 @@ export default function LoginPage() {
                 </span>
               </div>
 
-              {/* Aadhaar Input Field */}
+              {/* Mobile Number Input Field */}
               <div className="space-y-1">
                 <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                  {t('aadhaarNumber')}
+                  {tLabel('Mobile Number', 'மொபைல் எண்')}
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
-                      type="text"
+                      type="tel"
                       disabled={otpSent}
-                      value={getDisplayAadhaar()}
-                      onChange={handleAadhaarChange}
-                      placeholder="•••• •••• •••• ••••"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      placeholder="9876543210"
                       className="w-full bg-slate-50 disabled:opacity-80 disabled:bg-slate-50/50 border border-slate-200 outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm tracking-widest placeholder-slate-400 placeholder:tracking-normal focus:border-[#8B1A1A] transition-all"
                     />
-                    {rawAadhaar.length === 16 && !otpSent && (
+                    {isPhoneValid && !otpSent && (
                       <div className="absolute right-4 top-3">
                         <CheckCircle className="w-5 h-5 text-slate-300" />
                       </div>
@@ -485,10 +454,10 @@ export default function LoginPage() {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="space-y-4 overflow-visible pt-1"
                 >
-                  {/* STEP 2 — Aadhaar Verified Name */}
+                  {/* STEP 2 — Phone Verified Name */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                      {t('aadhaarVerifiedName')}
+                      {tLabel('Phone Verified Name', 'தொலைபேசி சரிபார்க்கப்பட்ட பெயர்')}
                     </label>
                     <div className="relative">
                       <input

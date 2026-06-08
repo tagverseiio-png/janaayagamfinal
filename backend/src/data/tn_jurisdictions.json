@@ -1,0 +1,3089 @@
+{
+  "districts": [
+    {
+      "id": 1,
+      "name": "Ariyalur",
+      "hq": "Ariyalur",
+      "talukCount": 4
+    },
+    {
+      "id": 2,
+      "name": "Chengalpattu",
+      "hq": "Chengalpattu",
+      "talukCount": 7
+    },
+    {
+      "id": 3,
+      "name": "Chennai",
+      "hq": "Chennai",
+      "talukCount": 17
+    },
+    {
+      "id": 4,
+      "name": "Coimbatore",
+      "hq": "Coimbatore",
+      "talukCount": 12
+    },
+    {
+      "id": 5,
+      "name": "Cuddalore",
+      "hq": "Cuddalore",
+      "talukCount": 10
+    },
+    {
+      "id": 6,
+      "name": "Dharmapuri",
+      "hq": "Dharmapuri",
+      "talukCount": 5
+    },
+    {
+      "id": 7,
+      "name": "Dindigul",
+      "hq": "Dindigul",
+      "talukCount": 13
+    },
+    {
+      "id": 8,
+      "name": "Erode",
+      "hq": "Erode",
+      "talukCount": 12
+    },
+    {
+      "id": 9,
+      "name": "Kallakurichi",
+      "hq": "Kallakurichi",
+      "talukCount": 7
+    },
+    {
+      "id": 10,
+      "name": "Kanchipuram",
+      "hq": "Kanchipuram",
+      "talukCount": 11
+    },
+    {
+      "id": 11,
+      "name": "Kanyakumari",
+      "hq": "Nagercoil",
+      "talukCount": 6
+    },
+    {
+      "id": 12,
+      "name": "Karur",
+      "hq": "Karur",
+      "talukCount": 7
+    },
+    {
+      "id": 13,
+      "name": "Krishnagiri",
+      "hq": "Krishnagiri",
+      "talukCount": 7
+    },
+    {
+      "id": 14,
+      "name": "Madurai",
+      "hq": "Madurai",
+      "talukCount": 13
+    },
+    {
+      "id": 15,
+      "name": "Mayiladuthurai",
+      "hq": "Mayiladuthurai",
+      "talukCount": 4
+    },
+    {
+      "id": 16,
+      "name": "Nagapattinam",
+      "hq": "Nagapattinam",
+      "talukCount": 8
+    },
+    {
+      "id": 17,
+      "name": "Namakkal",
+      "hq": "Namakkal",
+      "talukCount": 7
+    },
+    {
+      "id": 18,
+      "name": "Nilgiris",
+      "hq": "Ooty",
+      "talukCount": 6
+    },
+    {
+      "id": 19,
+      "name": "Perambalur",
+      "hq": "Perambalur",
+      "talukCount": 4
+    },
+    {
+      "id": 20,
+      "name": "Pudukkottai",
+      "hq": "Pudukkottai",
+      "talukCount": 13
+    },
+    {
+      "id": 21,
+      "name": "Ramanathapuram",
+      "hq": "Ramanathapuram",
+      "talukCount": 8
+    },
+    {
+      "id": 22,
+      "name": "Ranipet",
+      "hq": "Ranipet",
+      "talukCount": 5
+    },
+    {
+      "id": 23,
+      "name": "Salem",
+      "hq": "Salem",
+      "talukCount": 12
+    },
+    {
+      "id": 24,
+      "name": "Sivaganga",
+      "hq": "Sivaganga",
+      "talukCount": 7
+    },
+    {
+      "id": 25,
+      "name": "Tenkasi",
+      "hq": "Tenkasi",
+      "talukCount": 6
+    },
+    {
+      "id": 26,
+      "name": "Thanjavur",
+      "hq": "Thanjavur",
+      "talukCount": 14
+    },
+    {
+      "id": 27,
+      "name": "Theni",
+      "hq": "Theni",
+      "talukCount": 5
+    },
+    {
+      "id": 28,
+      "name": "Thoothukudi",
+      "hq": "Thoothukudi",
+      "talukCount": 8
+    },
+    {
+      "id": 29,
+      "name": "Tiruchirappalli",
+      "hq": "Tiruchirappalli",
+      "talukCount": 14
+    },
+    {
+      "id": 30,
+      "name": "Tirunelveli",
+      "hq": "Tirunelveli",
+      "talukCount": 12
+    },
+    {
+      "id": 31,
+      "name": "Tirupattur",
+      "hq": "Tirupattur",
+      "talukCount": 5
+    },
+    {
+      "id": 32,
+      "name": "Tiruppur",
+      "hq": "Tiruppur",
+      "talukCount": 10
+    },
+    {
+      "id": 33,
+      "name": "Tiruvallur",
+      "hq": "Thiruvallur",
+      "talukCount": 14
+    },
+    {
+      "id": 34,
+      "name": "Tiruvannamalai",
+      "hq": "Tiruvannamalai",
+      "talukCount": 11
+    },
+    {
+      "id": 35,
+      "name": "Tiruvarur",
+      "hq": "Tiruvarur",
+      "talukCount": 10
+    },
+    {
+      "id": 36,
+      "name": "Vellore",
+      "hq": "Vellore",
+      "talukCount": 11
+    },
+    {
+      "id": 37,
+      "name": "Villupuram",
+      "hq": "Villupuram",
+      "talukCount": 9
+    },
+    {
+      "id": 38,
+      "name": "Virudhunagar",
+      "hq": "Virudhunagar",
+      "talukCount": 10
+    }
+  ],
+  "lokSabhaConstituencies": [
+    {
+      "id": 1,
+      "name": "Tiruvallur",
+      "district": "Thiruvallur"
+    },
+    {
+      "id": 2,
+      "name": "Chennai North",
+      "district": "Chennai"
+    },
+    {
+      "id": 3,
+      "name": "Chennai Central",
+      "district": "Chennai"
+    },
+    {
+      "id": 4,
+      "name": "Chennai South",
+      "district": "Chennai / Chengalpattu"
+    },
+    {
+      "id": 5,
+      "name": "Sriperumbudur",
+      "district": "Kancheepuram / Chengalpattu"
+    },
+    {
+      "id": 6,
+      "name": "Kancheepuram",
+      "district": "Kanchipuram / Chengalpattu"
+    },
+    {
+      "id": 7,
+      "name": "Arakkonam",
+      "district": "Vellore / Ranipet / Tiruvallur"
+    },
+    {
+      "id": 8,
+      "name": "Vellore",
+      "district": "Vellore"
+    },
+    {
+      "id": 9,
+      "name": "Krishnagiri",
+      "district": "Krishnagiri / Tirupattur"
+    },
+    {
+      "id": 10,
+      "name": "Dharmapuri",
+      "district": "Dharmapuri / Salem"
+    },
+    {
+      "id": 11,
+      "name": "Tiruvannamalai",
+      "district": "Tiruvannamalai"
+    },
+    {
+      "id": 12,
+      "name": "Arani",
+      "district": "Tiruvannamalai / Vellore"
+    },
+    {
+      "id": 13,
+      "name": "Villupuram",
+      "district": "Villupuram"
+    },
+    {
+      "id": 14,
+      "name": "Kallakurichi",
+      "district": "Kallakurichi / Villupuram"
+    },
+    {
+      "id": 15,
+      "name": "Salem",
+      "district": "Salem"
+    },
+    {
+      "id": 16,
+      "name": "Namakkal",
+      "district": "Namakkal / Salem / Erode"
+    },
+    {
+      "id": 17,
+      "name": "Erode",
+      "district": "Erode"
+    },
+    {
+      "id": 18,
+      "name": "Tiruppur",
+      "district": "Tiruppur / Coimbatore"
+    },
+    {
+      "id": 19,
+      "name": "Nilgiris",
+      "district": "Nilgiris"
+    },
+    {
+      "id": 20,
+      "name": "Coimbatore",
+      "district": "Coimbatore"
+    },
+    {
+      "id": 21,
+      "name": "Pollachi",
+      "district": "Coimbatore / Tiruppur"
+    },
+    {
+      "id": 22,
+      "name": "Dindigul",
+      "district": "Dindigul"
+    },
+    {
+      "id": 23,
+      "name": "Karur",
+      "district": "Karur / Tiruchirappalli / Perambalur"
+    },
+    {
+      "id": 24,
+      "name": "Tiruchirappalli",
+      "district": "Tiruchirappalli / Pudukkottai"
+    },
+    {
+      "id": 25,
+      "name": "Perambalur",
+      "district": "Perambalur / Karur / Ariyalur"
+    },
+    {
+      "id": 26,
+      "name": "Cuddalore",
+      "district": "Cuddalore"
+    },
+    {
+      "id": 27,
+      "name": "Chidambaram",
+      "district": "Cuddalore / Ariyalur"
+    },
+    {
+      "id": 28,
+      "name": "Mayiladuthurai",
+      "district": "Mayiladuthurai / Nagapattinam / Thanjavur"
+    },
+    {
+      "id": 29,
+      "name": "Nagapattinam",
+      "district": "Nagapattinam / Tiruvarur / Thanjavur"
+    },
+    {
+      "id": 30,
+      "name": "Thanjavur",
+      "district": "Thanjavur / Tiruvarur"
+    },
+    {
+      "id": 31,
+      "name": "Sivaganga",
+      "district": "Sivaganga / Pudukkottai"
+    },
+    {
+      "id": 32,
+      "name": "Ramanathapuram",
+      "district": "Ramanathapuram / Pudukkottai / Virudhunagar"
+    },
+    {
+      "id": 33,
+      "name": "Theni",
+      "district": "Theni / Madurai"
+    },
+    {
+      "id": 34,
+      "name": "Madurai",
+      "district": "Madurai / Virudhunagar"
+    },
+    {
+      "id": 35,
+      "name": "Virudhunagar",
+      "district": "Virudhunagar / Tenkasi"
+    },
+    {
+      "id": 36,
+      "name": "Tenkasi",
+      "district": "Tenkasi / Tirunelveli"
+    },
+    {
+      "id": 37,
+      "name": "Thoothukudi",
+      "district": "Thoothukudi"
+    },
+    {
+      "id": 38,
+      "name": "Tirunelveli",
+      "district": "Tirunelveli / Tenkasi"
+    },
+    {
+      "id": 39,
+      "name": "Kanniyakumari",
+      "district": "Kanyakumari"
+    }
+  ],
+  "assemblyConstituencies": [
+    {
+      "id": 1,
+      "name": "Gummidipoondi",
+      "type": "GEN",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 2,
+      "name": "Ponneri",
+      "type": "SC",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 3,
+      "name": "Tiruttani",
+      "type": "GEN",
+      "district": "Thiruvallur",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 4,
+      "name": "Thiruvallur",
+      "type": "GEN",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 5,
+      "name": "Poonamallee",
+      "type": "SC",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 6,
+      "name": "Avadi",
+      "type": "GEN",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 7,
+      "name": "Maduravoyal",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 8,
+      "name": "Ambattur",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 9,
+      "name": "Madavaram",
+      "type": "GEN",
+      "district": "Thiruvallur",
+      "lokSabha": "Tiruvallur"
+    },
+    {
+      "id": 10,
+      "name": "Thiruvottiyur",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 11,
+      "name": "Dr. Radhakrishnan Nagar",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 12,
+      "name": "Perambur",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 13,
+      "name": "Kolathur",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 14,
+      "name": "Villivakkam",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 15,
+      "name": "Thiru-Vi-Ka-Nagar",
+      "type": "SC",
+      "district": "Chennai",
+      "lokSabha": "Chennai North"
+    },
+    {
+      "id": 16,
+      "name": "Egmore",
+      "type": "SC",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 17,
+      "name": "Royapuram",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 18,
+      "name": "Harbour",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 19,
+      "name": "Chepauk-Thiruvallikeni",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 20,
+      "name": "Thousand Lights",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 21,
+      "name": "Anna Nagar",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai Central"
+    },
+    {
+      "id": 22,
+      "name": "Virugampakkam",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 23,
+      "name": "Saidapet",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 24,
+      "name": "Thiyagarayanagar",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 25,
+      "name": "Mylapore",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 26,
+      "name": "Velachery",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 27,
+      "name": "Sholinganallur",
+      "type": "GEN",
+      "district": "Chennai",
+      "lokSabha": "Chennai South"
+    },
+    {
+      "id": 28,
+      "name": "Alandur",
+      "type": "GEN",
+      "district": "Kanchipuram",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 29,
+      "name": "Sriperumbudur",
+      "type": "SC",
+      "district": "Kanchipuram",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 30,
+      "name": "Pallavaram",
+      "type": "GEN",
+      "district": "Chengalpattu",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 31,
+      "name": "Tambaram",
+      "type": "GEN",
+      "district": "Chengalpattu",
+      "lokSabha": "Sriperumbudur"
+    },
+    {
+      "id": 32,
+      "name": "Chengalpattu",
+      "type": "GEN",
+      "district": "Chengalpattu",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 33,
+      "name": "Thiruporur",
+      "type": "GEN",
+      "district": "Chengalpattu",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 34,
+      "name": "Cheyyur",
+      "type": "SC",
+      "district": "Chengalpattu",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 35,
+      "name": "Madurantakam",
+      "type": "SC",
+      "district": "Chengalpattu",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 36,
+      "name": "Uthiramerur",
+      "type": "GEN",
+      "district": "Kanchipuram",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 37,
+      "name": "Kancheepuram",
+      "type": "GEN",
+      "district": "Kanchipuram",
+      "lokSabha": "Kancheepuram"
+    },
+    {
+      "id": 38,
+      "name": "Arakkonam",
+      "type": "SC",
+      "district": "Ranipet",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 39,
+      "name": "Sholinghur",
+      "type": "GEN",
+      "district": "Ranipet",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 40,
+      "name": "Katpadi",
+      "type": "GEN",
+      "district": "Vellore",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 41,
+      "name": "Ranipet",
+      "type": "GEN",
+      "district": "Ranipet",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 42,
+      "name": "Arcot",
+      "type": "GEN",
+      "district": "Ranipet",
+      "lokSabha": "Arakkonam"
+    },
+    {
+      "id": 43,
+      "name": "Vellore",
+      "type": "GEN",
+      "district": "Vellore",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 44,
+      "name": "Anaikattu",
+      "type": "GEN",
+      "district": "Vellore",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 45,
+      "name": "Kilvaithinankuppam",
+      "type": "SC",
+      "district": "Vellore",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 46,
+      "name": "Gudiyatham",
+      "type": "SC",
+      "district": "Vellore",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 47,
+      "name": "Vaniyambadi",
+      "type": "GEN",
+      "district": "Tirupattur",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 48,
+      "name": "Ambur",
+      "type": "GEN",
+      "district": "Tirupattur",
+      "lokSabha": "Vellore"
+    },
+    {
+      "id": 49,
+      "name": "Jolarpet",
+      "type": "GEN",
+      "district": "Tirupattur",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 50,
+      "name": "Tiruppattur",
+      "type": "GEN",
+      "district": "Tirupattur",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 51,
+      "name": "Uthangarai",
+      "type": "SC",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 52,
+      "name": "Bargur",
+      "type": "GEN",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 53,
+      "name": "Krishnagiri",
+      "type": "GEN",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 54,
+      "name": "Veppanahalli",
+      "type": "GEN",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 55,
+      "name": "Hosur",
+      "type": "GEN",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 56,
+      "name": "Thalli",
+      "type": "GEN",
+      "district": "Krishnagiri",
+      "lokSabha": "Krishnagiri"
+    },
+    {
+      "id": 57,
+      "name": "Palacode",
+      "type": "GEN",
+      "district": "Dharmapuri",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 58,
+      "name": "Pennagaram",
+      "type": "GEN",
+      "district": "Dharmapuri",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 59,
+      "name": "Dharmapuri",
+      "type": "GEN",
+      "district": "Dharmapuri",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 60,
+      "name": "Pappireddippatti",
+      "type": "GEN",
+      "district": "Dharmapuri",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 61,
+      "name": "Harur",
+      "type": "SC",
+      "district": "Dharmapuri",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 62,
+      "name": "Chengam",
+      "type": "SC",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Tiruvannamalai"
+    },
+    {
+      "id": 63,
+      "name": "Tiruvannamalai",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Tiruvannamalai"
+    },
+    {
+      "id": 64,
+      "name": "Kilpennathur",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Tiruvannamalai"
+    },
+    {
+      "id": 65,
+      "name": "Kalasapakkam",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Tiruvannamalai"
+    },
+    {
+      "id": 66,
+      "name": "Polur",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Tiruvannamalai"
+    },
+    {
+      "id": 67,
+      "name": "Arani",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Arani"
+    },
+    {
+      "id": 68,
+      "name": "Cheyyar",
+      "type": "GEN",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Arani"
+    },
+    {
+      "id": 69,
+      "name": "Vandavasi",
+      "type": "SC",
+      "district": "Tiruvannamalai",
+      "lokSabha": "Arani"
+    },
+    {
+      "id": 70,
+      "name": "Gingee",
+      "type": "GEN",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 71,
+      "name": "Mailam",
+      "type": "GEN",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 72,
+      "name": "Tindivanam",
+      "type": "GEN",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 73,
+      "name": "Vanur",
+      "type": "SC",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 74,
+      "name": "Villupuram",
+      "type": "GEN",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 75,
+      "name": "Vikravandi",
+      "type": "GEN",
+      "district": "Villupuram",
+      "lokSabha": "Villupuram"
+    },
+    {
+      "id": 76,
+      "name": "Tirukkoyilur",
+      "type": "GEN",
+      "district": "Kallakurichi",
+      "lokSabha": "Kallakurichi"
+    },
+    {
+      "id": 77,
+      "name": "Ulundurpettai",
+      "type": "GEN",
+      "district": "Kallakurichi",
+      "lokSabha": "Kallakurichi"
+    },
+    {
+      "id": 78,
+      "name": "Rishivandiyam",
+      "type": "GEN",
+      "district": "Kallakurichi",
+      "lokSabha": "Kallakurichi"
+    },
+    {
+      "id": 79,
+      "name": "Sankarapuram",
+      "type": "GEN",
+      "district": "Kallakurichi",
+      "lokSabha": "Kallakurichi"
+    },
+    {
+      "id": 80,
+      "name": "Kallakurichi",
+      "type": "SC",
+      "district": "Kallakurichi",
+      "lokSabha": "Kallakurichi"
+    },
+    {
+      "id": 81,
+      "name": "Gangavalli",
+      "type": "SC",
+      "district": "Salem",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 82,
+      "name": "Attur",
+      "type": "SC",
+      "district": "Salem",
+      "lokSabha": "Dharmapuri"
+    },
+    {
+      "id": 83,
+      "name": "Yercaud",
+      "type": "ST",
+      "district": "Salem",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 84,
+      "name": "Omalur",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 85,
+      "name": "Mettur",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 86,
+      "name": "Edappadi",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 87,
+      "name": "Sankari",
+      "type": "GEN",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 88,
+      "name": "Salem (West)",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 89,
+      "name": "Salem (North)",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 90,
+      "name": "Salem (South)",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 91,
+      "name": "Veerapandi",
+      "type": "GEN",
+      "district": "Salem",
+      "lokSabha": "Salem"
+    },
+    {
+      "id": 92,
+      "name": "Rasipuram",
+      "type": "SC",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 93,
+      "name": "Senthamangalam",
+      "type": "ST",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 94,
+      "name": "Namakkal",
+      "type": "GEN",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 95,
+      "name": "Paramathi Velur",
+      "type": "GEN",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 96,
+      "name": "Tiruchengodu",
+      "type": "GEN",
+      "district": "Namakkal",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 97,
+      "name": "Kumarapalayam",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Namakkal"
+    },
+    {
+      "id": 98,
+      "name": "Erode (East)",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 99,
+      "name": "Erode (West)",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 100,
+      "name": "Modakkurichi",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 101,
+      "name": "Dharapuram",
+      "type": "SC",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 102,
+      "name": "Kangayam",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 103,
+      "name": "Perundurai",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 104,
+      "name": "Bhavani",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 105,
+      "name": "Anthiyur",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 106,
+      "name": "Gobichettipalayam",
+      "type": "GEN",
+      "district": "Erode",
+      "lokSabha": "Erode"
+    },
+    {
+      "id": 107,
+      "name": "Bhavanisagar",
+      "type": "SC",
+      "district": "Erode",
+      "lokSabha": "Nilgiris"
+    },
+    {
+      "id": 108,
+      "name": "Udhagamandalam",
+      "type": "GEN",
+      "district": "Nilgiris",
+      "lokSabha": "Nilgiris"
+    },
+    {
+      "id": 109,
+      "name": "Gudalur",
+      "type": "SC",
+      "district": "Nilgiris",
+      "lokSabha": "Nilgiris"
+    },
+    {
+      "id": 110,
+      "name": "Coonoor",
+      "type": "GEN",
+      "district": "Nilgiris",
+      "lokSabha": "Nilgiris"
+    },
+    {
+      "id": 111,
+      "name": "Mettupalayam",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Nilgiris"
+    },
+    {
+      "id": 112,
+      "name": "Avanashi",
+      "type": "SC",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 113,
+      "name": "Tiruppur (North)",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 114,
+      "name": "Tiruppur (South)",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 115,
+      "name": "Palladam",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 116,
+      "name": "Sulur",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Coimbatore"
+    },
+    {
+      "id": 117,
+      "name": "Kavundampalayam",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Coimbatore"
+    },
+    {
+      "id": 118,
+      "name": "Coimbatore (North)",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Coimbatore"
+    },
+    {
+      "id": 119,
+      "name": "Thondamuthur",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Pollachi"
+    },
+    {
+      "id": 120,
+      "name": "Coimbatore (South)",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Coimbatore"
+    },
+    {
+      "id": 121,
+      "name": "Singanallur",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Coimbatore"
+    },
+    {
+      "id": 122,
+      "name": "Kinathukadavu",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Pollachi"
+    },
+    {
+      "id": 123,
+      "name": "Pollachi",
+      "type": "GEN",
+      "district": "Coimbatore",
+      "lokSabha": "Pollachi"
+    },
+    {
+      "id": 124,
+      "name": "Valparai",
+      "type": "SC",
+      "district": "Coimbatore",
+      "lokSabha": "Pollachi"
+    },
+    {
+      "id": 125,
+      "name": "Udumalaipettai",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 126,
+      "name": "Madathukulam",
+      "type": "GEN",
+      "district": "Tiruppur",
+      "lokSabha": "Tiruppur"
+    },
+    {
+      "id": 127,
+      "name": "Palani",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Dindigul"
+    },
+    {
+      "id": 128,
+      "name": "Oddanchatram",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Dindigul"
+    },
+    {
+      "id": 129,
+      "name": "Athoor",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Dindigul"
+    },
+    {
+      "id": 130,
+      "name": "Nilakottai",
+      "type": "SC",
+      "district": "Dindigul",
+      "lokSabha": "Pollachi"
+    },
+    {
+      "id": 131,
+      "name": "Natham",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Dindigul"
+    },
+    {
+      "id": 132,
+      "name": "Dindigul",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Dindigul"
+    },
+    {
+      "id": 133,
+      "name": "Vedasandur",
+      "type": "GEN",
+      "district": "Dindigul",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 134,
+      "name": "Aravakurichi",
+      "type": "GEN",
+      "district": "Karur",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 135,
+      "name": "Karur",
+      "type": "GEN",
+      "district": "Karur",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 136,
+      "name": "Krishnarayapuram",
+      "type": "SC",
+      "district": "Karur",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 137,
+      "name": "Kulithalai",
+      "type": "GEN",
+      "district": "Karur",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 138,
+      "name": "Manapaarai",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 139,
+      "name": "Srirangam",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 140,
+      "name": "Tiruchirappalli (West)",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 141,
+      "name": "Tiruchirappalli (East)",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 142,
+      "name": "Thiruverumbur",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 143,
+      "name": "Lalgudi",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 144,
+      "name": "Manachanallur",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 145,
+      "name": "Musiri",
+      "type": "GEN",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 146,
+      "name": "Thuraiyur",
+      "type": "SC",
+      "district": "Tiruchirappalli",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 147,
+      "name": "Perambalur",
+      "type": "SC",
+      "district": "Perambalur",
+      "lokSabha": "Perambalur"
+    },
+    {
+      "id": 148,
+      "name": "Kunnam",
+      "type": "GEN",
+      "district": "Perambalur",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 149,
+      "name": "Ariyalur",
+      "type": "GEN",
+      "district": "Ariyalur",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 150,
+      "name": "Jayankondam",
+      "type": "GEN",
+      "district": "Ariyalur",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 151,
+      "name": "Tittakudi",
+      "type": "SC",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 152,
+      "name": "Virudhachalam",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 153,
+      "name": "Neyveli",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 154,
+      "name": "Panruti",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 155,
+      "name": "Cuddalore",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 156,
+      "name": "Kurinjipadi",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Cuddalore"
+    },
+    {
+      "id": 157,
+      "name": "Bhuvanagiri",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 158,
+      "name": "Chidambaram",
+      "type": "GEN",
+      "district": "Cuddalore",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 159,
+      "name": "Kattumannarkoil",
+      "type": "SC",
+      "district": "Cuddalore",
+      "lokSabha": "Chidambaram"
+    },
+    {
+      "id": 160,
+      "name": "Sirkazhi",
+      "type": "SC",
+      "district": "Mayiladuthurai",
+      "lokSabha": "Mayiladuthurai"
+    },
+    {
+      "id": 161,
+      "name": "Mayiladuthurai",
+      "type": "GEN",
+      "district": "Mayiladuthurai",
+      "lokSabha": "Mayiladuthurai"
+    },
+    {
+      "id": 162,
+      "name": "Poompuhar",
+      "type": "GEN",
+      "district": "Mayiladuthurai",
+      "lokSabha": "Mayiladuthurai"
+    },
+    {
+      "id": 163,
+      "name": "Nagapattinam",
+      "type": "GEN",
+      "district": "Nagapattinam",
+      "lokSabha": "Mayiladuthurai"
+    },
+    {
+      "id": 164,
+      "name": "Kilvelur",
+      "type": "SC",
+      "district": "Nagapattinam",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 165,
+      "name": "Vedaranyam",
+      "type": "GEN",
+      "district": "Nagapattinam",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 166,
+      "name": "Thiruthuraipoondi",
+      "type": "SC",
+      "district": "Tiruvarur",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 167,
+      "name": "Mannargudi",
+      "type": "GEN",
+      "district": "Tiruvarur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 168,
+      "name": "Thiruvarur",
+      "type": "GEN",
+      "district": "Tiruvarur",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 169,
+      "name": "Nannilam",
+      "type": "GEN",
+      "district": "Tiruvarur",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 170,
+      "name": "Thiruvidaimarudur",
+      "type": "SC",
+      "district": "Thanjavur",
+      "lokSabha": "Mayiladuthurai"
+    },
+    {
+      "id": 171,
+      "name": "Kumbakonam",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Nagapattinam"
+    },
+    {
+      "id": 172,
+      "name": "Papanasam",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 173,
+      "name": "Thiruvaiyaru",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 174,
+      "name": "Thanjavur",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 175,
+      "name": "Orathanadu",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 176,
+      "name": "Pattukkottai",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 177,
+      "name": "Peravurani",
+      "type": "GEN",
+      "district": "Thanjavur",
+      "lokSabha": "Thanjavur"
+    },
+    {
+      "id": 178,
+      "name": "Gandarvakottai",
+      "type": "SC",
+      "district": "Pudukkottai",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 179,
+      "name": "Viralimalai",
+      "type": "GEN",
+      "district": "Pudukkottai",
+      "lokSabha": "Karur"
+    },
+    {
+      "id": 180,
+      "name": "Pudukkottai",
+      "type": "GEN",
+      "district": "Pudukkottai",
+      "lokSabha": "Tiruchirappalli"
+    },
+    {
+      "id": 181,
+      "name": "Thirumayam",
+      "type": "GEN",
+      "district": "Pudukkottai",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 182,
+      "name": "Alangudi",
+      "type": "GEN",
+      "district": "Pudukkottai",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 183,
+      "name": "Aranthangi",
+      "type": "GEN",
+      "district": "Pudukkottai",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 184,
+      "name": "Karaikudi",
+      "type": "GEN",
+      "district": "Sivaganga",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 185,
+      "name": "Tiruppattur",
+      "type": "GEN",
+      "district": "Sivaganga",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 186,
+      "name": "Sivaganga",
+      "type": "GEN",
+      "district": "Sivaganga",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 187,
+      "name": "Manamadurai",
+      "type": "SC",
+      "district": "Sivaganga",
+      "lokSabha": "Sivaganga"
+    },
+    {
+      "id": 188,
+      "name": "Melur",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 189,
+      "name": "Madurai East",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Madurai"
+    },
+    {
+      "id": 190,
+      "name": "Sholavandan",
+      "type": "SC",
+      "district": "Madurai",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 191,
+      "name": "Madurai North",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Madurai"
+    },
+    {
+      "id": 192,
+      "name": "Madurai South",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Madurai"
+    },
+    {
+      "id": 193,
+      "name": "Madurai Central",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Madurai"
+    },
+    {
+      "id": 194,
+      "name": "Madurai West",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Madurai"
+    },
+    {
+      "id": 195,
+      "name": "Thiruparankundram",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 196,
+      "name": "Thirumangalam",
+      "type": "GEN",
+      "district": "Madurai",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 197,
+      "name": "Usilampatti",
+      "type": "GEN",
+      "district": "Theni",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 198,
+      "name": "Andipatti",
+      "type": "GEN",
+      "district": "Theni",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 199,
+      "name": "Periyakulam",
+      "type": "SC",
+      "district": "Theni",
+      "lokSabha": "Theni"
+    },
+    {
+      "id": 200,
+      "name": "Bodinayakanur",
+      "type": "GEN",
+      "district": "Theni",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 201,
+      "name": "Cumbum",
+      "type": "GEN",
+      "district": "Theni",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 202,
+      "name": "Rajapalayam",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 203,
+      "name": "Srivilliputhur",
+      "type": "SC",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 204,
+      "name": "Sattur",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 205,
+      "name": "Sivakasi",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 206,
+      "name": "Virudhunagar",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 207,
+      "name": "Aruppukkottai",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Virudhunagar"
+    },
+    {
+      "id": 208,
+      "name": "Tiruchuli",
+      "type": "GEN",
+      "district": "Virudhunagar",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 209,
+      "name": "Paramakudi",
+      "type": "SC",
+      "district": "Ramanathapuram",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 210,
+      "name": "Tiruvadanai",
+      "type": "GEN",
+      "district": "Ramanathapuram",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 211,
+      "name": "Ramanathapuram",
+      "type": "GEN",
+      "district": "Ramanathapuram",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 212,
+      "name": "Mudhukulathur",
+      "type": "GEN",
+      "district": "Ramanathapuram",
+      "lokSabha": "Ramanathapuram"
+    },
+    {
+      "id": 213,
+      "name": "Vilathikulam",
+      "type": "GEN",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 214,
+      "name": "Thoothukkudi",
+      "type": "GEN",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 215,
+      "name": "Tiruchendur",
+      "type": "GEN",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 216,
+      "name": "Srivaikuntam",
+      "type": "GEN",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 217,
+      "name": "Ottapidaram",
+      "type": "SC",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 218,
+      "name": "Kovilpatti",
+      "type": "GEN",
+      "district": "Thoothukudi",
+      "lokSabha": "Thoothukkudi"
+    },
+    {
+      "id": 219,
+      "name": "Sankarankovil",
+      "type": "SC",
+      "district": "Tenkasi",
+      "lokSabha": "Tenkasi"
+    },
+    {
+      "id": 220,
+      "name": "Vasudevanallur",
+      "type": "SC",
+      "district": "Tenkasi",
+      "lokSabha": "Tenkasi"
+    },
+    {
+      "id": 221,
+      "name": "Kadayanallur",
+      "type": "GEN",
+      "district": "Tenkasi",
+      "lokSabha": "Tenkasi"
+    },
+    {
+      "id": 222,
+      "name": "Tenkasi",
+      "type": "GEN",
+      "district": "Tenkasi",
+      "lokSabha": "Tenkasi"
+    },
+    {
+      "id": 223,
+      "name": "Alangulam",
+      "type": "GEN",
+      "district": "Tenkasi",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 224,
+      "name": "Tirunelveli",
+      "type": "GEN",
+      "district": "Tirunelveli",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 225,
+      "name": "Ambasamudram",
+      "type": "GEN",
+      "district": "Tirunelveli",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 226,
+      "name": "Palayamkottai",
+      "type": "GEN",
+      "district": "Tirunelveli",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 227,
+      "name": "Nanguneri",
+      "type": "GEN",
+      "district": "Tirunelveli",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 228,
+      "name": "Radhapuram",
+      "type": "GEN",
+      "district": "Tirunelveli",
+      "lokSabha": "Tirunelveli"
+    },
+    {
+      "id": 229,
+      "name": "Kanniyakumari",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    },
+    {
+      "id": 230,
+      "name": "Nagercoil",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    },
+    {
+      "id": 231,
+      "name": "Colachal",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    },
+    {
+      "id": 232,
+      "name": "Padmanabhapuram",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    },
+    {
+      "id": 233,
+      "name": "Vilavancode",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    },
+    {
+      "id": 234,
+      "name": "Killiyoor",
+      "type": "GEN",
+      "district": "Kanyakumari",
+      "lokSabha": "Kanniyakumari"
+    }
+  ],
+  "blocks": {
+    "Ariyalur": [
+      "Ariyalur",
+      "Sendurai",
+      "Udayarpalayam",
+      "Andimadam"
+    ],
+    "Chengalpattu": [
+      "Chengalpattu",
+      "Thiruporur",
+      "Vandalur",
+      "Cheyyur",
+      "Madurantakam",
+      "Thirukalukundram",
+      "Uthiramerur"
+    ],
+    "Coimbatore": [
+      "Anaimalai",
+      "Annur",
+      "Coimbatore North",
+      "Coimbatore South",
+      "Kinathukadavu",
+      "Madukkarai",
+      "Mettupalayam",
+      "Pollachi",
+      "Sulur",
+      "Thondamuthur",
+      "Valparai",
+      "Periyanaickenpalayam"
+    ],
+    "Cuddalore": [
+      "Bhuvanagiri",
+      "Chidambaram",
+      "Cuddalore",
+      "Kattumannarkoil",
+      "Kurinjipadi",
+      "Panruti",
+      "Tittakudi",
+      "Virudhachalam",
+      "Mangalur",
+      "Nallur"
+    ],
+    "Dharmapuri": [
+      "Dharmapuri",
+      "Harur",
+      "Karimangalam",
+      "Nallampalli",
+      "Palacode",
+      "Pennagaram",
+      "Pappireddipatti"
+    ],
+    "Dindigul": [
+      "Athoor",
+      "Batlagundu",
+      "Dindigul",
+      "Gujiliamparai",
+      "Kodaikanal",
+      "Natham",
+      "Nilakottai",
+      "Oddanchatram",
+      "Palani",
+      "Reddiyarchatram",
+      "Shanarpatti",
+      "Vadamadurai",
+      "Vedasandur"
+    ],
+    "Erode": [
+      "Anthiyur",
+      "Bhavani",
+      "Bhavanisagar",
+      "Erode",
+      "Gobichettipalayam",
+      "Kodumudi",
+      "Modakkurichi",
+      "Nambiyur",
+      "Perundurai",
+      "Sathyamangalam",
+      "Thalavadi"
+    ],
+    "Kallakurichi": [
+      "Chinnaselam",
+      "Kallakurichi",
+      "Rishivandiyam",
+      "Sankarapuram",
+      "Tirukkoyilur",
+      "Ulundurpettai",
+      "Vazhapadi"
+    ],
+    "Kanchipuram": [
+      "Cheyyur",
+      "Kancheepuram",
+      "Kundrathur",
+      "Madurantakam",
+      "Sriperumbudur",
+      "Uthiramerur",
+      "Walajabad"
+    ],
+    "Kanyakumari": [
+      "Agastheeswaram",
+      "Kalkulam",
+      "Killiyoor",
+      "Thovalai",
+      "Vilavancode"
+    ],
+    "Karur": [
+      "Aravakurichi",
+      "Karur",
+      "Krishnarayapuram",
+      "Kulithalai",
+      "Manmangalam",
+      "Pugalur",
+      "Thanthoni"
+    ],
+    "Krishnagiri": [
+      "Bargur",
+      "Denkanikottai",
+      "Hosur",
+      "Kaveripattinam",
+      "Krishnagiri",
+      "Pochampalli",
+      "Shoolagiri",
+      "Uthangarai",
+      "Veppanahalli"
+    ],
+    "Madurai": [
+      "Kalligudi",
+      "Keelavalavu",
+      "Madurai",
+      "Melur",
+      "Peraiyur",
+      "T.Kallupatti",
+      "Thirumangalam",
+      "Thiruparankundram",
+      "Usilampatti",
+      "Vadipatti"
+    ],
+    "Mayiladuthurai": [
+      "Kuthalam",
+      "Mayiladuthurai",
+      "Sirkazhi",
+      "Tarangambadi"
+    ],
+    "Nagapattinam": [
+      "Kilvelur",
+      "Kuthalam (part)",
+      "Nagapattinam",
+      "Sirkali",
+      "Tharangambadi",
+      "Thirukkuvalai",
+      "Vedaranyam"
+    ],
+    "Namakkal": [
+      "Erumapatty",
+      "Kolli Hills",
+      "Kumarapalayam",
+      "Mohanur",
+      "Namakkal",
+      "Paramathi-Velur",
+      "Rasipuram",
+      "Tiruchengodu"
+    ],
+    "Nilgiris": [
+      "Coonoor",
+      "Gudalur",
+      "Kotagiri",
+      "Kundah",
+      "Ooty",
+      "Panthalur"
+    ],
+    "Perambalur": [
+      "Kunnam",
+      "Perambalur",
+      "Veppanthattai"
+    ],
+    "Pudukkottai": [
+      "Alangudi",
+      "Aranthangi",
+      "Avudayarkoil",
+      "Gandarvakottai",
+      "Illuppur",
+      "Karambakudi",
+      "Kulathur",
+      "Manamelkudi",
+      "Ponnamaravathi",
+      "Pudukkottai",
+      "Thirumayam",
+      "Thiruvarankulam",
+      "Viralimalai"
+    ],
+    "Ramanathapuram": [
+      "Bogalur",
+      "Kadaladi",
+      "Kamudi",
+      "Mudukulathur",
+      "Paramakudi",
+      "Ramanathapuram",
+      "Rameswaram",
+      "Tiruvadanai"
+    ],
+    "Ranipet": [
+      "Arakkonam",
+      "Arcot",
+      "Nemili",
+      "Sholinghur",
+      "Walajah"
+    ],
+    "Salem": [
+      "Attur",
+      "Edapadi",
+      "Gangavalli",
+      "Mettur",
+      "Omalur",
+      "Pethanaickenpalayam",
+      "Salem",
+      "Sangagiri",
+      "Thalaivasal",
+      "Vazhapadi",
+      "Yercaud"
+    ],
+    "Sivaganga": [
+      "Devakottai",
+      "Ilayangudi",
+      "Kalayarkoil",
+      "Karaikudi",
+      "Manamadurai",
+      "Sivaganga",
+      "Tiruppattur"
+    ],
+    "Tenkasi": [
+      "Alangulam",
+      "Kadayanallur",
+      "Sankarankovil",
+      "Shencottai",
+      "Tenkasi",
+      "Vasudevanallur"
+    ],
+    "Thanjavur": [
+      "Ammapettai",
+      "Budalur",
+      "Kumbakonam",
+      "Orathanadu",
+      "Papanasam",
+      "Pattukkottai",
+      "Peravurani",
+      "Sethubavachatram",
+      "Thanjavur",
+      "Thiruvaiyaru",
+      "Thiruvidaimarudur"
+    ],
+    "Theni": [
+      "Andipatti",
+      "Bodinayakanur",
+      "Periyakulam",
+      "Theni",
+      "Uthamapalayam"
+    ],
+    "Thoothukudi": [
+      "Kayathar",
+      "Kovilpatti",
+      "Ottapidaram",
+      "Sathankulam",
+      "Srivaikuntam",
+      "Tiruchendur",
+      "Thoothukudi",
+      "Vilathikulam"
+    ],
+    "Tiruchirappalli": [
+      "Andanallur",
+      "Lalgudi",
+      "Manachanallur",
+      "Manapparai",
+      "Marungapuri",
+      "Musiri",
+      "Pullambadi",
+      "Thiruverumbur",
+      "Thuraiyur",
+      "Tiruchirappalli",
+      "Uppiliyapuram",
+      "Vaiyampatti"
+    ],
+    "Tirunelveli": [
+      "Ambasamudram",
+      "Cheranmahadevi",
+      "Kalakkad",
+      "Kadayam",
+      "Nanguneri",
+      "Palayamkottai",
+      "Radhapuram",
+      "Tirunelveli",
+      "Valliyoor"
+    ],
+    "Tirupattur": [
+      "Ambur",
+      "Jolarpet",
+      "Natrampalli",
+      "Tirupattur",
+      "Vaniyambadi"
+    ],
+    "Tiruppur": [
+      "Avanashi",
+      "Dharapuram",
+      "Kangayam",
+      "Madathukulam",
+      "Palladam",
+      "Tiruppur",
+      "Udumalaipettai",
+      "Uthukuli"
+    ],
+    "Tiruvallur": [
+      "Ambattur (part)",
+      "Avadi",
+      "Gummidipoondi",
+      "Minjur",
+      "Pallipattu",
+      "Ponneri",
+      "R.K.Pet",
+      "Thiruvallur",
+      "Thiruvalangadu",
+      "Tiruttani",
+      "Uthukottai"
+    ],
+    "Tiruvannamalai": [
+      "Arni",
+      "Chengam",
+      "Cheyyar",
+      "Jawadhu Hills",
+      "Kalasapakkam",
+      "Kilpennathur",
+      "Polur",
+      "Thandrampet",
+      "Tiruvannamalai",
+      "Vandavasi",
+      "Vembakkam"
+    ],
+    "Tiruvarur": [
+      "Kodavasal",
+      "Kottur",
+      "Mannargudi",
+      "Muthupettai",
+      "Nannilam",
+      "Needamangalam",
+      "Thiruthuraipoondi",
+      "Tiruvarur",
+      "Valangaiman"
+    ],
+    "Vellore": [
+      "Anaicut",
+      "Gudiyatham",
+      "Kannamangalam",
+      "Katpadi",
+      "Pernambut",
+      "Thirupathur (part)",
+      "Vellore"
+    ],
+    "Villupuram": [
+      "Gingee",
+      "Kallakurichi (part)",
+      "Mailam",
+      "Marakkanam",
+      "Rishivandiyam (part)",
+      "Tindivanam",
+      "Vanur",
+      "Vikravandi",
+      "Villupuram"
+    ],
+    "Virudhunagar": [
+      "Aruppukkottai",
+      "Kariapatti",
+      "Rajapalayam",
+      "Sattur",
+      "Sivakasi",
+      "Srivilliputhur",
+      "Tiruchuli",
+      "Vembakottai",
+      "Virudhunagar",
+      "Watrap"
+    ]
+  },
+  "corporations": [
+    {
+      "id": 1,
+      "name": "Greater Chennai Corporation",
+      "district": "Chennai",
+      "wardCount": 200
+    },
+    {
+      "id": 2,
+      "name": "Coimbatore City Municipal Corp.",
+      "district": "Coimbatore",
+      "wardCount": 100
+    },
+    {
+      "id": 3,
+      "name": "Madurai Municipal Corporation",
+      "district": "Madurai",
+      "wardCount": 100
+    },
+    {
+      "id": 4,
+      "name": "Tiruchirappalli City MC",
+      "district": "Tiruchirappalli",
+      "wardCount": 65
+    },
+    {
+      "id": 5,
+      "name": "Salem City Municipal Corp.",
+      "district": "Salem",
+      "wardCount": 60
+    },
+    {
+      "id": 6,
+      "name": "Tirunelveli City MC",
+      "district": "Tirunelveli",
+      "wardCount": 55
+    },
+    {
+      "id": 7,
+      "name": "Tiruppur City MC",
+      "district": "Tiruppur",
+      "wardCount": 60
+    },
+    {
+      "id": 8,
+      "name": "Erode City MC",
+      "district": "Erode",
+      "wardCount": 60
+    },
+    {
+      "id": 9,
+      "name": "Thoothukudi MC",
+      "district": "Thoothukudi",
+      "wardCount": 60
+    },
+    {
+      "id": 10,
+      "name": "Vellore Municipal Corp.",
+      "district": "Vellore",
+      "wardCount": 60
+    },
+    {
+      "id": 11,
+      "name": "Thanjavur City MC",
+      "district": "Thanjavur",
+      "wardCount": 48
+    },
+    {
+      "id": 12,
+      "name": "Dindigul City MC",
+      "district": "Dindigul",
+      "wardCount": 48
+    },
+    {
+      "id": 13,
+      "name": "Avadi City MC",
+      "district": "Tiruvallur",
+      "wardCount": 48
+    },
+    {
+      "id": 14,
+      "name": "Tambaram City MC",
+      "district": "Chengalpattu",
+      "wardCount": 70
+    },
+    {
+      "id": 15,
+      "name": "Nagercoil City MC",
+      "district": "Kanyakumari",
+      "wardCount": 52
+    },
+    {
+      "id": 16,
+      "name": "Kancheepuram City MC",
+      "district": "Kanchipuram",
+      "wardCount": 50
+    },
+    {
+      "id": 17,
+      "name": "Hosur City MC",
+      "district": "Krishnagiri",
+      "wardCount": 45
+    },
+    {
+      "id": 18,
+      "name": "Tiruvannamalai MC",
+      "district": "Tiruvannamalai",
+      "wardCount": 45
+    },
+    {
+      "id": 19,
+      "name": "Karur City MC",
+      "district": "Karur",
+      "wardCount": 48
+    },
+    {
+      "id": 20,
+      "name": "Namakkal City MC",
+      "district": "Namakkal",
+      "wardCount": 45
+    },
+    {
+      "id": 21,
+      "name": "Pudukkottai City MC",
+      "district": "Pudukkottai",
+      "wardCount": 45
+    }
+  ],
+  "chennaiZones": [
+    {
+      "zoneId": 1,
+      "name": "Thiruvottiyur",
+      "startWard": 1,
+      "endWard": 14,
+      "wardCount": 14
+    },
+    {
+      "zoneId": 2,
+      "name": "Manali",
+      "startWard": 15,
+      "endWard": 21,
+      "wardCount": 7
+    },
+    {
+      "zoneId": 3,
+      "name": "Madhavaram",
+      "startWard": 22,
+      "endWard": 35,
+      "wardCount": 14
+    },
+    {
+      "zoneId": 4,
+      "name": "Tondiarpet",
+      "startWard": 36,
+      "endWard": 48,
+      "wardCount": 13
+    },
+    {
+      "zoneId": 5,
+      "name": "Royapuram",
+      "startWard": 49,
+      "endWard": 60,
+      "wardCount": 12
+    },
+    {
+      "zoneId": 6,
+      "name": "Thiru Vi Ka Nagar",
+      "startWard": 61,
+      "endWard": 81,
+      "wardCount": 21
+    },
+    {
+      "zoneId": 7,
+      "name": "Ambattur",
+      "startWard": 82,
+      "endWard": 101,
+      "wardCount": 20
+    },
+    {
+      "zoneId": 8,
+      "name": "Anna Nagar",
+      "startWard": 102,
+      "endWard": 121,
+      "wardCount": 20
+    },
+    {
+      "zoneId": 9,
+      "name": "Teynampet",
+      "startWard": 122,
+      "endWard": 141,
+      "wardCount": 20
+    },
+    {
+      "zoneId": 10,
+      "name": "Kodambakkam",
+      "startWard": 142,
+      "endWard": 156,
+      "wardCount": 15
+    },
+    {
+      "zoneId": 11,
+      "name": "Valasaravakkam",
+      "startWard": 157,
+      "endWard": 167,
+      "wardCount": 11
+    },
+    {
+      "zoneId": 12,
+      "name": "Alandur",
+      "startWard": 168,
+      "endWard": 179,
+      "wardCount": 12
+    },
+    {
+      "zoneId": 13,
+      "name": "Adyar",
+      "startWard": 180,
+      "endWard": 190,
+      "wardCount": 11
+    },
+    {
+      "zoneId": 14,
+      "name": "Perungudi",
+      "startWard": 191,
+      "endWard": 196,
+      "wardCount": 6
+    },
+    {
+      "zoneId": 15,
+      "name": "Sholinganallur",
+      "startWard": 197,
+      "endWard": 200,
+      "wardCount": 4
+    }
+  ],
+  "municipalities": [
+    {
+      "district": "Coimbatore",
+      "name": "Mettupalayam",
+      "wardCount": 24
+    },
+    {
+      "district": "Coimbatore",
+      "name": "Pollachi",
+      "wardCount": 30
+    },
+    {
+      "district": "Coimbatore",
+      "name": "Anaimalai",
+      "wardCount": 18
+    },
+    {
+      "district": "Cuddalore",
+      "name": "Cuddalore",
+      "wardCount": 45
+    },
+    {
+      "district": "Cuddalore",
+      "name": "Chidambaram",
+      "wardCount": 30
+    },
+    {
+      "district": "Cuddalore",
+      "name": "Neyveli",
+      "wardCount": 24
+    },
+    {
+      "district": "Cuddalore",
+      "name": "Panruti",
+      "wardCount": 18
+    },
+    {
+      "district": "Cuddalore",
+      "name": "Virudhachalam",
+      "wardCount": 27
+    },
+    {
+      "district": "Dharmapuri",
+      "name": "Dharmapuri",
+      "wardCount": 33
+    },
+    {
+      "district": "Dharmapuri",
+      "name": "Harur",
+      "wardCount": 18
+    },
+    {
+      "district": "Dindigul",
+      "name": "Palani",
+      "wardCount": 36
+    },
+    {
+      "district": "Dindigul",
+      "name": "Kodaikanal",
+      "wardCount": 18
+    },
+    {
+      "district": "Dindigul",
+      "name": "Batlagundu",
+      "wardCount": 18
+    },
+    {
+      "district": "Erode",
+      "name": "Gobichettipalayam",
+      "wardCount": 30
+    },
+    {
+      "district": "Erode",
+      "name": "Perundurai",
+      "wardCount": 24
+    },
+    {
+      "district": "Erode",
+      "name": "Sathyamangalam",
+      "wardCount": 30
+    },
+    {
+      "district": "Erode",
+      "name": "Bhavani",
+      "wardCount": 30
+    },
+    {
+      "district": "Kanchipuram",
+      "name": "Kancheepuram",
+      "wardCount": 36
+    },
+    {
+      "district": "Kanyakumari",
+      "name": "Marthandam",
+      "wardCount": 24
+    },
+    {
+      "district": "Kanyakumari",
+      "name": "Padmanabhapuram",
+      "wardCount": 18
+    },
+    {
+      "district": "Karur",
+      "name": "Karur",
+      "wardCount": 48
+    },
+    {
+      "district": "Krishnagiri",
+      "name": "Krishnagiri",
+      "wardCount": 27
+    },
+    {
+      "district": "Krishnagiri",
+      "name": "Denkanikottai",
+      "wardCount": 18
+    },
+    {
+      "district": "Madurai",
+      "name": "Melur",
+      "wardCount": 18
+    },
+    {
+      "district": "Madurai",
+      "name": "Usilampatti",
+      "wardCount": 18
+    },
+    {
+      "district": "Mayiladuthurai",
+      "name": "Mayiladuthurai",
+      "wardCount": 36
+    },
+    {
+      "district": "Mayiladuthurai",
+      "name": "Sirkazhi",
+      "wardCount": 18
+    },
+    {
+      "district": "Nagapattinam",
+      "name": "Nagapattinam",
+      "wardCount": 36
+    },
+    {
+      "district": "Nagapattinam",
+      "name": "Vedaranyam",
+      "wardCount": 18
+    },
+    {
+      "district": "Namakkal",
+      "name": "Namakkal",
+      "wardCount": 45
+    },
+    {
+      "district": "Namakkal",
+      "name": "Tiruchengodu",
+      "wardCount": 30
+    },
+    {
+      "district": "Namakkal",
+      "name": "Rasipuram",
+      "wardCount": 24
+    },
+    {
+      "district": "Nilgiris",
+      "name": "Ooty",
+      "wardCount": 36
+    },
+    {
+      "district": "Nilgiris",
+      "name": "Coonoor",
+      "wardCount": 30
+    },
+    {
+      "district": "Nilgiris",
+      "name": "Kotagiri",
+      "wardCount": 18
+    },
+    {
+      "district": "Perambalur",
+      "name": "Perambalur",
+      "wardCount": 21
+    },
+    {
+      "district": "Pudukkottai",
+      "name": "Karaikudi",
+      "wardCount": 45
+    },
+    {
+      "district": "Pudukkottai",
+      "name": "Aranthangi",
+      "wardCount": 18
+    },
+    {
+      "district": "Ramanathapuram",
+      "name": "Ramanathapuram",
+      "wardCount": 30
+    },
+    {
+      "district": "Ramanathapuram",
+      "name": "Paramakudi",
+      "wardCount": 24
+    },
+    {
+      "district": "Ranipet",
+      "name": "Ranipet",
+      "wardCount": 30
+    },
+    {
+      "district": "Ranipet",
+      "name": "Arcot",
+      "wardCount": 24
+    },
+    {
+      "district": "Ranipet",
+      "name": "Arakkonam",
+      "wardCount": 27
+    },
+    {
+      "district": "Salem",
+      "name": "Mettur",
+      "wardCount": 24
+    },
+    {
+      "district": "Salem",
+      "name": "Attur",
+      "wardCount": 24
+    },
+    {
+      "district": "Salem",
+      "name": "Omalur",
+      "wardCount": 18
+    },
+    {
+      "district": "Sivaganga",
+      "name": "Karaikudi",
+      "wardCount": 45
+    },
+    {
+      "district": "Sivaganga",
+      "name": "Devakottai",
+      "wardCount": 30
+    },
+    {
+      "district": "Sivaganga",
+      "name": "Manamadurai",
+      "wardCount": 24
+    },
+    {
+      "district": "Tenkasi",
+      "name": "Tenkasi",
+      "wardCount": 36
+    },
+    {
+      "district": "Tenkasi",
+      "name": "Kadayanallur",
+      "wardCount": 30
+    },
+    {
+      "district": "Tenkasi",
+      "name": "Sankarankovil",
+      "wardCount": 30
+    },
+    {
+      "district": "Thanjavur",
+      "name": "Kumbakonam",
+      "wardCount": 48
+    },
+    {
+      "district": "Thanjavur",
+      "name": "Pattukkottai",
+      "wardCount": 24
+    },
+    {
+      "district": "Thanjavur",
+      "name": "Papanasam",
+      "wardCount": 18
+    },
+    {
+      "district": "Theni",
+      "name": "Uthamapalayam",
+      "wardCount": 30
+    },
+    {
+      "district": "Theni",
+      "name": "Periyakulam",
+      "wardCount": 30
+    },
+    {
+      "district": "Theni",
+      "name": "Bodinayakanur",
+      "wardCount": 24
+    },
+    {
+      "district": "Tirupattur",
+      "name": "Vaniyambadi",
+      "wardCount": 30
+    },
+    {
+      "district": "Tirupattur",
+      "name": "Ambur",
+      "wardCount": 30
+    },
+    {
+      "district": "Tirupattur",
+      "name": "Jolarpet",
+      "wardCount": 24
+    },
+    {
+      "district": "Tiruppur",
+      "name": "Dharapuram",
+      "wardCount": 30
+    },
+    {
+      "district": "Tiruppur",
+      "name": "Udumalaipettai",
+      "wardCount": 30
+    },
+    {
+      "district": "Tiruppur",
+      "name": "Kangayam",
+      "wardCount": 24
+    },
+    {
+      "district": "Tiruvallur",
+      "name": "Tiruttani",
+      "wardCount": 30
+    },
+    {
+      "district": "Tiruvallur",
+      "name": "Ponneri",
+      "wardCount": 24
+    },
+    {
+      "district": "Tiruvannamalai",
+      "name": "Tiruvannamalai",
+      "wardCount": 45
+    },
+    {
+      "district": "Tiruvannamalai",
+      "name": "Polur",
+      "wardCount": 18
+    },
+    {
+      "district": "Tiruvannamalai",
+      "name": "Vandavasi",
+      "wardCount": 18
+    },
+    {
+      "district": "Tiruvarur",
+      "name": "Mannargudi",
+      "wardCount": 36
+    },
+    {
+      "district": "Tiruvarur",
+      "name": "Nagapattinam (former district)",
+      "wardCount": 30
+    },
+    {
+      "district": "Vellore",
+      "name": "Gudiyatham",
+      "wardCount": 30
+    },
+    {
+      "district": "Vellore",
+      "name": "Katpadi",
+      "wardCount": 24
+    },
+    {
+      "district": "Villupuram",
+      "name": "Villupuram",
+      "wardCount": 36
+    },
+    {
+      "district": "Villupuram",
+      "name": "Tindivanam",
+      "wardCount": 30
+    },
+    {
+      "district": "Villupuram",
+      "name": "Gingee",
+      "wardCount": 18
+    },
+    {
+      "district": "Virudhunagar",
+      "name": "Virudhunagar",
+      "wardCount": 45
+    },
+    {
+      "district": "Virudhunagar",
+      "name": "Sivakasi",
+      "wardCount": 36
+    },
+    {
+      "district": "Virudhunagar",
+      "name": "Rajapalayam",
+      "wardCount": 30
+    },
+    {
+      "district": "Virudhunagar",
+      "name": "Sattur",
+      "wardCount": 24
+    },
+    {
+      "district": "Virudhunagar",
+      "name": "Srivilliputhur",
+      "wardCount": 24
+    }
+  ]
+}

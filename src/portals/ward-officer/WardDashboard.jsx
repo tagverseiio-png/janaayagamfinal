@@ -6,14 +6,33 @@ import { motion } from 'framer-motion';
 import { AlertOctagon, HeartHandshake, CheckCircle2, Flame, Inbox, ShieldAlert, MessageCircle, ArrowRight, UserPlus, MapPin } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
 import TicketCard from '../../shared/components/TicketCard';
-import { SEED_TICKETS } from '../../data/seedData';
+import api from '../../services/api';
 
 export default function WardDashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
-  // Filter only for Ward 142
-  const [tickets, setTickets] = useState(SEED_TICKETS.filter(t => t.ward === 'Ward 142'));
+  const [tickets, setTickets] = useState([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          id: t.ticketNumber,
+          description: t.description,
+          ward: 'Ward 142' // Mock for now
+        }));
+        setTickets(formatted.filter(t => t.ward === 'Ward 142'));
+      } catch (err) {
+        console.error('Failed to fetch ward tickets:', err);
+      }
+    };
+    fetchTickets();
+  }, []);
 
   const priorityTickets = tickets.filter(t => t.status !== 'Resolved').slice(0, 3);
   

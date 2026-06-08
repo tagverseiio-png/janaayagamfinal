@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FileText, Landmark, ShieldAlert, AlertTriangle, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
-import { droSeedData } from '../../data/droSeedData';
+const droSeedData = [];
+
 
 export default function DroDashboard() {
  const { t, i18n } = useTranslation();

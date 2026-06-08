@@ -9,7 +9,8 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import { getTicketsByCategory } from '../../data/seedData';
+const getTicketsByCategory = () => [];
+
 
 export default function RevenueTickets({ flaggedOnly = false }) {
  const { t } = useTranslation();

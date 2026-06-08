@@ -10,7 +10,8 @@ import ErrorBoundary from '../../shared/components/ErrorBoundary';
 import TnMap from '../../shared/components/TnMap';
 import GeoCamera from '../../shared/components/GeoCamera';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { getCategoryCount } from '../../data/seedData';
+const getCategoryCount = () => [];
+
 
 // Subcomponent: BdoDashboard
 function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCamera, noteTitle, setNoteTitle, noteText, setNoteText, notePhoto, handlePhotoUpload }) {

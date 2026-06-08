@@ -13,12 +13,8 @@ import {
 } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-
+import api from '../../services/api';
 import StatCard from '../../shared/components/StatCard';
-import { 
-  SEED_TICKETS, STATE_STATS, DISTRICT_STATS, RESOLUTION_TREND, 
-  EMERGENCY_CONTACTS, DISTRICT_COORDINATES, getCategoryCount 
-} from '../../data/seedData';
 
 const CATEGORY_COLORS = {
   Water: '#3b82f6', Electricity: '#eab308', Roads: '#64748b', 
@@ -38,6 +34,51 @@ export default function CmDashboard({ overviewMode = false }) {
   const [activeDeptTab, setActiveDeptTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [reportGenerated, setReportGenerated] = useState(false);
+
+  const [SEED_TICKETS, setTickets] = useState([]);
+  const [STATE_STATS, setStats] = useState({ totalOpen: 0, totalResolved: 0, criticalPriority: 0, breachDistricts: 0, cmEscalations: 0, activeSectors: 0 });
+  const [DISTRICT_STATS, setDistrictStats] = useState({});
+  const RESOLUTION_TREND = [];
+  const EMERGENCY_CONTACTS = [];
+  const getCategoryCount = () => [];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsRes = await api.get('/dashboard/stats');
+        setStats(prev => ({
+          ...prev,
+          totalOpen: statsRes.data.totalOpen,
+          totalResolved: statsRes.data.totalResolved,
+          criticalPriority: statsRes.data.criticalPriority
+        }));
+
+        const ticketsRes = await api.get('/tickets');
+        const formattedTickets = ticketsRes.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          id: t.ticketNumber,
+          description: t.description
+        }));
+        setTickets(formattedTickets);
+
+        const dStats = {};
+        formattedTickets.forEach(t => {
+          const d = t.district;
+          if (!dStats[d]) dStats[d] = { open: 0, resolved: 0, critical: 0 };
+          if (t.status === 'open') dStats[d].open++;
+          if (t.status === 'resolved') dStats[d].resolved++;
+          if (t.priority === 'critical') dStats[d].critical++;
+        });
+        setDistrictStats(dStats);
+
+      } catch (err) {
+        console.error('Error fetching CM dashboard data:', err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('jn_emp_role');

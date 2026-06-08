@@ -4,7 +4,7 @@ import { Shield, LogOut, CheckCircle, AlertTriangle, Clock, MapPin, Search, BarC
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TnMap from '../shared/components/TnMap';
-import { SEED_TICKETS } from '../data/seedData';
+import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function EmployeeDashboard() {
@@ -14,6 +14,7 @@ export default function EmployeeDashboard() {
   const [department, setDepartment] = useState('');
   const [jurisdiction, setJurisdiction] = useState({});
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   

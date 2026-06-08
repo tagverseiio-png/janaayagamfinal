@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Shield, Lock, Unlock, MapPin, AlertTriangle, CheckCircle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import JurisdictionSelector from '../../shared/components/JurisdictionSelector';
 
 const districtsList = [
   { name: "Chennai", tamil: "சென்னை" },
@@ -458,38 +459,21 @@ export default function LocationSettings() {
                 />
               </div>
 
-              {/* District & Ward Row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                    {tLabel("DISTRICT", "மாவட்டம்")}
-                  </label>
-                  <select
-                    value={livingDistrict}
-                    onChange={(e) => setLivingDistrict(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 outline-none px-3 py-2.5 rounded-xl text-slate-700 font-extrabold text-xs shadow-sm cursor-pointer focus:border-[#8B1A1A] transition-all"
-                  >
-                    {districtsList.map(d => (
-                      <option key={d.name} value={d.name}>
-                        {isTa ? d.tamil : d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-extrabold text-slate-400 tracking-wider uppercase block" style={{ letterSpacing: '0.08em' }}>
-                    {tLabel("WARD NUMBER", "வார்டு எண்")}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={livingWard}
-                    onChange={(e) => setLivingWard(e.target.value.replace(/\D/g, ''))}
-                    placeholder="e.g. 142"
-                    className="w-full bg-white border border-slate-200 focus:border-[#8B1A1A] outline-none px-4 py-2.5 rounded-xl text-slate-700 font-extrabold text-xs shadow-sm transition-all"
-                  />
-                </div>
+              {/* Jurisdiction Row */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
+                <JurisdictionSelector
+                  isTa={isTa}
+                  onChange={(id, isFinal, obj) => {
+                    if (obj && obj.level === 'DISTRICT') {
+                      setLivingDistrict(obj.name);
+                    } else if (obj && obj.level === 'WARD') {
+                      setLivingWard(obj.name);
+                    }
+                    if (isFinal) {
+                      localStorage.setItem('jn_jurisdiction_id', id);
+                    }
+                  }}
+                />
               </div>
 
               {/* Pincode & Coordinates Row */}

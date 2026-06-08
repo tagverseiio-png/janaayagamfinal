@@ -7,9 +7,8 @@ import { Toaster } from 'sonner';
 import LoginPage from './pages/LoginPage';
 import EmployeeLoginPage from './pages/EmployeeLoginPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
-import { seedAllDummyData } from './utils/seedData';
 
-// Import Portal Components
+import AdminDashboard from './portals/admin/AdminDashboard';
 import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
 import CmDashboard from './portals/cm/CmDashboard';
@@ -36,7 +35,6 @@ export default function App() {
   const [isMobile, setIsMobile] = React.useState(false);
 
   useEffect(() => {
-    seedAllDummyData();
     // 1. Mobile responsive check for toast placement
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -91,6 +89,7 @@ export default function App() {
           />
           
           <Route path="/track" element={<TrackTicket />} />
+          <Route path="/admin" element={<AdminDashboard />} />
 
           {/* Fallback to Login page */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { SEED_TICKETS } from '../../data/seedData';
 import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
+import api from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function TrackTicket() {
@@ -21,16 +21,33 @@ export default function TrackTicket() {
     }
   }, [initialTicketId]);
 
-  const searchTicket = (searchId = ticketId) => {
-    const localTickets = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
-    let found = localTickets.find(t => t.id.toLowerCase() === searchId.toLowerCase() || t.id.toLowerCase() === searchId.replace(/^JN-?/i, '').toLowerCase());
-    
-    if (!found) {
-      found = SEED_TICKETS.find(t => t.id.toLowerCase() === searchId.toLowerCase() || t.id.toLowerCase() === searchId.replace(/^JN-?/i, '').toLowerCase());
-    }
+  const searchTicket = async (searchId = ticketId) => {
+    try {
+      const res = await api.get('/tickets');
+      const allTickets = res.data;
+      
+      const found = allTickets.find(t => 
+        t.ticketNumber.toLowerCase() === searchId.toLowerCase() || 
+        t.ticketNumber.toLowerCase() === searchId.replace(/^JN-?/i, '').toLowerCase() ||
+        t.id.toLowerCase() === searchId.toLowerCase()
+      );
 
-    if (found) { setTicket(found); setError(''); }
-    else setError('Ticket not found. Check your Ticket ID.');
+      if (found) {
+        setTicket({
+          ...found,
+          id: found.ticketNumber,
+          category: found.department?.name || 'Unknown',
+          district: found.jurisdiction?.name || 'Unknown',
+          ward: 'Ward 142' // Mock
+        });
+        setError('');
+      } else {
+        setError('Ticket not found. Check your Ticket ID.');
+      }
+    } catch (err) {
+      console.error('Failed to fetch tickets:', err);
+      setError('Error fetching ticket data.');
+    }
   };
 
   const deptKey = ticket ? (ticket.department || ticket.category) : null;

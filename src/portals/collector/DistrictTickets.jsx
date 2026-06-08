@@ -8,7 +8,8 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import { collectorSeedData } from '../../data/collectorSeedData';
+const collectorSeedData = [];
+
 
 export default function DistrictTickets({ escalatedOnly = false }) {
  const { t } = useTranslation();

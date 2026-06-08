@@ -9,6 +9,7 @@ import {
 import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet';
 
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
+import api from '../../services/api';
 import { toast } from 'sonner';
 
 /* ─── Priority Dot Colors ────────────────────────────────────────────── */
@@ -51,76 +52,23 @@ export default function MyTickets() {
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
 
-  const fetchTickets = () => {
-    let list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
-    
-    // Proactively seed the 3 mock resolved tickets if they don't exist
-    const hasMockResolved = list.some(t => t.id === '1045');
-    if (!hasMockResolved) {
-      const mockResolved = [
-        {
-          id: '1045',
-          category: 'electricity',
-          description: 'Streetlight Replacement at 4th block cross road to ensure safety for pedestrians during night hours.',
-          status: 'resolved',
-          priority: 'medium',
-          created_at: new Date('2026-05-16T10:00:00Z').toISOString(),
-          sla_deadline: new Date('2026-05-18T10:00:00Z').toISOString(),
-          resolved_at: new Date('2026-05-18T14:14:00Z').toISOString(),
-          resolved_by: 'Ward Officer Mohan R',
-          resolution_text: 'Replaced complete high pressure sodium lamps with energy efficient smart LED fittings.',
-          resolution_proof: 'https://picsum.photos/400/200?random=45',
-          resolution_lat: '13.0403',
-          resolution_lng: '80.2422',
-          resolution_address: 'Anna Salai, Teynampet, Chennai',
-          ward: '22',
-          district: 'Chennai',
-          citizen_name: 'KARTHIK RAJ S.',
-          feedback: 'positive'
-        },
-        {
-          id: '1046',
-          category: 'roads',
-          description: 'Pothole Repair - Main Road section in ward 22 causing vehicle bottlenecks.',
-          status: 'resolved',
-          priority: 'critical',
-          created_at: new Date('2026-05-13T10:00:00Z').toISOString(),
-          sla_deadline: new Date('2026-05-15T10:00:00Z').toISOString(),
-          resolved_at: new Date('2026-05-15T14:14:00Z').toISOString(),
-          resolved_by: 'Ward Officer Mohan R',
-          resolution_text: 'Filled pot holes using state of the art cold asphalt compounds and compressed fully.',
-          resolution_proof: 'https://picsum.photos/400/200?random=46',
-          resolution_lat: '13.0403',
-          resolution_lng: '80.2422',
-          resolution_address: 'Anna Salai, Teynampet, Chennai',
-          ward: '22',
-          district: 'Chennai',
-          citizen_name: 'KARTHIK RAJ S.'
-        },
-        {
-          id: '1047',
-          category: 'water',
-          description: 'Water Supply Restored in Ward 22. Valve leak caused low pressure.',
-          status: 'resolved',
-          priority: 'high',
-          created_at: new Date('2026-05-09T10:00:00Z').toISOString(),
-          sla_deadline: new Date('2026-05-10T10:00:00Z').toISOString(),
-          resolved_at: new Date('2026-05-10T14:14:00Z').toISOString(),
-          resolved_by: 'Ward Officer Mohan R',
-          resolution_text: 'Main municipal water supply gate valve repaired and pressure test verified.',
-          resolution_proof: 'https://picsum.photos/400/200?random=47',
-          resolution_lat: '13.0403',
-          resolution_lng: '80.2422',
-          resolution_address: 'Anna Salai, Teynampet, Chennai',
-          ward: '22',
-          district: 'Chennai',
-          citizen_name: 'KARTHIK RAJ S.'
-        }
-      ];
-      list = [...list, ...mockResolved];
-      localStorage.setItem('jn_tickets', JSON.stringify(list));
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        created_at: t.createdAt,
+        sla_deadline: t.deadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
+        ward: 'Ward 142' // Mock
+      }));
+      setTickets(formatted);
+    } catch (err) {
+      console.error('Failed to fetch user tickets:', err);
+      toast.error('Failed to load tickets');
     }
-    setTickets(list);
   };
 
   useEffect(() => {

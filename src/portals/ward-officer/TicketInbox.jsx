@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import TicketCard from '../../shared/components/TicketCard';
 import GeoCamera from '../../shared/components/GeoCamera';
-import { getTicketsByStatus, SEED_TICKETS } from '../../data/seedData';
+import api from '../../services/api';
 import { DEPT_HIERARCHY, normalizeDept, getNextRole } from '../../data/hierarchyData';
 
 export default function TicketInbox() {
@@ -48,10 +48,22 @@ export default function TicketInbox() {
  const [touchStart, setTouchStart] = useState(null);
  const [touchEnd, setTouchEnd] = useState(null);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list.length > 0 ? list : SEED_TICKETS);
- };
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        description: t.description,
+        ward: 'Ward 142' // Mock
+      }));
+      setTickets(formatted.filter(t => t.ward === 'Ward 142'));
+    } catch (err) {
+      console.error('Failed to fetch inbox tickets:', err);
+    }
+  };
 
  const handleAction = (ticketId, action) => {
  const ticket = tickets.find(t => t.id === ticketId);
