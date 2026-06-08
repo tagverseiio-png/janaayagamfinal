@@ -17,7 +17,7 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  const [cameraError, setCameraError] = useState(false);
  const [currentTime, setCurrentTime] = useState('');
 
- const officerName = localStorage.getItem('jn_name') || 'KARTHIK RAJ S.';
+ const officerName = localStorage.getItem('jn_name') || '';
  const officerWard = localStorage.getItem('jn_ward') || '142';
 
  // 1. Digital Clock

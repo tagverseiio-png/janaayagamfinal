@@ -5,12 +5,15 @@ import { toast } from 'sonner';
 import { BarChart2, FileText, TrendingUp, ArrowUpRight, Shield, MapPin, Plus, Trash2, Camera, 
  AlertTriangle, CheckCircle, ChevronRight, Layers, Users, Map, Radio } from 'lucide-react';
 
+import api from '../../services/api';
+
+const getCategoryCount = () => [];
+
 import PortalLayout from '../../shared/components/PortalLayout';
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
 import TnMap from '../../shared/components/TnMap';
 import GeoCamera from '../../shared/components/GeoCamera';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-const getCategoryCount = () => [];
 
 
 // Subcomponent: BdoDashboard
@@ -19,6 +22,18 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
  const isTa = i18n.language === 'ta';
  const tLabel = (en, ta) => isTa ? ta : en;
  const fileInputRef = React.useRef(null);
+
+ const [stats, setStats] = useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
+
+ useEffect(() => {
+   api.get('/dashboard/stats').then(res => {
+     setStats({
+       totalActive: res.data.totalOpen || 0,
+       totalResolved: res.data.totalResolved || 0,
+       totalEscalated: res.data.totalEscalated || 0
+     });
+   }).catch(console.error);
+ }, []);
 
  return (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -204,15 +219,15 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
 
         <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center select-none">
           <div>
-            <p className="text-sm font-black text-slate-800">1,204</p>
+            <p className="text-sm font-black text-slate-800">{stats.totalActive}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ACTIVE</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#4CAF50]">8,432</p>
+            <p className="text-sm font-black text-[#4CAF50]">{stats.totalResolved}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">RESOLVED</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#F44336]">89</p>
+            <p className="text-sm font-black text-[#F44336]">{stats.totalEscalated}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ESCALATED</p>
           </div>
         </div>

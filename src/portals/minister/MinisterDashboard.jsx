@@ -162,7 +162,7 @@ export default function MinisterDashboard() {
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-xs">KR</div>
             <div className="flex flex-col">
-              <span className="text-xs font-black text-slate-800">KARTHIK RAJ S.</span>
+              <span className="text-xs font-black text-slate-800">{localStorage.getItem('jn_emp_name') || 'Minister'}</span>
               <span className="text-[10px] text-slate-400 font-bold uppercase">MINISTER</span>
             </div>
           </div>

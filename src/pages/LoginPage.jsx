@@ -29,6 +29,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const [phone, setPhone] = useState('');
+  const [citizenName, setCitizenName] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -147,6 +148,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (!citizenName.trim()) {
+      toast.error(tLabel('Please enter your full name', 'தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும்'));
+      return;
+    }
+
     if (pincode.length !== 6 || pincodeStatus !== 'success') {
       toast.error(tLabel('Please enter a valid 6-digit Pincode and complete lookup', 'தயவுசெய்து செல்லுபடியாகும் 6-இலக்க பின்கோடை உள்ளிட்டு சரிபார்ப்பை பூர்த்தி செய்யவும்'));
       return;
@@ -178,7 +184,7 @@ export default function LoginPage() {
     try {
       const response = await api.post('/auth/citizen/login', {
         phone: phone,
-        name: 'KARTHIK RAJ S.',
+        name: citizenName,
         pincode: pincode
       });
 
@@ -370,9 +376,10 @@ export default function LoginPage() {
                     <div className="relative">
                       <input
                         type="text"
-                        value="KARTHIK RAJ S."
-                        readOnly
-                        className="w-full bg-slate-50/80 border border-slate-200 outline-none px-4 py-3 rounded-xl text-slate-800 font-extrabold text-sm shadow-sm tracking-wide select-none"
+                        value={citizenName}
+                        onChange={(e) => setCitizenName(e.target.value)}
+                        placeholder={tLabel('Enter your full name', 'உங்கள் முழு பெயரை உள்ளிடவும்')}
+                        className="w-full bg-slate-50 border border-slate-200 outline-none px-4 py-3 rounded-xl text-slate-800 font-extrabold text-sm shadow-sm tracking-wide"
                       />
                       <div className="absolute right-4 top-3">
                         <CheckCircle className="w-5 h-5 text-[#4CAF50] fill-[#4CAF50]/10" />

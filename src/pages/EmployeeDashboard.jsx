@@ -155,7 +155,7 @@ export default function EmployeeDashboard() {
               {role.charAt(0)}
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black text-slate-800">KARTHIK RAJ S.</span>
+              <span className="text-xs font-black text-slate-800">{localStorage.getItem('jn_emp_name') || 'Officer'}</span>
               <span className="text-[10px] text-slate-400 font-bold uppercase truncate max-w-[150px]">{role}</span>
             </div>
           </div>

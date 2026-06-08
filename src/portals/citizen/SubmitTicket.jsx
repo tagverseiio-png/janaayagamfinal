@@ -179,7 +179,7 @@ export default function SubmitTicket() {
           <GeoCamera 
             onCapture={handleCameraCapture} 
             onClose={() => setShowCamera(false)} 
-            userName={localStorage.getItem('jn_name') || 'KARTHIK RAJ S.'}
+            userName={localStorage.getItem('jn_name') || ''}
             userWard={locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward_name') || 'Ward 1')}
           />
         </div>

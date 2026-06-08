@@ -7,21 +7,7 @@ import TnMap from '../../shared/components/TnMap';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const grievancePoints = [
-  { lat: 13.0827, lng: 80.2707, count: 12, type: 'critical', area: 'Chennai Central' },
-  { lat: 13.0569, lng: 80.2425, count: 8, type: 'high', area: 'Adyar' },
-  { lat: 13.1067, lng: 80.2206, count: 5, type: 'medium', area: 'Ambattur' },
-  { lat: 13.0878, lng: 80.2785, count: 15, type: 'critical', area: 'Royapuram' },
-  { lat: 13.0525, lng: 80.2500, count: 3, type: 'low', area: 'Velachery' },
-  { lat: 13.0732, lng: 80.2609, count: 7, type: 'high', area: 'T. Nagar' },
-];
-
-const getColor = (type) => {
-  if (type === 'critical') return '#ef4444';
-  if (type === 'high') return '#f97316';
-  if (type === 'medium') return '#eab308';
-  return '#22c55e';
-};
+import api from '../../services/api';
 
 export default function CitizenDashboard() {
   const { t, lang } = useLanguage();
@@ -31,6 +17,18 @@ export default function CitizenDashboard() {
   const tLabel = (en, ta) => isTa ? ta : en;
 
   const livingAddr = localStorage.getItem('jn_living_address');
+  
+  const [stats, setStats] = React.useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
+
+  React.useEffect(() => {
+    api.get('/dashboard/stats').then(res => {
+      setStats({
+        totalActive: res.data.totalOpen || 0,
+        totalResolved: res.data.totalResolved || 0,
+        totalEscalated: res.data.totalEscalated || 0
+      });
+    }).catch(console.error);
+  }, []);
 
   return (
     <motion.div
@@ -180,52 +178,43 @@ export default function CitizenDashboard() {
         </div>
 
         {/* Map */}
-        <div className="rounded-xl overflow-hidden relative mb-3" style={{ height: 'clamp(200px, 30vw, 350px)', width: '100%', zIndex: 0 }}>
-          <MapContainer
-            center={[13.0827, 80.2707]}
-            zoom={11}
-            style={{ height: '100%', width: '100%' }}
-            zoomControl={false}
-            scrollWheelZoom={false}
-            dragging={false}
-            attributionControl={true}
-          >
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-              attribution='© Carto'
-            />
-            {grievancePoints.map((point, i) => (
-              <CircleMarker
-                key={i}
-                center={[point.lat, point.lng]}
-                radius={point.count * 0.8 + 6}
-                fillColor={getColor(point.type)}
-                color="white"
-                weight={2}
-                fillOpacity={0.85}
-              >
-                <Popup>{point.area}: {point.count} issues</Popup>
-              </CircleMarker>
-            ))}
-          </MapContainer>
+        <div className="rounded-xl overflow-hidden relative mb-3 border border-slate-100" style={{ zIndex: 0 }}>
+          <TnMap 
+            lang={lang} 
+            citizenMode={true} 
+            height="220px" 
+            center={
+              (() => {
+                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_district') : null;
+                const dMap = {
+                  "Chennai": [13.0827, 80.2707],
+                  "Madurai": [9.9252, 78.1198],
+                  "Coimbatore": [11.0168, 76.9558],
+                  "Salem": [11.6643, 78.1460],
+                  "Trichy": [10.7905, 78.7047]
+                };
+                return dMap[ud] || [13.0827, 80.2707];
+              })()
+            }
+          />
         </div>
 
         {/* Stats Row Below Map (3 Columns) */}
         <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center select-none">
           <div>
-            <p className="text-sm font-black text-slate-800">1,204</p>
+            <p className="text-sm font-black text-slate-800">{stats.totalActive}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">
               {tLabel('ACTIVE', 'செயலில்')}
             </p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#4CAF50]">8,432</p>
+            <p className="text-sm font-black text-[#4CAF50]">{stats.totalResolved}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">
               {tLabel('RESOLVED', 'தீர்க்கப்பட்டவை')}
             </p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#F44336]">89</p>
+            <p className="text-sm font-black text-[#F44336]">{stats.totalEscalated}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">
               {tLabel('ESCALATED', 'மேல்முறையீடு')}
             </p>

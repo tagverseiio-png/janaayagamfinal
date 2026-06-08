@@ -33,7 +33,7 @@ export default function CitizenPortal() {
 
 
 
-  const citizenName = localStorage.getItem('jn_name') || 'KARTHIK RAJ S.';
+  const citizenName = localStorage.getItem('jn_name') || '';
 
   // Language Switch
   const toggleLanguage = () => {

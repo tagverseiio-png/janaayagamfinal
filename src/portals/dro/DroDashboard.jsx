@@ -11,6 +11,7 @@ import api from '../../services/api';
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [talukData, setTalukData] = useState([]);
+  const [stats, setStats] = useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -40,6 +41,16 @@ import api from '../../services/api';
         setTalukData(Object.values(talukMap));
       } catch (err) {
         console.error('Failed to fetch DRO tickets:', err);
+      }
+      try {
+        const statsRes = await api.get('/dashboard/stats');
+        setStats({
+          totalActive: statsRes.data.totalOpen || 0,
+          totalResolved: statsRes.data.totalResolved || 0,
+          totalEscalated: statsRes.data.totalEscalated || 0
+        });
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
       }
     };
     fetchTickets();
@@ -131,15 +142,15 @@ import api from '../../services/api';
 
         <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center select-none">
           <div>
-            <p className="text-sm font-black text-slate-800">1,204</p>
+            <p className="text-sm font-black text-slate-800">{stats.totalActive}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ACTIVE</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#4CAF50]">8,432</p>
+            <p className="text-sm font-black text-[#4CAF50]">{stats.totalResolved}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">RESOLVED</p>
           </div>
           <div>
-            <p className="text-sm font-black text-[#F44336]">89</p>
+            <p className="text-sm font-black text-[#F44336]">{stats.totalEscalated}</p>
             <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wide mt-0.5">ESCALATED</p>
           </div>
         </div>

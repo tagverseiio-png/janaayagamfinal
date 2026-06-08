@@ -13,7 +13,7 @@ export default function ProfilePage() {
 
  const role = localStorage.getItem('jn_role') || 'citizen';
  const name = localStorage.getItem('jn_name') || 'Guest User';
- const ward = localStorage.getItem('jn_ward') || localStorage.getItem('jn_living_ward') || 'Ward 142';
+ const ward = localStorage.getItem('jn_ward') || localStorage.getItem('jn_living_ward') || localStorage.getItem('jn_ward_name') || '';
  const district = localStorage.getItem('jn_district') || 'Chennai';
  const constituency = localStorage.getItem('jn_constituency') || 'Velachery';
  const department = localStorage.getItem('jn_department') || 'Municipal Administration';
