@@ -332,6 +332,7 @@ export default function SubmitTicket() {
                       <span>{tLabel(`Home Ward: Ward ${livingWard}, ${livingDistrict}`, `வசிப்பிடம்: வார்டு ${livingWard}, ${livingDistrict}`)}</span>
                     </>
                   ) : (
+                    <>
                       <span>{tLabel(`Live GPS: ${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'}`, `ஜிபிஎஸ்: ${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'}`)}</span>
                     </>
                   )}

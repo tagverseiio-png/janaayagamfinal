@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no tvk@13.235.135.81
+expect "assword:"
+send "2004\r"
+expect "$ "
+send "tar -xzf deploy.tar.gz -C janaayagamfinal\r"
+expect "$ "
+send "cd janaayagamfinal\r"
+expect "$ "
+send "npm install\r"
+expect "$ "
+send "npm run build\r"
+expect "$ "
+send "cd backend && npm install && npm run build && cd ..\r"
+expect "$ "
+send "pm2 restart all\r"
+expect "$ "
+send "exit\r"
+expect eof

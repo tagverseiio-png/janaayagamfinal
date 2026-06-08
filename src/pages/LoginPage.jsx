@@ -139,7 +139,7 @@ export default function LoginPage() {
       .catch(console.error);
   }, [district, dbDistricts]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!otpVerified) {

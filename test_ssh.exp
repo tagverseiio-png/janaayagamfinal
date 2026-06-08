@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no tvk@13.235.135.81 "ls -la"
+expect {
+    "assword:" {
+        send "2004\r"
+        exp_continue
+    }
+    eof
+}
