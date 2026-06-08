@@ -130,34 +130,8 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  if (!cameraError && videoRef.current) {
  ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
  } else {
- // MOCK MODE GRAPHIC: Render a styled background with grid lines
- ctx.fillStyle = '#1e293b'; // slate-800
- ctx.fillRect(0, 0, canvas.width, canvas.height);
- 
- // Draw a subtle focus grid
- ctx.strokeStyle = 'rgba(255,255,255,0.08)';
- ctx.lineWidth = 1;
- for (let i = 40; i < canvas.width; i += 40) {
- ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
- }
- for (let j = 40; j < canvas.height; j += 40) {
- ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
- }
-
- // Add mock center reticle
- ctx.strokeStyle = 'rgba(244, 67, 54, 0.4)'; // Red reticle
- ctx.lineWidth = 2;
- ctx.beginPath();
- ctx.arc(canvas.width / 2, canvas.height / 2, 40, 0, Math.PI * 2);
- ctx.stroke();
-
- // Render a placeholder text or landscape
- ctx.fillStyle = 'rgba(255,255,255,0.3)';
- ctx.font = 'bold 16px Arial';
- ctx.textAlign = 'center';
- ctx.fillText('[ MOCK CAMERA VIEWER ]', canvas.width / 2, canvas.height / 2 - 10);
- ctx.font = '12px Arial';
- ctx.fillText('FIELD REPORT VERIFIED BY GPS', canvas.width / 2, canvas.height / 2 + 15);
+  toast.error("Camera access failed. Cannot capture.");
+  return;
  }
 
  // DRAW WATERMARK BAR AT BOTTOM
@@ -277,14 +251,13 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  <div className="w-full max-w-md aspect-[4/3] bg-white relative border-y border-white/5 flex items-center justify-center">
  
  {cameraError ? (
- // Mock viewport when camera fails
  <div className="w-full h-full relative flex flex-col items-center justify-center text-center p-6 space-y-3">
- <AlertTriangle className="w-12 h-12 text-[#FF9800] animate-bounce" />
+ <AlertTriangle className="w-12 h-12 text-[#FF9800]" />
  <span className="text-xs font-black text-[#FF9800] tracking-widest bg-amber-500/10 px-3 py-1 rounded-full uppercase">
- [ MOCK CAMERA MODE ACTIVE ]
+ CAMERA ACCESS FAILED
  </span>
  <p className="text-[10px] text-slate-400 font-bold max-w-[280px]">
- Webcam blocked/unavailable. Grid alignment and location stamping will operate successfully on capture.
+ Please check your device permissions and try again.
  </p>
  </div>
  ) : (

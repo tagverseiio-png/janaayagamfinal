@@ -8,6 +8,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import api from '../../services/api';
 
 export default function ConstituencyTickets() {
  const { t } = useTranslation();
@@ -25,10 +26,22 @@ export default function ConstituencyTickets() {
  const [flagModalOpen, setFlagModalOpen] = useState(false);
  const [flagReason, setFlagReason] = useState('');
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- };
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        ward: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        created_at: t.createdAt || new Date().toISOString()
+      }));
+      setTickets(formatted);
+    } catch (err) {
+      console.error('Failed to fetch constituency tickets:', err);
+    }
+  };
 
  useEffect(() => {
  fetchTickets();

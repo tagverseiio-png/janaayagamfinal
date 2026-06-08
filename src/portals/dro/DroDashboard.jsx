@@ -5,18 +5,49 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FileText, Landmark, ShieldAlert, AlertTriangle, ArrowRight, HelpCircle, Radio } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
-const droSeedData = [];
+import api from '../../services/api';
+ export default function DroDashboard() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [tickets, setTickets] = useState([]);
+  const [talukData, setTalukData] = useState([]);
 
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          id: t.ticketNumber,
+          taluk: t.jurisdiction?.name || 'Unknown'
+        }));
+        
+        const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
+        const districtTickets = formatted.filter(t => t.district === districtName);
+        setTickets(districtTickets);
 
-export default function DroDashboard() {
- const { t, i18n } = useTranslation();
- const navigate = useNavigate();
- const [tickets, setTickets] = useState(droSeedData.tickets);
+        // Group by taluk for Revenue tickets (or all tickets if we want to show jurisdiction)
+        const talukMap = {};
+        districtTickets.forEach(ticket => {
+          const jName = ticket.taluk;
+          if (!talukMap[jName]) talukMap[jName] = { name: jName, open: 0, avgDays: 4 };
+          if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
+            talukMap[jName].open += 1;
+          }
+        });
+        setTalukData(Object.values(talukMap));
+      } catch (err) {
+        console.error('Failed to fetch DRO tickets:', err);
+      }
+    };
+    fetchTickets();
+  }, []);
 
- // Map over talukData from seed
- const talukData = droSeedData.talukData;
-
- const { totalOpenRevenue, pattaIssues, encroachmentIssues } = droSeedData.stats;
+  const totalOpenRevenue = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length;
+  const pattaIssues = tickets.filter(t => t.category.toLowerCase().includes('patta')).length;
+  const encroachmentIssues = tickets.filter(t => t.category.toLowerCase().includes('encroachment')).length;
 
  return (
  <motion.div 

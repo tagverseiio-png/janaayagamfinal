@@ -13,34 +13,11 @@ export default function Escalate() {
  const [evidence, setEvidence] = useState('');
  const [history, setHistory] = useState([]);
 
- // Initialize mock history
- useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_mla_escalations') || '[]');
- if (list.length === 0) {
- const mock = [
- {
- id: 'ESC-8921',
- target: 'collector',
- summary: 'Urgent funding allocation request for desilting storm drains in Ward 142 Velachery.',
- urgency: 'Urgent',
- created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
- status: 'acknowledged'
- },
- {
- id: 'ESC-8703',
- target: 'minister',
- summary: 'Policy realignment and financial budget approval for high school construction in Ward 145.',
- urgency: 'Normal',
- created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
- status: 'resolved'
- }
- ];
- localStorage.setItem('jn_mla_escalations', JSON.stringify(mock));
- setHistory(mock);
- } else {
- setHistory(list);
- }
- }, []);
+  // Initialize mock history
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem('jn_mla_escalations') || '[]');
+    setHistory(list);
+  }, []);
 
  const handlePhotoUpload = (e) => {
  const file = e.target.files[0];

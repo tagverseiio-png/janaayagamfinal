@@ -31,59 +31,7 @@ export default function CitizenPortal() {
     }
   }, []);
 
-  // Prepopulate 3 mock tickets in localStorage if not present
-  useEffect(() => {
-    const existing = localStorage.getItem('jn_tickets');
-    if (!existing) {
-      const mockTickets = [
-        {
-          id: '1042',
-          category: 'roads',
-          department: 'Roads',
-          assignedTo: 'Ward Officer',
-          description: 'Huge pothole near the Velachery main junction causing extreme traffic delays and minor accidents.',
-          status: 'open',
-          priority: 'critical',
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          sla_deadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
-          ward: '142',
-          district: 'Chennai',
-          citizen_name: 'Karthik Raj S.'
-        },
-        {
-          id: '1043',
-          category: 'water',
-          department: 'Water',
-          assignedTo: 'AEO',
-          description: 'No drinking water supply in RS Puram street for the past 4 days. Local residents are suffering.',
-          status: 'in_progress',
-          priority: 'high',
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          sla_deadline: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
-          ward: '142',
-          district: 'Chennai',
-          citizen_name: 'Karthik Raj S.'
-        },
-        {
-          id: '1044',
-          category: 'electricity',
-          department: 'Electricity',
-          assignedTo: 'Resolved',
-          description: 'Severe voltage fluctuations in Ward 142 causing damages to household appliances.',
-          status: 'resolved',
-          priority: 'medium',
-          created_at: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-          sla_deadline: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          ward: '142',
-          district: 'Chennai',
-          citizen_name: 'Karthik Raj S.',
-          resolution_proof: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=400',
-          resolution_text: 'Transformer and fuse box replaced by local electricity division staff.'
-        }
-      ];
-      localStorage.setItem('jn_tickets', JSON.stringify(mockTickets));
-    }
-  }, []);
+
 
   const citizenName = localStorage.getItem('jn_name') || 'KARTHIK RAJ S.';
 

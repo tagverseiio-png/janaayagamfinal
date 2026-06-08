@@ -5,15 +5,29 @@ import {
  TrendingUp, BarChart2, Calendar, MapPin, Users, Star, ArrowUpRight, AlertTriangle 
 } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
-
+import api from '../../services/api';
 export default function MlaAnalytics() {
  const { t } = useTranslation();
  const [tickets, setTickets] = useState([]);
 
- useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- }, []);
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name?.toLowerCase() || 'unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          ward: t.jurisdiction?.name || 'Unknown',
+          status: t.status || 'open'
+        }));
+        setTickets(formatted);
+      } catch (err) {
+        console.error('Failed to fetch analytics tickets:', err);
+      }
+    };
+    fetchTickets();
+  }, []);
 
  // Compute local tickets data if helpful, or use static high fidelity mocks combined with active ticket counts
  const roadsCount = tickets.filter(t => t.category === 'roads').length + 8;
@@ -32,16 +46,23 @@ export default function MlaAnalytics() {
  { name: t('categories.education'), count: educationCount, color: 'bg-[#8B1A1A]' }
  ].sort((a, b) => b.count - a.count);
 
- const wardComparison = [
- { ward: '142', open: tickets.filter(t => t.status !== 'resolved').length + 14, resolved: 45, avgDays: 8, officer: 'Karthik Raj S.', isWorst: true },
- { ward: '140', open: 2, resolved: 12, avgDays: 3, officer: 'Suresh M.', isWorst: false },
- { ward: '141', open: 1, resolved: 14, avgDays: 2, officer: 'Anitha K.', isWorst: false },
- { ward: '143', open: 3, resolved: 18, avgDays: 4, officer: 'Ramya V.', isWorst: false },
- { ward: '144', open: 0, resolved: 22, avgDays: 2, officer: 'Selvam P.', isWorst: false },
- { ward: '145', open: 2, resolved: 19, avgDays: 3, officer: 'Divya N.', isWorst: false },
- { ward: '146', open: 1, resolved: 15, avgDays: 3, officer: 'Manoj S.', isWorst: false },
- { ward: '147', open: 0, resolved: 11, avgDays: 2, officer: 'Priya R.', isWorst: false }
- ];
+  const wardMap = {};
+  tickets.forEach(t => {
+    const w = t.ward || 'Unknown';
+    if (!wardMap[w]) {
+      wardMap[w] = { ward: w, open: 0, resolved: 0, avgDays: 3, officer: 'Assigned Officer', isWorst: false };
+    }
+    if (t.status !== 'resolved' && t.status !== 'closed') {
+      wardMap[w].open += 1;
+    } else {
+      wardMap[w].resolved += 1;
+    }
+  });
+  
+  const wardComparison = Object.values(wardMap).sort((a, b) => b.open - a.open);
+  if (wardComparison.length > 0) {
+    wardComparison[0].isWorst = true;
+  }
 
  return (
  <motion.div 

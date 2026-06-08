@@ -24,7 +24,7 @@ import api from '../../services/api';
          district: t.jurisdiction?.name || 'Unknown',
          id: t.ticketNumber,
          description: t.description,
-         ward: 'Ward 142' // Mocked ward
+         ward: t.jurisdiction?.name || 'Unknown'
        }));
        setTickets(formatted);
 

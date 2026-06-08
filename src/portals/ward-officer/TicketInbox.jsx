@@ -51,15 +51,16 @@ export default function TicketInbox() {
   const fetchTickets = async () => {
     try {
       const res = await api.get('/tickets');
+      const officerWard = localStorage.getItem('jn_ward') || 'Velachery';
       const formatted = res.data.map(t => ({
         ...t,
         category: t.department?.name || 'Unknown',
         district: t.jurisdiction?.name || 'Unknown',
         id: t.ticketNumber,
         description: t.description,
-        ward: 'Ward 142' // Mock
+        ward: t.jurisdiction?.name || 'Unknown'
       }));
-      setTickets(formatted.filter(t => t.ward === 'Ward 142'));
+      setTickets(formatted.filter(t => t.ward === officerWard || t.ward.includes('142')));
     } catch (err) {
       console.error('Failed to fetch inbox tickets:', err);
     }

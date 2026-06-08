@@ -9,20 +9,31 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-const getTicketsByCategory = () => [];
-
+import api from '../../services/api';
 
 export default function RevenueTickets({ flaggedOnly = false }) {
  const { t } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState(getTicketsByCategory('Revenue'));
+ const [tickets, setTickets] = useState([]);
  const [activeSubtype, setActiveSubtype] = useState('all');
  const [activeTicket, setActiveTicket] = useState(null);
 
- const loadTickets = () => {
- // Force seed data
- setTickets(getTicketsByCategory('Revenue'));
- };
+  const loadTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        ward: t.jurisdiction?.name || 'Unknown',
+        createdAt: t.createdAt || new Date().toISOString()
+      }));
+      setTickets(formatted);
+    } catch (err) {
+      console.error('Failed to load revenue tickets:', err);
+    }
+  };
 
  useEffect(() => {
  loadTickets();

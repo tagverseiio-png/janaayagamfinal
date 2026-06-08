@@ -27,33 +27,12 @@ export default function CmEmergency() {
  'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
  ];
 
- useEffect(() => {
- const active = localStorage.getItem('jn_state_emergency') === 'true';
- setEmergencyActive(active);
+  useEffect(() => {
+    const active = localStorage.getItem('jn_state_emergency') === 'true';
+    setEmergencyActive(active);
 
- const list = JSON.parse(localStorage.getItem('jn_past_emergencies') || '[]');
- if (list.length === 0) {
- const mock = [
- {
- id: 'EMG-9021',
- reason: 'Severe cyclonic storm and heavy rainfall warning across coastal districts requiring localized flood management protocols.',
- districts: ['Chennai', 'Chengalpattu', 'Cuddalore', 'Nagapattinam', 'Thanjavur'],
- created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
- status: 'resolved'
- },
- {
- id: 'EMG-8103',
- reason: 'Statewide water grid load realignments due to heatwave-induced municipal storage depletion.',
- districts: districtsList,
- created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
- status: 'resolved'
- }
- ];
- localStorage.setItem('jn_past_emergencies', JSON.stringify(mock));
- setHistory(mock);
- } else {
- setHistory(list);
- }
+    const list = JSON.parse(localStorage.getItem('jn_past_emergencies') || '[]');
+    setHistory(list);
 
  // Pre-select all 38 districts for step 2
  setSelectedDistricts(districtsList);

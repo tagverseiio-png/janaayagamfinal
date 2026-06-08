@@ -61,27 +61,24 @@ export default function SecretaryDashboard() {
  const activeTickets = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed');
 
  // Compute District Grid Counts Dynamically
- const districtData = districtsList.map(dist => {
- // Dynamic query from actual tickets matching district and selected sector
- const dynamicCount = activeTickets.filter(ticket => {
- return ticket.district === dist && ticket.category.toLowerCase() === selectedDept;
- }).length;
+  const districtData = districtsList.map(dist => {
+    // Dynamic query from actual tickets matching district and selected sector
+    const distTickets = tickets.filter(ticket => ticket.district === dist && ticket.category.toLowerCase() === selectedDept);
+    
+    const dOpen = distTickets.filter(t => t.status === 'open').length;
+    const dResolved = distTickets.filter(t => t.status === 'resolved').length;
 
- // Stable mock baseline offset based on district name to fully populate 38 rows
- const hash = dist.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
- const mockBaseline = (hash % 14) + 1; // 1 to 14 complaints
+    return {
+      name: dist,
+      open: dOpen,
+      resolved: dResolved,
+      avgDays: 0 // Cannot compute from mock, leaving as 0 or could calculate if we had resolvedAt
+    };
+  }).sort((a, b) => b.open - a.open); // Sorted by open descending
 
- return {
- name: dist,
- open: mockBaseline + dynamicCount,
- resolved: (hash % 20) + 12,
- avgDays: (hash % 8) + 3
- };
- }).sort((a, b) => b.open - a.open); // Sorted by open descending
-
- // Systemic Issue Watch logic: Same issue has active complaints in 3+ mock districts
- const districtsWithActiveIssues = districtData.filter(d => d.open > 0).length;
- const isSystemicFailure = districtsWithActiveIssues >= 3;
+  // Systemic Issue Watch logic: Same issue has active complaints in 3+ districts
+  const districtsWithActiveIssues = districtData.filter(d => d.open > 0).length;
+  const isSystemicFailure = districtsWithActiveIssues >= 3;
 
  const totalOpenInDept = districtData.reduce((sum, d) => sum + d.open, 0);
  const totalResolvedInDept = districtData.reduce((sum, d) => sum + d.resolved, 0);

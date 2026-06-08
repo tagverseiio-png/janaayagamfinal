@@ -236,13 +236,7 @@ export default function LocationSettings() {
  loadData();
  };
 
- // Mock cooldown expiry
- const handleMockExpire = () => {
- localStorage.removeItem('jn_location_last_updated');
- localStorage.removeItem('jn_location_next_update');
- toast.success(tLabel("Cooldown expired! Cooldown locks reset for demo review.", "குளிரூட்டும் காலம் காலாவதியானது! டெமோ மதிப்பாய்விற்காக பூட்டுகள் மீட்டமைக்கப்பட்டன."));
- loadData();
- };
+
 
  const role = localStorage.getItem('jn_role') || 'citizen';
 
@@ -412,15 +406,7 @@ export default function LocationSettings() {
  <span>{tLabel("Address locked under cooldown", "குளிரூட்டப்பட்டதால் முகவரி பூட்டப்பட்டுள்ளது")}</span>
  </button>
 
- {/* Tester mock expire bypass */}
- <button
- type="button"
- onClick={handleMockExpire}
- className="w-full bg-[#8B1A1A]/5 hover:bg-[#8B1A1A]/10 text-[#8B1A1A] border border-[#8B1A1A]/20 font-extrabold text-[11px] py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
- >
- <RefreshCw className="w-3.5 h-3.5" />
- <span>{tLabel("🧪 Mock Expire Cooldown (For Demo/Testing)", "🧪 குளிரூட்டலை காலாவதியாக்கு (மதிப்பாய்விற்காக)")}</span>
- </button>
+
  </div>
  </div>
  ) : (

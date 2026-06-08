@@ -80,21 +80,18 @@ export default function MinisterDashboard() {
     'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
   ];
 
-  const districtRanking = districtsList.map(dist => {
+  const districtPerformanceData = Array.from(districtsList).map(dist => {
     const distTickets = deptTickets.filter(t => t.district === dist);
-    const dOpen = distTickets.filter(t => t.status !== 'Resolved').length;
-    const dResolved = distTickets.filter(t => t.status === 'Resolved').length;
+    const dOpen = distTickets.filter(t => t.status === 'open').length;
+    const dResolved = distTickets.filter(t => t.status === 'resolved').length;
     
-    const hash = dist.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const mockOpen = dOpen + (hash % 10);
-    const mockResolved = dResolved + (hash % 20) + 5;
-    const mockTotal = mockOpen + mockResolved;
-    const rate = Math.round((mockResolved / mockTotal) * 100);
+    const dTotal = dOpen + dResolved || 1;
+    const rate = Math.round((dResolved / dTotal) * 100);
 
     return {
       name: dist,
-      open: mockOpen,
-      resolved: mockResolved,
+      open: dOpen,
+      resolved: dResolved,
       rate: rate
     };
   }).sort((a, b) => b.rate - a.rate);

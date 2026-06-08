@@ -18,7 +18,7 @@ export default function CollectorPerformance() {
 
  // Compute dynamic category distribution district-wide
  const getCategoryCount = (cat) => {
- return tickets.filter(t => t.category.toLowerCase() === cat).length + 4; // Mock baseline
+ return tickets.filter(t => t.category.toLowerCase() === cat).length;
  };
 
  const categories = [

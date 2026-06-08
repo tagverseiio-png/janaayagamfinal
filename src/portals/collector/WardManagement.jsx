@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { 
  Settings, Layers, Users, MapPin, AlertCircle, X, ShieldAlert, ArrowRight, Check
-} from 'lucide-react';
+} from 'lucide-react';import api from '../../services/api';
 
 export default function WardManagement() {
  const { t } = useTranslation();
@@ -15,26 +15,8 @@ export default function WardManagement() {
  setExpandedWards(prev => ({ ...prev, [wardName]: !prev[wardName] }));
  };
  
- // Wards administrative state (mocked and synced with dynamic ticket counts)
- const [wards, setWards] = useState([
- { name: '140', taluk: 'Velachery', officer: 'Suresh M.' },
- { name: '141', taluk: 'Velachery', officer: 'Anitha K.' },
- { name: '142', taluk: 'Velachery', officer: 'Karthik Raj S.' },
- { name: '143', taluk: 'Velachery', officer: 'Ramya V.' },
- { name: '144', taluk: 'Sholinganallur', officer: 'Selvam P.' },
- { name: '145', taluk: 'Sholinganallur', officer: 'Divya N.' },
- { name: '146', taluk: 'Sholinganallur', officer: 'Manoj S.' },
- { name: '147', taluk: 'Sholinganallur', officer: 'Priya R.' },
- { name: '120', taluk: 'Mylapore', officer: 'Ganesh P.' },
- { name: '121', taluk: 'Mylapore', officer: 'Subha S.' },
- { name: '130', taluk: 'Guindy', officer: 'Naveen Kumar' },
- { name: '131', taluk: 'Guindy', officer: 'Vimala Devi' }
- ]);
-
- // Merge Wards states
- const [mergeModalOpen, setMergeModalOpen] = useState(false);
- const [sourceWard, setSourceWard] = useState('');
- const [targetWard, setTargetWard] = useState('');
+  // Wards administrative state (dynamic)
+  const [wards, setWards] = useState([]);
 
  // Officer list for reassignment dropdown
  const availableOfficers = [
@@ -44,72 +26,36 @@ export default function WardManagement() {
  'Arun Kumar A.', 'Meenakshi R.'
  ];
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- };
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        ward: t.jurisdiction?.name || 'Unknown'
+      }));
+      setTickets(formatted);
 
- useEffect(() => {
- fetchTickets();
- }, []);
-
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- };
-
- // Get active tickets count dynamically for each ward
- const getOpenCount = (wardName) => {
- return tickets.filter(t => {
- return String(t.ward) === String(wardName) && t.status !== 'resolved' && t.status !== 'closed';
- }).length;
- };
-
- // Reassign Officer
- const handleOfficerChange = (wardName, newOfficer) => {
- const updatedWards = wards.map(w => {
- if (w.name === wardName) {
- return { ...w, officer: newOfficer };
- }
- return w;
- });
- setWards(updatedWards);
- toast.success(`Ward ${wardName} officer reassigned to ${newOfficer}`);
- };
-
- // Execute Mock Ward Merge: Reassign all tickets from Ward A to Ward B
- const handleMergeSubmit = (e) => {
- e.preventDefault();
-
- if (!sourceWard || !targetWard) {
- toast.error('Both source and target wards must be selected');
- return;
- }
-
- if (sourceWard === targetWard) {
- toast.error('Source and Target wards cannot be the same');
- return;
- }
-
- // Reassign tickets
- const updatedTickets = tickets.map(ticket => {
- if (String(ticket.ward) === String(sourceWard)) {
- return { ...ticket, ward: targetWard, notes: `Reassigned from Ward ${sourceWard} due to Ward Merge action.` };
- }
- return ticket;
- });
-
- handleSaveTickets(updatedTickets);
- setMergeModalOpen(false);
-
- // Remove source ward from the administrative listing to simulate merge deletion
- const updatedWards = wards.filter(w => w.name !== sourceWard);
- setWards(updatedWards);
-
- toast.success(`Wards merged! All active complaints transferred from Ward ${sourceWard} to Ward ${targetWard}.`);
- setSourceWard('');
- setTargetWard('');
- };
+      // Generate dynamic wards list from tickets
+      const wardSet = new Set();
+      const dynamicWards = [];
+      formatted.forEach(t => {
+        if (!wardSet.has(t.ward)) {
+          wardSet.add(t.ward);
+          dynamicWards.push({
+            name: t.ward,
+            taluk: 'District Assigned',
+            officer: 'Pending Assignment'
+          });
+        }
+      });
+      setWards(dynamicWards);
+    } catch (err) {
+      console.error('Failed to fetch tickets for ward management:', err);
+    }
+  };
 
  return (
  <motion.div 
@@ -133,14 +79,6 @@ export default function WardManagement() {
  </div>
  </div>
 
- {/* Merge Ward CTA button */}
- <button
- onClick={() => setMergeModalOpen(true)}
- className="flex items-center gap-1.5 text-xs font-black uppercase px-4 py-2.5 rounded-2xl bg-[#8B1A1A] hover:bg-[#FF6600] text-white shadow-md transition-all"
- >
- <Layers className="w-4 h-4" />
- <span>{t('merge_ward')}</span>
- </button>
  </div>
 
  {/* Ward Administration Table */}
@@ -245,81 +183,6 @@ export default function WardManagement() {
  </div>
 
  </div>
-
- {/* MODAL: Merge Ward Component */}
- <AnimatePresence>
- {mergeModalOpen && (
- <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
- <motion.div 
- initial={{ scale: 0.95, opacity: 0 }}
- animate={{ scale: 1, opacity: 1 }}
- exit={{ scale: 0.95, opacity: 0 }}
- className="w-full max-w-md bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4"
- >
- <div className="flex justify-between items-center pb-2 border-b border-slate-100 ">
- <h4 className="font-black text-[#8B1A1A] text-base uppercase flex items-center gap-1.5">
- <Layers className="w-5 h-5" />
- <span>Merge Municipal Wards</span>
- </h4>
- <button onClick={() => setMergeModalOpen(false)}>
- <X className="w-5 h-5 text-slate-400" />
- </button>
- </div>
-
- <div className="bg-amber-50 border border-amber-200 p-4.5 rounded-2xl flex items-start gap-2.5 shadow-inner">
- <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
- <p className="text-[11px] text-amber-800 font-extrabold leading-relaxed">
- WARNING: This action is administrative-level. Merging Wards will automatically transfer all active and resolved complaints from the Source Ward into the Target Ward, permanently updating ticket records.
- </p>
- </div>
-
- <form onSubmit={handleMergeSubmit} className="space-y-4 pt-2">
- <div className="grid grid-cols-2 gap-4">
- {/* Source Ward */}
- <div className="space-y-1">
- <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block">
- Source Ward (To merge)
- </label>
- <select
- required
- value={sourceWard}
- onChange={(e) => setSourceWard(e.target.value)}
- className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
- >
- <option value="" disabled>Select Ward</option>
- {wards.map(w => <option key={w.name} value={w.name}>Ward {w.name}</option>)}
- </select>
- </div>
-
- {/* Target Ward */}
- <div className="space-y-1">
- <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block">
- Target Ward (To absorb)
- </label>
- <select
- required
- value={targetWard}
- onChange={(e) => setTargetWard(e.target.value)}
- className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
- >
- <option value="" disabled>Select Ward</option>
- {wards.map(w => <option key={w.name} value={w.name}>Ward {w.name}</option>)}
- </select>
- </div>
- </div>
-
- <button
- type="submit"
- className="w-full py-3.5 rounded-xl bg-[#8B1A1A] hover:bg-[#FF6600] text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-1.5"
- >
- <span>Verify and Execute Merge</span>
- <ArrowRight className="w-4 h-4" />
- </button>
- </form>
- </motion.div>
- </div>
- )}
- </AnimatePresence>
 
  </motion.div>
  );

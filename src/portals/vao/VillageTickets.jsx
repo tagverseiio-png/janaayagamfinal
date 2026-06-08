@@ -6,6 +6,7 @@ import { AlertCircle, PlusCircle, CheckCircle, Search, ShieldAlert, Landmark, X 
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import api from '../../services/api';
 
 export default function VillageTickets() {
  const { t } = useTranslation();
@@ -14,40 +15,41 @@ export default function VillageTickets() {
  const [observations, setObservations] = useState({});
  const [selectedTicket, setSelectedTicket] = useState(null);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        id: t.ticketNumber,
+        description: t.description,
+        ward: t.jurisdiction?.name || 'Unknown',
+        created_at: t.createdAt || new Date().toISOString()
+      }));
+      setTickets(formatted);
 
- // Populate existing observations
- const notes = {};
- list.forEach(ticket => {
- if (ticket.vao_observation) {
- notes[ticket.id] = ticket.vao_observation;
- }
- });
- setObservations(notes);
- };
+      // Populate existing observations from local storage
+      const notesList = JSON.parse(localStorage.getItem('jn_vao_notes') || '{}');
+      setObservations(notesList);
+    } catch (err) {
+      console.error('Failed to fetch Village tickets:', err);
+    }
+  };
 
  useEffect(() => {
  fetchTickets();
  }, []);
 
- const handleSaveObservation = (ticketId) => {
- const note = observations[ticketId] || '';
- 
- // Save to localStorage
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- const updated = list.map(ticket => {
- if (ticket.id === ticketId) {
- return { ...ticket, vao_observation: note };
- }
- return ticket;
- });
+  const handleSaveObservation = (ticketId) => {
+    const note = observations[ticketId] || '';
+    
+    // Save to localStorage specifically for notes
+    const notesList = JSON.parse(localStorage.getItem('jn_vao_notes') || '{}');
+    notesList[ticketId] = note;
+    localStorage.setItem('jn_vao_notes', JSON.stringify(notesList));
 
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- toast.success('Field observation saved successfully');
- };
+    toast.success('Field observation saved successfully');
+  };
 
  const handleAction = (ticketId, actionType) => {
  if (actionType === 'view') {

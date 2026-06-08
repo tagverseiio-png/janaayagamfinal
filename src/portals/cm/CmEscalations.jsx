@@ -8,6 +8,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
+import api from '../../services/api';
 
 export default function CmEscalations() {
  const { t } = useTranslation();
@@ -21,10 +22,23 @@ export default function CmEscalations() {
  const [overrideModalOpen, setOverrideModalOpen] = useState(false);
  const [escalateModalOpen, setEscalateModalOpen] = useState(false);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- };
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name?.toLowerCase() || 'unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        ward: t.jurisdiction?.name || 'Unknown',
+        status: t.status || 'open',
+        id: t.ticketNumber,
+        created_at: t.createdAt || new Date().toISOString()
+      }));
+      setTickets(formatted);
+    } catch (err) {
+      console.error('Failed to fetch tickets for escalations:', err);
+    }
+  };
 
  useEffect(() => {
  fetchTickets();

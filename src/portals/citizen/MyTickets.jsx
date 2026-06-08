@@ -61,8 +61,7 @@ export default function MyTickets() {
         district: t.jurisdiction?.name || 'Unknown',
         id: t.ticketNumber,
         created_at: t.createdAt,
-        sla_deadline: t.deadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
-        ward: 'Ward 142' // Mock
+        sla_deadline: t.deadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString()
       }));
       setTickets(formatted);
     } catch (err) {
@@ -266,12 +265,7 @@ export default function MyTickets() {
     };
   };
 
-  // Mock Resolved History data
-  const mockRecentlyResolved = [
-    { id: '1045', titleEn: 'Streetlight Replacement', titleTa: 'தெருவிளக்கு மாற்றுதல்', date: 'May 18, 2026', dateTa: 'மே 18, 2026' },
-    { id: '1046', titleEn: 'Pothole Repair - Main Road', titleTa: 'சாலை பள்ளம் பழுதுபார்த்தல்', date: 'May 15, 2026', dateTa: 'மே 15, 2026' },
-    { id: '1047', titleEn: 'Water Supply Restored', titleTa: 'குடிநீர் விநியோகம் சீரமைப்பு', date: 'May 10, 2026', dateTa: 'மே 10, 2026' }
-  ];
+
 
   return (
     <div 
@@ -402,7 +396,7 @@ export default function MyTickets() {
                         <span className="text-[10px] font-mono text-slate-400 pl-1">#JN-{ticket.id}</span>
                       </h4>
                       <p className="text-[12px] text-slate-400 font-bold mt-1.5 leading-none">
-                        Ward {ticket.ward}, Velachery, {ticket.district || 'Chennai'}
+                        {ticket.jurisdictionName || ticket.district || 'Chennai'}
                       </p>
                       <p className="text-[10.5px] text-slate-400 font-bold mt-1 leading-none">
                         Submitted: {submittedStr}
@@ -754,46 +748,7 @@ export default function MyTickets() {
         </div>
       )}
 
-      {/* ══ RECENTLY RESOLVED HISTORY LIST ══ */}
-      {tickets.length > 0 && (
-        <div className="mt-8 space-y-3 pb-8 select-none">
-          <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest block">
-            {tLabel("Recently Resolved Complaints", "சமீபத்தில் தீர்க்கப்பட்ட புகார்கள்")}
-          </span>
-          
-          <div className="space-y-3">
-            {mockRecentlyResolved.map(hist => (
-              <div
-                key={hist.id}
-                onClick={() => {
-                  setExpandedId(hist.id);
-                  setFilter('all');
-                  setTimeout(() => {
-                    document.getElementById(`ticket-${hist.id}`)?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="bg-white rounded-[12px] p-3.5 border border-[#DDE1E7] flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black shrink-0 border border-emerald-100 shadow-xs">
-                    ✓
-                  </div>
-                  <div>
-                    <h5 className="text-[13px] font-black text-slate-800">
-                      {tLabel(hist.titleEn, hist.titleTa)}
-                    </h5>
-                    <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
-                      {tLabel(`Resolved on ${hist.date}`, `${hist.dateTa} அன்று தீர்க்கப்பட்டது`)}
-                    </span>
-                  </div>
-                </div>
-                
-                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
       </div>
 
     </div>

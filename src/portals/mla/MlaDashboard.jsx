@@ -46,18 +46,24 @@ export default function MlaDashboard({ overviewMode = false }) {
   const [DISTRICT_STATS, setDistrictStats] = useState({});
   const RESOLUTION_TREND = [];
   const EMERGENCY_CONTACTS = [];
-  const getCategoryCount = () => [];
+  const getCategoryCount = () => {
+    const catCounts = {};
+    SEED_TICKETS.forEach(t => {
+      catCounts[t.category] = (catCounts[t.category] || 0) + 1;
+    });
+    return Object.entries(catCounts).map(([name, count]) => ({ name, count }));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await api.get('/dashboard/stats');
-        setStats(prev => ({
-          ...prev,
-          totalOpen: statsRes.data.totalOpen,
-          totalResolved: statsRes.data.totalResolved,
-          criticalPriority: statsRes.data.criticalPriority
-        }));
+        let statsResData = null;
+        try {
+          const statsRes = await api.get('/dashboard/stats');
+          statsResData = statsRes.data;
+        } catch(err) {
+          console.log('Using local stats fallback');
+        }
 
         const ticketsRes = await api.get('/tickets');
         const formattedTickets = ticketsRes.data.map(t => ({
@@ -71,6 +77,22 @@ export default function MlaDashboard({ overviewMode = false }) {
         // For MLA, optionally filter by constituency/district here if we wanted
         // setTickets(formattedTickets.filter(t => t.district === district));
         setTickets(formattedTickets);
+
+        if (statsResData) {
+          setStats(prev => ({
+            ...prev,
+            totalOpen: statsResData.totalOpen || 0,
+            totalResolved: statsResData.totalResolved || 0,
+            criticalPriority: statsResData.criticalPriority || 0
+          }));
+        } else {
+          setStats(prev => ({
+            ...prev,
+            totalOpen: formattedTickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length,
+            totalResolved: formattedTickets.filter(t => t.status === 'resolved').length,
+            criticalPriority: formattedTickets.filter(t => t.priority === 'critical' || t.priority === 'Critical').length
+          }));
+        }
 
         const dStats = {};
         formattedTickets.forEach(t => {

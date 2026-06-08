@@ -6,6 +6,8 @@ import {
  TrendingUp, Calendar, FileText, Printer, Download, X, HelpCircle 
 } from 'lucide-react';
 
+import api from '../../services/api';
+
 export default function SecretaryReports() {
  const { t } = useTranslation();
  const [startDate, setStartDate] = useState('');
@@ -17,31 +19,53 @@ export default function SecretaryReports() {
  'Erode', 'Thanjavur', 'Thoothukudi', 'Dindigul', 'Kancheepuram', 'Cuddalore', 'Nagapattinam'
  ];
 
- // Mock report dataset that uses reproducible hashes based on date selections
- const generateReportData = () => {
- // Generate dates based calculations to simulate true filtering
- const startNum = startDate ? new Date(startDate).getTime() % 10 : 3;
- const endNum = endDate ? new Date(endDate).getTime() % 10 : 7;
- const offset = Math.abs(endNum - startNum) + 1;
+  const [tickets, setTickets] = useState([]);
+  
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          status: t.status || 'open',
+          createdAt: new Date(t.createdAt).getTime()
+        }));
+        setTickets(formatted);
+      } catch (err) {
+        console.error('Failed to load tickets:', err);
+      }
+    };
+    fetchTickets();
+  }, []);
 
- return districtsList.map(dist => {
- const hash = dist.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
- const open = (hash % 15) + offset;
- const resolved = (hash % 25) + (offset * 2);
- const breach = Math.round(((hash % 18) / (open || 1)) * 100) % 40;
- const avgDays = (hash % 6) + 3;
+  const generateReportData = () => {
+    const startNum = startDate ? new Date(startDate).getTime() : 0;
+    const endNum = endDate ? new Date(endDate).getTime() + 86400000 : Infinity; // Include whole end date
 
- return {
- name: dist,
- open,
- resolved,
- breach,
- avgDays
- };
- });
- };
+    const filteredTickets = tickets.filter(t => t.createdAt >= startNum && t.createdAt <= endNum);
+    
+    return districtsList.map(dist => {
+      const distTickets = filteredTickets.filter(t => t.district === dist);
+      const open = distTickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length;
+      const resolved = distTickets.filter(t => t.status === 'resolved').length;
+      
+      // Simulate breach % if we don't have sla data yet
+      const breach = 0;
+      const avgDays = 0;
 
- const reportData = generateReportData();
+      return {
+        name: dist,
+        open,
+        resolved,
+        breach,
+        avgDays
+      };
+    });
+  };
+
+  const reportData = generateReportData();
 
  const handleGenerateReport = (e) => {
  e.preventDefault();

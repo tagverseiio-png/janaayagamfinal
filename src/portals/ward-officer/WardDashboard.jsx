@@ -13,6 +13,7 @@ export default function WardDashboard() {
   const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
+  const officerWard = localStorage.getItem('jn_ward') || 'Velachery';
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -24,9 +25,9 @@ export default function WardDashboard() {
           district: t.jurisdiction?.name || 'Unknown',
           id: t.ticketNumber,
           description: t.description,
-          ward: 'Ward 142' // Mock for now
+          ward: t.jurisdiction?.name || 'Unknown' 
         }));
-        setTickets(formatted.filter(t => t.ward === 'Ward 142'));
+        setTickets(formatted.filter(t => t.ward === officerWard || t.ward.includes('142')));
       } catch (err) {
         console.error('Failed to fetch ward tickets:', err);
       }
@@ -62,7 +63,7 @@ export default function WardDashboard() {
             Grassroots Citizen Representative
           </span>
           <h2 className="text-3xl font-black">
-            WARD — Ward 142 only
+            WARD — {officerWard}
           </h2>
           <p className="text-sm text-emerald-100 font-bold uppercase tracking-wider opacity-90 flex items-center gap-1.5">
             <HeartHandshake className="w-4 h-4" />
@@ -204,7 +205,7 @@ export default function WardDashboard() {
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#8B1A1A]" />
                 <h3 className="font-extrabold text-sm text-slate-700 uppercase tracking-wider">
-                  Ward 142 Boundary Map
+                  {officerWard} Boundary Map
                 </h3>
               </div>
               <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded">ZOOM LEVEL 13</span>

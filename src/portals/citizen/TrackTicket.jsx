@@ -37,8 +37,7 @@ export default function TrackTicket() {
           ...found,
           id: found.ticketNumber,
           category: found.department?.name || 'Unknown',
-          district: found.jurisdiction?.name || 'Unknown',
-          ward: 'Ward 142' // Mock
+          district: found.jurisdiction?.name || 'Unknown'
         });
         setError('');
       } else {
@@ -111,7 +110,7 @@ export default function TrackTicket() {
               </div>
 
               <p className="text-slate-700 font-semibold text-sm mb-1">{ticket.description}</p>
-              <p className="text-slate-400 text-xs mb-3">{ticket.ward}, {ticket.district}</p>
+              <p className="text-slate-400 text-xs mb-3">{ticket.jurisdictionName || ticket.district}</p>
 
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">

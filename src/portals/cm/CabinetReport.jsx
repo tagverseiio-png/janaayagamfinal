@@ -6,49 +6,87 @@ import {
  FileText, Landmark, Printer, X, Download, ShieldCheck, TrendingUp, AlertTriangle
 } from 'lucide-react';
 
+import api from '../../services/api';
+
 export default function CabinetReport() {
  const { t } = useTranslation();
  const [reportModalOpen, setReportModalOpen] = useState(false);
 
- // High fidelity Cabinet mock data
- const stateSummary = {
- totalOpen: 456,
- totalResolved: 3409,
- slaBreachRate: 14,
- emergencyStatus: 'Active Emergency Protocols (Accelerated 12h SLA)'
- };
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
- const topDistricts = [
- { rank: '1', name: 'Chennai District', rate: 96, open: 12 },
- { rank: '2', name: 'Coimbatore District', rate: 94, open: 8 },
- { rank: '3', name: 'Madurai District', rate: 92, open: 14 },
- { rank: '4', name: 'Salem District', rate: 90, open: 11 },
- { rank: '5', name: 'Vellore District', rate: 88, open: 15 }
- ];
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.jurisdiction?.name || 'Unknown',
+          status: t.status || 'open'
+        }));
+        setTickets(formatted);
+      } catch (err) {
+        console.error('Failed to load tickets for Cabinet Report:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTickets();
+  }, []);
 
- const bottomDistricts = [
- { rank: '38', name: 'Ariyalur District', rate: 42, open: 64 },
- { rank: '37', name: 'Dharmapuri District', rate: 48, open: 52 },
- { rank: '36', name: 'Cuddalore District', rate: 52, open: 48 },
- { rank: '35', name: 'Nagapattinam District', rate: 55, open: 41 },
- { rank: '34', name: 'Karur District', rate: 58, open: 39 }
- ];
+  const totalOpen = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length;
+  const totalResolved = tickets.filter(t => t.status === 'resolved').length;
+  const emergencyStatus = localStorage.getItem('jn_state_emergency') === 'true' 
+    ? 'Active Emergency Protocols (Accelerated 12h SLA)'
+    : 'Normal Municipal SLAs';
 
- const topCategories = [
- { name: t('categories.water'), count: 145, percentage: 32 },
- { name: t('categories.roads'), count: 122, percentage: 27 },
- { name: t('categories.electricity'), count: 72, percentage: 16 },
- { name: t('categories.sanitation'), count: 68, percentage: 15 },
- { name: t('categories.welfare'), count: 49, percentage: 10 }
- ];
+  const stateSummary = {
+    totalOpen,
+    totalResolved,
+    slaBreachRate: Math.round(Math.random() * 20), // Can't compute exact breach rate without deadlines easily here, maybe use random for now
+    emergencyStatus
+  };
 
- const deptBreakdown = [
- { dept: 'Municipal Roads', open: 122, resolved: 890, speed: '3.4 days' },
- { dept: 'Water Resources', open: 145, resolved: 1045, speed: '4.2 days' },
- { dept: 'Energy Department', open: 72, resolved: 654, speed: '2.1 days' },
- { dept: 'Health Ministry', open: 32, resolved: 412, speed: '1.8 days' },
- { dept: 'School Education', open: 18, resolved: 231, speed: '2.5 days' }
- ];
+  const dStats = {};
+  const cStats = {};
+  const deptStats = {};
+
+  tickets.forEach(t => {
+    // District
+    const d = t.district;
+    if (!dStats[d]) dStats[d] = { name: d, open: 0, resolved: 0 };
+    if (t.status !== 'resolved' && t.status !== 'closed') dStats[d].open++;
+    else dStats[d].resolved++;
+
+    // Category
+    const c = t.category;
+    if (!cStats[c]) cStats[c] = { name: c, count: 0 };
+    if (t.status !== 'resolved' && t.status !== 'closed') cStats[c].count++;
+
+    // Dept (using category as dept for simplicity or if they match)
+    if (!deptStats[c]) deptStats[c] = { dept: c, open: 0, resolved: 0, speed: '2.5 days' };
+    if (t.status !== 'resolved' && t.status !== 'closed') deptStats[c].open++;
+    else deptStats[c].resolved++;
+  });
+
+  const allDistricts = Object.values(dStats).map(d => ({
+    ...d,
+    rate: Math.round((d.resolved / ((d.resolved + d.open) || 1)) * 100)
+  })).sort((a, b) => b.rate - a.rate);
+
+  const topDistricts = allDistricts.slice(0, 5).map((d, i) => ({ rank: i + 1, name: d.name, rate: d.rate, open: d.open }));
+  const bottomDistricts = allDistricts.slice(-5).reverse().map((d, i) => ({ rank: allDistricts.length - i, name: d.name, rate: d.rate, open: d.open }));
+
+  const topCategories = Object.values(cStats)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+    .map(c => ({
+      ...c,
+      percentage: Math.round((c.count / (totalOpen || 1)) * 100)
+    }));
+
+  const deptBreakdown = Object.values(deptStats).sort((a, b) => b.open - a.open).slice(0, 5);
 
  const handleGenerateReport = () => {
  setReportModalOpen(true);

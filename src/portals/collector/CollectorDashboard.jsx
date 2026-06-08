@@ -29,12 +29,11 @@ import api from '../../services/api';
        const formatted = res.data.map(t => ({
          ...t,
          category: t.department?.name || 'Unknown',
-         district: t.jurisdiction?.name || 'Unknown',
+         district: 'Chennai',
          id: t.ticketNumber,
-         taluk: 'Velachery', // Mocked taluk for now
-         ward: 142
+         taluk: t.jurisdiction?.name || 'Unknown',
+         ward: t.jurisdiction?.name || 'Unknown'
        }));
-       // For Collector Dashboard, filter by district (mocked to Chennai or current jurisdiction)
        const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
        setTickets(formatted.filter(t => t.district === districtName));
        setLoadingTable(false);
@@ -63,95 +62,40 @@ import api from '../../services/api';
  const escalatedToState = tickets.filter(t => t.flaggedState === true).length;
  const resolvedCount = tickets.filter(t => t.status === 'Resolved').length;
 
- // Mock initial taluk configuration that integrates dynamic counts
- const baseTaluks = [
- { 
- id: 'velachery', 
- name: 'Velachery', 
- bdo: 'K. Srinivasan', 
- openOffset: 4, 
- resolvedOffset: 45, 
- breachOffset: 12, 
- avgDays: 5,
- wards: [
- { name: 'Ward 140', open: 2, resolved: 12, officer: 'Suresh M.' },
- { name: 'Ward 141', open: 1, resolved: 14, officer: 'Anitha K.' },
- { name: 'Ward 142', open: 1, resolved: 10, officer: 'Karthik Raj S.' },
- { name: 'Ward 143', open: 0, resolved: 9, officer: 'Ramya V.' }
- ]
- },
- { 
- id: 'sholinganallur', 
- name: 'Sholinganallur', 
- bdo: 'M. Senthil Kumar', 
- openOffset: 8, 
- resolvedOffset: 52, 
- breachOffset: 25, 
- avgDays: 8,
- wards: [
- { name: 'Ward 144', open: 3, resolved: 18, officer: 'Selvam P.' },
- { name: 'Ward 145', open: 2, resolved: 14, officer: 'Divya N.' },
- { name: 'Ward 146', open: 2, resolved: 11, officer: 'Manoj S.' },
- { name: 'Ward 147', open: 1, resolved: 9, officer: 'Priya R.' }
- ]
- },
- { 
- id: 'guindy', 
- name: 'Guindy', 
- bdo: 'R. Anbarasan', 
- openOffset: 2, 
- resolvedOffset: 34, 
- breachOffset: 8, 
- avgDays: 4,
- wards: [
- { name: 'Ward 130', open: 1, resolved: 20, officer: 'Naveen Kumar' },
- { name: 'Ward 131', open: 1, resolved: 14, officer: 'Vimala Devi' }
- ]
- },
- { 
- id: 'mylapore', 
- name: 'Mylapore', 
- bdo: 'S. Rajasekaran', 
- openOffset: 3, 
- resolvedOffset: 41, 
- breachOffset: 15, 
- avgDays: 6,
- wards: [
- { name: 'Ward 120', open: 2, resolved: 22, officer: 'Ganesh P.' },
- { name: 'Ward 121', open: 1, resolved: 19, officer: 'Subha S.' }
- ]
- }
- ];
+  // Dynamic stats for table based on actual tickets
+  const talukMap = {};
+  
+  tickets.forEach(ticket => {
+    const jName = ticket.taluk || 'Unknown';
+    if (!talukMap[jName]) {
+      talukMap[jName] = {
+        id: jName,
+        name: jName,
+        bdo: 'Officer Assigned',
+        open: 0,
+        resolved: 0,
+        breachedCount: 0,
+        breach: 0,
+        avgDays: 4,
+        wards: []
+      };
+    }
+    if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
+      talukMap[jName].open += 1;
+      if (ticket.slaDeadline && now > new Date(ticket.slaDeadline)) {
+        talukMap[jName].breachedCount += 1;
+      }
+    } else {
+      talukMap[jName].resolved += 1;
+    }
+  });
 
- // Calculate stats for table dynamically using base mocks + localStorage data
- const talukTableData = baseTaluks.map(t => {
- // Dynamically query tickets assigned to this taluk or matching ward ids
- const activeInTaluk = activeTickets.filter(ticket => {
- if (ticket.taluk === t.name) return true;
- if (t.id === 'velachery') return ticket.ward >= 140 && ticket.ward <= 143;
- if (t.id === 'sholinganallur') return ticket.ward >= 144 && ticket.ward <= 147;
- return false;
- }).length;
-
- const resolvedInTaluk = tickets.filter(ticket => {
- if (ticket.status !== 'Resolved' && ticket.status !== 'Closed') return false;
- if (ticket.taluk === t.name) return true;
- if (t.id === 'velachery') return ticket.ward >= 140 && ticket.ward <= 143;
- if (t.id === 'sholinganallur') return ticket.ward >= 144 && ticket.ward <= 147;
- return false;
- }).length;
-
- const openCount = t.openOffset + activeInTaluk;
- const resolvedCount = t.resolvedOffset + resolvedInTaluk;
- const breachPercent = t.breachOffset; // Keep base baseline
-
- return {
- ...t,
- open: openCount,
- resolved: resolvedCount,
- breach: breachPercent
- };
- });
+  const talukTableData = Object.values(talukMap).map(t => {
+    return {
+      ...t,
+      breach: t.open > 0 ? Math.round((t.breachedCount / t.open) * 100) : 0
+    };
+  });
 
  // Table Sort logic
  const sortedTalukData = [...talukTableData].sort((a, b) => {
@@ -289,13 +233,13 @@ import api from '../../services/api';
  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider select-none">
  <th onClick={() => handleSort('name')} className="px-5 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors">
  <div className="flex items-center gap-1">
- <span>Taluk</span>
+ <span>Jurisdiction / Region</span>
  {sortField === 'name' && (sortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
  </div>
  </th>
  <th onClick={() => handleSort('bdo')} className="px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors">
  <div className="flex items-center gap-1">
- <span>BDO In-Charge</span>
+ <span>Officer In-Charge</span>
  {sortField === 'bdo' && (sortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
  </div>
  </th>
@@ -338,7 +282,7 @@ import api from '../../services/api';
  >
  <td className="px-5 py-4 flex items-center gap-2">
  {isExpanded ? <ChevronUp className="w-4 h-4 text-[#8B1A1A]" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
- <span className="font-extrabold text-slate-800 ">{row.name} Taluk</span>
+ <span className="font-extrabold text-slate-800 ">{row.name}</span>
  </td>
  <td className="px-4 py-4 font-medium text-slate-500">{row.bdo}</td>
  <td className="px-4 py-4 text-rose-600 font-mono">{row.open} active</td>

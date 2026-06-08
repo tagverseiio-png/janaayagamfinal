@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'sonner';
 import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getPlacesByPincode, getDistrictByPincode } from '../data/pincodeData';
+import api from '../services/api';
 
 /* ─── 38 Districts of Tamil Nadu ─────────────────────────────────────── */
 const districts = [
@@ -270,47 +271,50 @@ export default function LoginPage() {
     // Generate random session UUID
     const uuid = 'jn-' + Math.random().toString(36).substr(2, 9) + '-' + Math.random().toString(36).substr(2, 5);
 
-    // Save mock flow values to localStorage
-    localStorage.setItem('jn_role', 'citizen');
-    localStorage.setItem('jn_name', 'KARTHIK RAJ S.');
-    localStorage.setItem('jn_ward', wardNumber);
-    localStorage.setItem('jn_district', district);
-    localStorage.setItem('jn_user_id', uuid);
+    try {
+      const response = await api.post('/auth/citizen/login', {
+        phone: phone,
+        name: 'KARTHIK RAJ S.',
+        pincode: pincode
+      });
 
-    // Save Pincode details
-    localStorage.setItem('jn_pincode', pincode);
-    localStorage.setItem('jn_area', selectedArea);
-    localStorage.setItem('jn_ward_name', selectedWard);
-    localStorage.setItem('jn_ward_number', wardNumber);
-    localStorage.setItem('jn_living_lat', coords.lat.toString());
-    localStorage.setItem('jn_living_lng', coords.lng.toString());
+      const { token, citizen } = response.data;
+      
+      // Save backend token and citizen details
+      localStorage.setItem('jn_token', token);
+      localStorage.setItem('jn_user_id', citizen.id);
+      localStorage.setItem('jn_role', 'citizen');
+      localStorage.setItem('jn_name', citizen.name);
 
-    if (!localStorage.getItem('jn_aadhaar_address')) {
-      localStorage.setItem('jn_aadhaar_address', "123, Gandhi Nagar, Madurai - 625001");
-      localStorage.setItem('jn_aadhaar_district', "Madurai");
-      localStorage.setItem('jn_aadhaar_ward', "Ward 45");
+      // Save Pincode & Location details
+      localStorage.setItem('jn_pincode', pincode);
+      localStorage.setItem('jn_area', selectedArea);
+      localStorage.setItem('jn_ward_name', selectedWard);
+      localStorage.setItem('jn_ward_number', wardNumber);
+      localStorage.setItem('jn_district', district);
+      localStorage.setItem('jn_living_lat', coords.lat.toString());
+      localStorage.setItem('jn_living_lng', coords.lng.toString());
+
+      const completeAddress = `${selectedArea}, ${district}, Tamil Nadu - ${pincode}`;
+      localStorage.setItem('jn_living_address', completeAddress);
+      localStorage.setItem('jn_living_district', district);
+      localStorage.setItem('jn_living_ward', `Ward ${wardNumber}`);
+      
+      const today = new Date();
+      const nextDate = new Date();
+      nextDate.setDate(today.getDate() + 90);
+      localStorage.setItem('jn_location_last_updated', today.toISOString());
+      localStorage.setItem('jn_location_next_update', nextDate.toISOString());
+
+      toast.success(tLabel(
+        `Identity Verified: Welcome CITIZEN`,
+        `அடையாளம் சரிபார்க்கப்பட்டது: நல்வரவு குடிமகன்`
+      ));
+
+      navigate('/citizen');
+    } catch (err) {
+      toast.error(tLabel('Login Failed', 'உள்நுழைய முடியவில்லை'));
     }
-    
-    // Auto-set the Living Address since they chose it on login!
-    const completeAddress = `${selectedArea}, ${district}, Tamil Nadu - ${pincode}`;
-    localStorage.setItem('jn_living_address', completeAddress);
-    localStorage.setItem('jn_living_district', district);
-    localStorage.setItem('jn_living_ward', `Ward ${wardNumber}`);
-    localStorage.setItem('jn_living_lat', coords.lat.toString());
-    localStorage.setItem('jn_living_lng', coords.lng.toString());
-    
-    const today = new Date();
-    const nextDate = new Date();
-    nextDate.setDate(today.getDate() + 90);
-    localStorage.setItem('jn_location_last_updated', today.toISOString());
-    localStorage.setItem('jn_location_next_update', nextDate.toISOString());
-
-    toast.success(tLabel(
-      `Identity Verified: Welcome CITIZEN`,
-      `அடையாளம் சரிபார்க்கப்பட்டது: நல்வரவு குடிமகன்`
-    ));
-
-    navigate('/citizen');
   };
 
   const toggleLanguage = () => {
