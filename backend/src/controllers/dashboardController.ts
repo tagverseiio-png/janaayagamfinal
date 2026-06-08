@@ -1,6 +1,23 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 
+async function getJurisdictionDescendants(parentId: string): Promise<string[]> {
+  const children = await prisma.jurisdiction.findMany({
+    where: { parentId },
+    select: { id: true }
+  });
+  
+  const childIds = children.map(c => c.id);
+  const descendantIds: string[] = [...childIds];
+  
+  for (const childId of childIds) {
+    const subDescendants = await getJurisdictionDescendants(childId);
+    descendantIds.push(...subDescendants);
+  }
+  
+  return descendantIds;
+}
+
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
@@ -9,7 +26,12 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     let query: any = {};
     if (user?.type === 'employee') {
       if (user.departmentId) query.departmentId = user.departmentId;
-      if (user.jurisdictionId) query.jurisdictionId = user.jurisdictionId;
+      if (user.jurisdictionId) {
+        const descendantIds = await getJurisdictionDescendants(user.jurisdictionId);
+        query.jurisdictionId = {
+          in: [user.jurisdictionId, ...descendantIds]
+        };
+      }
     } else if (user?.type === 'citizen') {
       query.citizenId = user.id;
     }

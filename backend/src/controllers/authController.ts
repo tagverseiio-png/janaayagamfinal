@@ -91,3 +91,129 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ error: 'Internal server error during login' });
   }
 };
+
+export const loginEmployeeAadhaar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      aadhaar,
+      name,
+      category,
+      role,
+      departmentName,
+      jurisdictionLevel,
+      jurisdictionName
+    } = req.body;
+
+    if (!aadhaar || !name || !category || !role) {
+      res.status(400).json({ error: 'Aadhaar, name, category, and role are required' });
+      return;
+    }
+
+    // Resolve department
+    let departmentId: string | null = null;
+    if (departmentName) {
+      let dept = await prisma.department.findUnique({
+        where: { name: departmentName }
+      });
+      if (!dept) {
+        dept = await prisma.department.findFirst({
+          where: { name: { contains: departmentName } }
+        });
+      }
+      if (!dept) {
+        dept = await prisma.department.create({
+          data: { name: departmentName }
+        });
+      }
+      departmentId = dept.id;
+    }
+
+    // Resolve jurisdiction
+    let jurisdictionId: string | null = null;
+    if (jurisdictionLevel && jurisdictionName) {
+      let juris = await prisma.jurisdiction.findFirst({
+        where: {
+          level: jurisdictionLevel,
+          name: { contains: jurisdictionName }
+        }
+      });
+      if (!juris && jurisdictionLevel === 'STATE') {
+        juris = await prisma.jurisdiction.findFirst({
+          where: { level: 'STATE' }
+        });
+      }
+      if (!juris) {
+        // Fallback case-insensitive / partial match
+        juris = await prisma.jurisdiction.findFirst({
+          where: { name: { contains: jurisdictionName } }
+        });
+      }
+      if (!juris) {
+        const stateNode = await prisma.jurisdiction.findFirst({ where: { level: 'STATE' } });
+        juris = await prisma.jurisdiction.create({
+          data: {
+            level: jurisdictionLevel,
+            name: jurisdictionName,
+            parentId: stateNode?.id || null
+          }
+        });
+      }
+      jurisdictionId = juris.id;
+    }
+
+    // Look up employee by Aadhaar username
+    let employee = await prisma.employee.findUnique({
+      where: { username: aadhaar },
+      include: { department: true, jurisdiction: true }
+    });
+
+    const defaultPasswordHash = await bcrypt.hash('aadhaar-otp-auth-secure', 10);
+
+    if (!employee) {
+      employee = await prisma.employee.create({
+        data: {
+          username: aadhaar,
+          password: defaultPasswordHash,
+          name,
+          category,
+          role,
+          departmentId,
+          jurisdictionId
+        },
+        include: { department: true, jurisdiction: true }
+      });
+    } else {
+      employee = await prisma.employee.update({
+        where: { id: employee.id },
+        data: {
+          name,
+          category,
+          role,
+          departmentId,
+          jurisdictionId
+        },
+        include: { department: true, jurisdiction: true }
+      });
+    }
+
+    const payload: TokenPayload = {
+      id: employee.id,
+      role: employee.role,
+      type: 'employee',
+      category: employee.category,
+      departmentId: employee.departmentId || undefined,
+      jurisdictionId: employee.jurisdictionId || undefined
+    };
+
+    const token = generateToken(payload);
+
+    res.json({
+      message: 'Aadhaar login successful',
+      token,
+      employee
+    });
+  } catch (error) {
+    console.error('Aadhaar Employee Login Error:', error);
+    res.status(500).json({ error: 'Internal server error during login' });
+  }
+};

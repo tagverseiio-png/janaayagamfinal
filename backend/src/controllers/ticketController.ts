@@ -57,6 +57,23 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+async function getJurisdictionDescendants(parentId: string): Promise<string[]> {
+  const children = await prisma.jurisdiction.findMany({
+    where: { parentId },
+    select: { id: true }
+  });
+  
+  const childIds = children.map(c => c.id);
+  const descendantIds: string[] = [...childIds];
+  
+  for (const childId of childIds) {
+    const subDescendants = await getJurisdictionDescendants(childId);
+    descendantIds.push(...subDescendants);
+  }
+  
+  return descendantIds;
+}
+
 export const getTickets = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user;
@@ -65,17 +82,15 @@ export const getTickets = async (req: Request, res: Response): Promise<void> => 
     if (user?.type === 'citizen') {
       query.citizenId = user.id;
     } else if (user?.type === 'employee') {
-      // In a real scenario, this logic would be far more complex based on hierarchy.
-      // E.g., if a Collector, show all tickets for their district.
-      // If a Ward Officer, show all tickets for their ward.
       if (user.departmentId) {
         query.departmentId = user.departmentId;
       }
       if (user.jurisdictionId) {
-        // Here we would ideally find all child jurisdictions as well
-        query.jurisdictionId = user.jurisdictionId;
+        const descendantIds = await getJurisdictionDescendants(user.jurisdictionId);
+        query.jurisdictionId = {
+          in: [user.jurisdictionId, ...descendantIds]
+        };
       }
-      // If it's CM/Minister, they might see everything, so query stays empty or scoped.
     }
 
     const tickets = await prisma.ticket.findMany({
@@ -113,7 +128,7 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     if (assignedToId) data.assignedToId = assignedToId;
 
     const ticket = await prisma.ticket.update({
-      where: { id },
+      where: { id: id as string },
       data
     });
 

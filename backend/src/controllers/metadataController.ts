@@ -59,7 +59,7 @@ export const updateJurisdiction = async (req: Request, res: Response): Promise<v
     const { name, level, parentId } = req.body;
     
     const jurisdiction = await prisma.jurisdiction.update({
-      where: { id },
+      where: { id: id as string },
       data: { name, level, parentId }
     });
     
@@ -75,27 +75,27 @@ export const deleteJurisdiction = async (req: Request, res: Response): Promise<v
     const { id } = req.params;
     
     // Safety check: Don't delete if it has child jurisdictions
-    const children = await prisma.jurisdiction.findMany({ where: { parentId: id }});
+    const children = await prisma.jurisdiction.findMany({ where: { parentId: id as string }});
     if (children.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because it has child jurisdictions. Delete them first.' });
       return;
     }
 
     // Safety check: Don't delete if it has attached employees
-    const employees = await prisma.employee.findMany({ where: { jurisdictionId: id }});
+    const employees = await prisma.employee.findMany({ where: { jurisdictionId: id as string }});
     if (employees.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because employees are assigned to it.' });
       return;
     }
 
     // Safety check: Don't delete if it has attached tickets
-    const tickets = await prisma.ticket.findMany({ where: { jurisdictionId: id }});
+    const tickets = await prisma.ticket.findMany({ where: { jurisdictionId: id as string }});
     if (tickets.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because tickets are linked to it.' });
       return;
     }
 
-    await prisma.jurisdiction.delete({ where: { id }});
+    await prisma.jurisdiction.delete({ where: { id: id as string }});
     res.json({ message: 'Jurisdiction deleted successfully' });
   } catch (error) {
     console.error('Error deleting jurisdiction:', error);

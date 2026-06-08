@@ -38,7 +38,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
     }
 
     if (phone) {
-      const existingPhone = await prisma.employee.findUnique({ where: { phone } });
+      const existingPhone = await prisma.employee.findFirst({ where: { phone } });
       if (existingPhone) {
         res.status(400).json({ error: 'Employee with this phone already exists' });
         return;
@@ -93,7 +93,7 @@ export const deleteEmployee = async (req: Request, res: Response): Promise<void>
   try {
     const { id } = req.params;
     await prisma.employee.delete({
-      where: { id }
+      where: { id: id as string }
     });
     res.json({ message: 'Employee deleted successfully' });
   } catch (error) {
