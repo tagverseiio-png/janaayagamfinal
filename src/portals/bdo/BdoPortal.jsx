@@ -238,17 +238,29 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
 }
 
 // Subcomponent: BdoTickets (Ward performance)
-function BdoTickets() {
+ function BdoTickets() {
  const { i18n } = useTranslation();
  const isTa = i18n.language === 'ta';
  const tLabel = (en, ta) => isTa ? ta : en;
 
- const wards = [
- { name: '140', taluk: 'Velachery', officer: 'Suresh M.', open: 5, breach: true },
- { name: '141', taluk: 'Velachery', officer: 'Anitha K.', open: 1, breach: false },
- { name: '142', taluk: 'Velachery', officer: 'Karthik Raj S.', open: 8, breach: true },
- { name: '143', taluk: 'Velachery', officer: 'Ramya V.', open: 2, breach: false }
- ];
+ const [wards, setWards] = useState([]);
+
+ useEffect(() => {
+   api.get('/tickets').then(res => {
+     const wardMap = {};
+     res.data.forEach(t => {
+       const wName = t.jurisdiction?.name || 'Unknown';
+       if (!wardMap[wName]) {
+         wardMap[wName] = { name: wName, taluk: 'Local', officer: 'Officer', open: 0, breach: false };
+       }
+       if (t.status !== 'resolved' && t.status !== 'closed') {
+         wardMap[wName].open += 1;
+         if (t.priority === 'Critical') wardMap[wName].breach = true;
+       }
+     });
+     setWards(Object.values(wardMap));
+   }).catch(console.error);
+ }, []);
 
  return (
  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4 select-none">

@@ -165,7 +165,7 @@ export default function CivicFeed() {
     if (!text.trim()) return;
 
     const newComment = {
-      author: 'KARTHIK RAJ S.',
+      author: localStorage.getItem('jn_name') || 'Citizen',
       text: text.trim(),
       time: tLabel('Just now', 'இப்போதுதான்'),
       likes: 0

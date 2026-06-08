@@ -138,17 +138,10 @@ DEPARTMENT COMPLAINT VOLUME
 ${getCategoryCount().map(c => `- ${c.name}: ${c.count} complaints`).join('\n')}
 
 TOP 5 PERFORMING DISTRICTS
-- Kanniyakumari: 97% resolved
-- Thanjavur: 97% resolved
-- Dindigul: 96% resolved
-- Chennai: 95% resolved
-- Kancheepuram: 94% resolved
+- Dynamic data not available in summary report
 
 DISTRICTS NEEDING ATTENTION
-- Tiruvarur: 63% resolution
-- Tirupathur: 71% resolution
-- Vellore: 75% resolution
-- Tiruvannamalai: 75% resolution
+- Dynamic data not available in summary report
 
 ========================================
 Confidential â€” Government of Tamil Nadu`;

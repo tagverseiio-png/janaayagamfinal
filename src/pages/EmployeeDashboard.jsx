@@ -4,6 +4,7 @@ import { Shield, LogOut, CheckCircle, AlertTriangle, Clock, MapPin, Search, BarC
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TnMap from '../shared/components/TnMap';
+import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -40,23 +41,30 @@ export default function EmployeeDashboard() {
       setJurisdiction({});
     }
 
-    // Process massive realistic data based on role context
-    let filtered = [...SEED_TICKETS];
-    
-    // 1. Department Filter
-    if (isDepartment && dept) {
-      filtered = filtered.filter(t => t.category.toLowerCase().includes(dept.toLowerCase()) || dept.toLowerCase().includes(t.category.toLowerCase()));
-    }
+    api.get('/tickets').then(res => {
+      let filtered = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        ward: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber
+      }));
+      
+      // 1. Department Filter
+      if (isDepartment && dept) {
+        filtered = filtered.filter(t => t.category.toLowerCase().includes(dept.toLowerCase()) || dept.toLowerCase().includes(t.category.toLowerCase()));
+      }
 
-    // 2. Jurisdiction Filter
-    if (juris.district) {
-      filtered = filtered.filter(t => t.district === juris.district);
-    }
-    if (juris.ward) {
-      filtered = filtered.filter(t => t.ward === juris.ward);
-    }
+      // 2. Jurisdiction Filter
+      if (juris.district) {
+        filtered = filtered.filter(t => t.district === juris.district);
+      }
+      if (juris.ward) {
+        filtered = filtered.filter(t => t.ward === juris.ward);
+      }
 
-    setTickets(filtered);
+      setTickets(filtered);
+    }).catch(console.error);
   }, [navigate, isDepartment]);
 
   const handleLogout = () => {
