@@ -100,7 +100,7 @@ export default function VillageTickets() {
  Village Grievances List
  </h2>
  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">
- Grievances queue for Velachery Ward 142
+ Grievances queue for {localStorage.getItem('jn_jurisdiction') || 'Village'}
  </p>
  </div>
 

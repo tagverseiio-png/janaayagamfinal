@@ -52,24 +52,26 @@ export default function CollectorPerformance() {
  };
  });
 
- // Top 5 / Bottom 5 resolution rates
- const topWards = [
- { name: 'Ward 144 (Velachery)', rate: 98, color: 'bg-emerald-500' },
- { name: 'Ward 141 (Velachery)', rate: 95, color: 'bg-emerald-500' },
- { name: 'Ward 147 (Sholinganallur)', rate: 92, color: 'bg-emerald-500' },
- { name: 'Ward 131 (Guindy)', rate: 90, color: 'bg-emerald-500' },
- { name: 'Ward 140 (Velachery)', rate: 88, color: 'bg-emerald-500' }
- ];
+  const wardStats = {};
+  tickets.forEach(t => {
+    const wardName = t.jurisdiction?.name || 'Unknown Location';
+    if (!wardStats[wardName]) wardStats[wardName] = { total: 0, resolved: 0 };
+    wardStats[wardName].total++;
+    if (t.status === 'resolved' || t.status === 'closed') {
+      wardStats[wardName].resolved++;
+    }
+  });
 
- const bottomWards = [
- { name: 'Ward 142 (Velachery)', rate: 45, color: 'bg-rose-500' },
- { name: 'Ward 120 (Mylapore)', rate: 58, color: 'bg-rose-500' },
- { name: 'Ward 146 (Sholinganallur)', rate: 62, color: 'bg-rose-500' },
- { name: 'Ward 121 (Mylapore)', rate: 68, color: 'bg-rose-500' },
- { name: 'Ward 130 (Guindy)', rate: 72, color: 'bg-rose-500' }
- ];
+  const wardRates = Object.keys(wardStats).map(ward => ({
+    name: ward,
+    rate: Math.round((wardStats[ward].resolved / wardStats[ward].total) * 100)
+  })).sort((a, b) => b.rate - a.rate);
 
- const activeWardsChart = chartMode === 'top' ? topWards : bottomWards;
+  // Take top 5 and bottom 5 dynamically
+  const topWards = wardRates.slice(0, 5).map(w => ({ ...w, color: 'bg-emerald-500' }));
+  const bottomWards = [...wardRates].sort((a, b) => a.rate - b.rate).slice(0, 5).map(w => ({ ...w, color: 'bg-rose-500' }));
+
+  const activeWardsChart = chartMode === 'top' ? topWards : bottomWards;
 
  return (
  <motion.div 
@@ -209,7 +211,7 @@ export default function CollectorPerformance() {
  District Grievances Resolution Performance Index
  </h4>
  <p className="text-xs text-slate-600 leading-relaxed font-medium">
- The district has maintained a <strong>74% overall resolution index</strong> this month, showing a 4% increase in BDO block-level response timelines compared to last quarter. Velachery Ward 144 stands as the highest performing municipal ward with an average grievance closure time of 2.1 days.
+ The district has maintained a <strong>strong resolution index</strong> this month, showing an increase in BDO block-level response timelines compared to last quarter. The highest performing municipal ward has shown an impressive average grievance closure time.
  </p>
  </div>
 

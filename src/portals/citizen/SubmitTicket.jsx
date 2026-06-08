@@ -42,11 +42,10 @@ export default function SubmitTicket() {
   useEffect(() => {
     const lAddr = localStorage.getItem('jn_living_address') || "";
     const lDist = localStorage.getItem('jn_living_district') || "Chennai";
-    const lWard = (localStorage.getItem('jn_living_ward') || "Ward 142").replace(/Ward\s+/i, '');
+    const lWard = localStorage.getItem('jn_ward_name') || "Ward 1";
     
     setLivingAddress(lAddr);
     setLivingDistrict(lDist);
-    setLivingWard(lWard);
     setLivingWard(lWard);
   }, []);
 
@@ -181,7 +180,7 @@ export default function SubmitTicket() {
             onCapture={handleCameraCapture} 
             onClose={() => setShowCamera(false)} 
             userName={localStorage.getItem('jn_name') || 'KARTHIK RAJ S.'}
-            userWard={locationMode === 'home' ? `Ward ${livingWard}` : `Ward ${localStorage.getItem('jn_ward') || '142'}`}
+            userWard={locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward_name') || 'Ward 1')}
           />
         </div>
       )}
@@ -333,9 +332,7 @@ export default function SubmitTicket() {
                       <span>{tLabel(`Home Ward: Ward ${livingWard}, ${livingDistrict}`, `வசிப்பிடம்: வார்டு ${livingWard}, ${livingDistrict}`)}</span>
                     </>
                   ) : (
-                    <>
-                      <span>📍</span>
-                      <span>{tLabel(`Live GPS: Ward ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'}`, `ஜிபிஎஸ்: வார்டு ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'}`)}</span>
+                      <span>{tLabel(`Live GPS: ${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'}`, `ஜிபிஎஸ்: ${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'}`)}</span>
                     </>
                   )}
                 </div>
@@ -487,8 +484,8 @@ export default function SubmitTicket() {
                       assignedWard 
                         ? tLabel(`${assignedWard} (Auto-detected)`, `${assignedWard} (தானாக கண்டறியப்பட்டது)`)
                         : locationMode === 'home' 
-                          ? tLabel(`Ward ${livingWard}, ${livingDistrict} (Home Residence)`, `வார்டு ${livingWard}, ${livingDistrict} (வசிப்பிடம்)`)
-                          : tLabel(`Ward ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (GPS Transit)`, `வார்டு ${localStorage.getItem('jn_ward') || '142'}, ${localStorage.getItem('jn_district') || 'Chennai'} (ஜிபிஎஸ் வழி)`)
+                          ? tLabel(`${livingWard}, ${livingDistrict} (Home Residence)`, `${livingWard}, ${livingDistrict} (வசிப்பிடம்)`)
+                          : tLabel(`${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'} (GPS Transit)`, `${localStorage.getItem('jn_ward_name') || 'Ward 1'}, ${localStorage.getItem('jn_district') || 'Chennai'} (ஜிபிஎஸ் வழி)`)
                     }
                     disabled
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-500 font-extrabold text-xs cursor-not-allowed select-none opacity-80"

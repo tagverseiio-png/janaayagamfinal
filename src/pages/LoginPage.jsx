@@ -7,109 +7,7 @@ import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getPlacesByPincode, getDistrictByPincode } from '../data/pincodeData';
 import api from '../services/api';
 
-/* ─── 38 Districts of Tamil Nadu ─────────────────────────────────────── */
-const districts = [
-  { name: "Chennai", tamil: "சென்னை" },
-  { name: "Coimbatore", tamil: "கோயம்புத்தூர்" },
-  { name: "Madurai", tamil: "மதுரை" },
-  { name: "Salem", tamil: "சேலம்" },
-  { name: "Trichy", tamil: "திருச்சி" },
-  { name: "Vellore", tamil: "வேலூர்" },
-  { name: "Tirunelveli", tamil: "திருநெல்வேலி" },
-  { name: "Erode", tamil: "ஈரோடு" },
-  { name: "Thanjavur", tamil: "தஞ்சாவூர்" },
-  { name: "Dindigul", tamil: "திண்டுக்கல்" },
-  { name: "Kancheepuram", tamil: "காஞ்சிபுரம்" },
-  { name: "Tiruppur", tamil: "திருப்பூர்" },
-  { name: "Thoothukudi", tamil: "தூத்துக்குடி" },
-  { name: "Nagercoil", tamil: "நாகர்கோவில்" },
-  { name: "Cuddalore", tamil: "கடலூர்" },
-  { name: "Villupuram", tamil: "விழுப்புரம்" },
-  { name: "Nagapattinam", tamil: "நாகப்பட்டினம்" },
-  { name: "Dharmapuri", tamil: "தர்மபுரி" },
-  { name: "Krishnagiri", tamil: "கிருஷ்ணகிரி" },
-  { name: "Namakkal", tamil: "நாமக்கல்" },
-  { name: "Karur", tamil: "கரூர்" },
-  { name: "Pudukkottai", tamil: "புதுக்கோட்டை" },
-  { name: "Sivaganga", tamil: "சிவகங்கை" },
-  { name: "Virudhunagar", tamil: "விருதுநகர்" },
-  { name: "Ramanathapuram", tamil: "ராமநாதபுரம்" },
-  { name: "Theni", tamil: "தேனி" },
-  { name: "Nilgiris", tamil: "நீலகிரி" },
-  { name: "Perambalur", tamil: "பெரம்பலூர்" },
-  { name: "Ariyalur", tamil: "அரியலூர்" },
-  { name: "Tiruvarur", tamil: "திருவாரூர்" },
-  { name: "Tiruvannamalai", tamil: "திருவண்ணாமலை" },
-  { name: "Kallakurichi", tamil: "கள்ளக்குறிச்சி" },
-  { name: "Ranipet", tamil: "ராணிப்பேட்டை" },
-  { name: "Tenkasi", tamil: "தென்காசி" },
-  { name: "Chengalpattu", tamil: "செங்கல்பட்டு" },
-  { name: "Mayiladuthurai", tamil: "மயிலாடுதுறை" },
-  { name: "Tirupattur", tamil: "திருப்பூர்" },
-  { name: "Harur", tamil: "ஹாரூர்" }
-];
-
-
-
-
-
-/* ─── Hardcoded Wards Mapping by District ────────────────────────────── */
-const wardsByDistrict = {
-  "Chennai": [
-    "Ward 1 - Thiruvottiyur", "Ward 2 - Manali", "Ward 3 - Madhavaram",
-    "Ward 4 - Tondiarpet", "Ward 5 - Royapuram", "Ward 6 - Harbour",
-    "Ward 7 - Basin Bridge", "Ward 8 - Perambur", "Ward 9 - Kolathur",
-    "Ward 10 - Villivakkam", "Ward 11 - Ambattur", "Ward 12 - Annanagar",
-    "Ward 13 - Teynampet", "Ward 14 - Egmore", "Ward 15 - Park Town",
-    "Ward 16 - Thousand Lights", "Ward 17 - Anna Nagar", "Ward 18 - Valasaravakkam",
-    "Ward 19 - Kodambakkam", "Ward 20 - Alandur", "Ward 21 - Adyar",
-    "Ward 22 - Velachery", "Ward 23 - Sholinganallur", "Ward 24 - Perungudi",
-    "Ward 25 - Madipakkam", "Ward 26 - Guindy", "Ward 27 - Saidapet",
-    "Ward 28 - Mylapore", "Ward 29 - Royapettah", "Ward 30 - Nungambakkam"
-  ],
-  "Coimbatore": [
-    "Ward 1 - Ukkadam", "Ward 2 - Singanallur", "Ward 3 - Peelamedu",
-    "Ward 4 - RS Puram", "Ward 5 - Gandhipuram", "Ward 6 - Saibaba Colony",
-    "Ward 7 - Vadavalli", "Ward 8 - Kuniyamuthur", "Ward 9 - Kavundampalayam",
-    "Ward 10 - Thondamuthur"
-  ],
-  "Madurai": [
-    "Ward 1 - Tallakulam", "Ward 2 - Anna Nagar", "Ward 3 - KK Nagar",
-    "Ward 4 - Palanganatham", "Ward 5 - Vilangudi", "Ward 6 - Arasaradi",
-    "Ward 7 - Thiruppalai", "Ward 8 - Anaiyur", "Ward 9 - Tavithanpatti",
-    "Ward 10 - Goripalayam"
-  ],
-  "Salem": [
-    "Ward 1 - Shevapet", "Ward 2 - Suramangalam", "Ward 3 - Hasthampatti",
-    "Ward 4 - Kondalampatti", "Ward 5 - Ammapet", "Ward 6 - Alagapuram",
-    "Ward 7 - Fairlands", "Ward 8 - Gugai"
-  ],
-  "Trichy": [
-    "Ward 1 - Ariyamangalam", "Ward 2 - Manachanallur", "Ward 3 - Srirangam",
-    "Ward 4 - Golden Rock", "Ward 5 - Palakkarai", "Ward 6 - Woraiyur",
-    "Ward 7 - KK Nagar", "Ward 8 - Ponmalai"
-  ],
-  "Vellore": [
-    "Ward 1 - Sainathapuram", "Ward 2 - Gandhi Nagar", "Ward 3 - Kosapet",
-    "Ward 4 - Bagayam", "Ward 5 - Sathuvachari", "Ward 6 - Alamelumangapuram"
-  ],
-  "Tirunelveli": [
-    "Ward 1 - Melapalayam", "Ward 2 - Palayamkottai", "Ward 3 - Vannarpet",
-    "Ward 4 - Manakadu", "Ward 5 - Pettai", "Ward 6 - Krishnapuram"
-  ],
-  "Thanjavur": [
-    "Ward 1 - Medical College Road", "Ward 2 - South Rampart",
-    "Ward 3 - Vallam Road", "Ward 4 - Kumbakonam Road", "Ward 5 - Nanjikottai"
-  ],
-  "Erode": [
-    "Ward 1 - Veerappanchatiram", "Ward 2 - Surampatti",
-    "Ward 3 - Arisipalayam", "Ward 4 - Chithode", "Ward 5 - Modakurichi"
-  ],
-  "Tiruppur": [
-    "Ward 1 - Velampalayam", "Ward 2 - Anupparpalayam",
-    "Ward 3 - Avinashi Road", "Ward 4 - Muthur", "Ward 5 - Rayapuram"
-  ]
-};
+/* ─── Removed Hardcoded Mocks ────────────────────────────── */
 
 /* ─── District Centroid Coordinates for Stamping ──────────────────────── */
 const districtCoords = {
@@ -136,8 +34,16 @@ export default function LoginPage() {
   const [otpVerified, setOtpVerified] = useState(false);
 
   // Form selections
-  const [district, setDistrict] = useState('Chennai');
+  const [district, setDistrict] = useState('');
+  const [dbDistricts, setDbDistricts] = useState([]);
+  const [dbWards, setDbWards] = useState([]);
 
+  useEffect(() => {
+    // Fetch real districts from API
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDbDistricts(res.data))
+      .catch(console.error);
+  }, []);
 
   // Pincode Auto-Suggest Ward flow states
   const [pincode, setPincode] = useState('');
@@ -222,18 +128,16 @@ export default function LoginPage() {
     }
   };
 
-  const getDistrictWards = () => {
-    const list = wardsByDistrict[district];
-    if (list && list.length > 0) {
-      return list;
-    }
-    // Generic fallback
-    const fallback = [];
-    for (let i = 1; i <= 20; i++) {
-      fallback.push(`Ward ${i}`);
-    }
-    return fallback;
-  };
+  useEffect(() => {
+    if (!district) return;
+    const selectedDistObj = dbDistricts.find(d => d.name === district);
+    if (!selectedDistObj) return;
+
+    // Fetch sub-jurisdictions
+    api.get(`/metadata/jurisdictions?parentId=${selectedDistObj.id}`)
+      .then(res => setDbWards(res.data))
+      .catch(console.error);
+  }, [district, dbDistricts]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -258,11 +162,11 @@ export default function LoginPage() {
       return;
     }
 
-    // Extract ward number from selectedWard (e.g. "Ward 22 - Velachery" -> "22", or "Ward 1" -> "1")
-    let wardNumber = '142';
-    const match = selectedWard.match(/Ward\s+(\d+)/i);
+    // Just use selectedWard name directly or a default hash if missing
+    let wardNumber = '1';
+    const match = selectedWard.match(/\d+/);
     if (match) {
-      wardNumber = match[1];
+      wardNumber = match[0];
     }
 
     // Lookup coordinates by district center
@@ -603,9 +507,9 @@ export default function LoginPage() {
                             onChange={(e) => setDistrict(e.target.value)}
                             className="w-full bg-white border border-[#8B1A1A] outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm cursor-pointer transition-all"
                           >
-                            {districts.map(d => (
-                              <option key={d.name} value={d.name}>
-                                {isTa ? d.tamil : d.name}
+                            {dbDistricts.map(d => (
+                              <option key={d.id} value={d.name}>
+                                {d.name}
                               </option>
                             ))}
                           </select>
@@ -631,8 +535,8 @@ export default function LoginPage() {
                         className="w-full bg-slate-50 border border-slate-200 outline-none px-4 py-3 rounded-xl text-slate-700 font-extrabold text-sm shadow-sm cursor-pointer focus:border-[#8B1A1A] transition-all"
                       >
                         <option value="">{tLabel("Select your ward", "உங்கள் வார்டைத் தேர்ந்தெடுக்கவும்")}</option>
-                        {getDistrictWards().map(wardName => (
-                          <option key={wardName} value={wardName}>{wardName}</option>
+                        {dbWards.map(w => (
+                          <option key={w.id} value={w.name}>{w.name}</option>
                         ))}
                       </select>
                     </motion.div>

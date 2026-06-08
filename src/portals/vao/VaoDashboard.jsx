@@ -74,7 +74,7 @@ import api from '../../services/api';
  VAO Grievance Dashboard
  </h2>
  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">
- Ward 142 Administrative Center
+ {localStorage.getItem('jn_jurisdiction') || 'Village'} Administrative Center
  </p>
  </div>
 

@@ -47,14 +47,18 @@ const districts = [
  { name: "Harur", tamil: "ஹாரூர்", lat: 12.0620, lng: 78.4842, tickets: 0 }
 ];
 
-/* ─── Citizen Ward Coordinates (Local Ward Markers in Chennai) ─────── */
-const citizenWards = [
- { name: "Ward 142 (Anna Nagar)", tamil: "வார்டு 142 (அண்ணா நகர்)", lat: 13.0827, lng: 80.2707, tickets: 0, isUserWard: true },
- { name: "Ward 141 (Kilpauk)", tamil: "வார்டு 141 (கீழ்ப்பாக்கம்)", lat: 13.095, lng: 80.285, tickets: 0 },
- { name: "Ward 143 (Nungambakkam)", tamil: "வார்டு 143 (நுங்கம்பாக்கம்)", lat: 13.065, lng: 80.255, tickets: 0 },
- { name: "Ward 140 (Tondiarpet)", tamil: "வார்டு 140 (தண்டையார்பேட்டை)", lat: 13.115, lng: 80.295, tickets: 0 },
- { name: "Ward 144 (T. Nagar)", tamil: "வார்டு 144 (தி. நகர்)", lat: 13.045, lng: 80.245, tickets: 0 }
-];
+const getCitizenWards = () => {
+  const userWardName = localStorage.getItem('jn_ward_name') || "Ward 1";
+  const userLat = parseFloat(localStorage.getItem('jn_living_lat')) || 13.0827;
+  const userLng = parseFloat(localStorage.getItem('jn_living_lng')) || 80.2707;
+  
+  return [
+    { name: userWardName, tamil: userWardName, lat: userLat, lng: userLng, tickets: 0, isUserWard: true },
+    { name: "Nearby Ward 1", tamil: "அருகிலுள்ள வார்டு 1", lat: userLat + 0.012, lng: userLng + 0.014, tickets: 0 },
+    { name: "Nearby Ward 2", tamil: "அருகிலுள்ள வார்டு 2", lat: userLat - 0.017, lng: userLng - 0.010, tickets: 0 },
+    { name: "Nearby Ward 3", tamil: "அருகிலுள்ள வார்டு 3", lat: userLat + 0.005, lng: userLng - 0.015, tickets: 0 }
+  ];
+};
 
 /* ─── Color Helper ─────────────────────────────────────────── */
 const getColor = (tickets) => {
@@ -64,7 +68,10 @@ const getColor = (tickets) => {
 };
 
 /* ─── Hotspot districts/wards for live pulsing dots ───────────── */
-const PULSE_LOCATIONS = ["Chennai", "Trichy", "Coimbatore", "Ward 142 (Anna Nagar)", "Ward 143 (Nungambakkam)"];
+const getPulseLocations = () => {
+  const userWardName = localStorage.getItem('jn_ward_name') || "Ward 1";
+  return ["Chennai", "Trichy", "Coimbatore", userWardName];
+};
 
 // Safe standard custom pulse icon setup for Leaflet
 const pulseIcon = typeof window !== 'undefined' ? L.divIcon({
@@ -102,7 +109,7 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  const tLabel = (en, ta) => isTa ? ta : en;
 
  // Choose correct dataset based on role mode
- const currentDataset = citizenMode ? citizenWards : districts;
+ const currentDataset = citizenMode ? getCitizenWards() : districts;
  const initialCenter = center || (citizenMode ? [13.0827, 80.2707] : [10.8505, 78.6677]);
  const initialZoom = zoom !== undefined ? zoom : (citizenMode ? 10 : 7);
  const minZoom = citizenMode ? 8 : 6;
@@ -264,8 +271,8 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  );
  })}
 
- {/* Render 5 pulsing markers for live activity */}
- {pulseIcon && mappedDataset.filter(d => PULSE_LOCATIONS.includes(d.name)).map((d) => (
+ {/* Render pulsing markers for live activity */}
+ {pulseIcon && mappedDataset.filter(d => getPulseLocations().includes(d.name)).map((d) => (
  <Marker
  key={`pulse-${d.name}`}
  position={[d.lat, d.lng]}

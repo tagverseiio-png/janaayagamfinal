@@ -34,6 +34,9 @@ export default function CivicFeed() {
   const [visibleCount, setVisibleCount] = useState(6);
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  const userWard = localStorage.getItem('jn_ward_name') || 'Your Ward';
+  const userDistrict = localStorage.getItem('jn_district') || 'Chennai';
+
   // Dynamic comments tracking
   const [expandedComments, setExpandedComments] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
@@ -303,7 +306,7 @@ export default function CivicFeed() {
         <div className="bg-[#FFF0EE] px-4 py-2.5 flex items-center gap-1.5 w-full select-none shrink-0 border-t border-red-100/50">
           <span className="text-xs">📍</span>
           <span className="text-[12px] font-black text-[#8B1A1A] leading-none uppercase tracking-wide">
-            {tLabel("Ward 142, Chennai — Your neighbourhood", "வார்டு 142, சென்னை — உங்கள் சுற்றுப்புறம்")}
+            {tLabel(`${userWard}, ${userDistrict} — Your neighbourhood`, `${userWard}, ${userDistrict} — உங்கள் சுற்றுப்புறம்`)}
           </span>
         </div>
       </div>
@@ -356,7 +359,7 @@ export default function CivicFeed() {
           <div className="flex items-center gap-1.5">
             <span className="text-base">🔥</span>
             <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-              {tLabel("Trending in Ward 142", "வார்டு 142 இல் பரவலாக பேசப்படுவது")}
+              {tLabel(`Trending in ${userWard}`, `${userWard} இல் பரவலாக பேசப்படுவது`)}
             </h4>
           </div>
 
