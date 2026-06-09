@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 
 // Import LoginPage
 import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
 import EmployeeLoginPage from './pages/EmployeeLoginPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 
@@ -61,6 +62,7 @@ export default function App() {
         <Routes>
           {/* Public Login Route */}
           <Route path="/" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
 
           {/* Employee Protected Routes */}

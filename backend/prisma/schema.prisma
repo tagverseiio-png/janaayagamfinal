@@ -21,11 +21,14 @@ model Citizen {
 }
 
 model Department {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  description String?
-  employees   Employee[]
-  tickets     Ticket[]
+  id            String              @id @default(uuid())
+  name          String              @unique
+  slug          String?             @unique
+  primaryDomain String?
+  isCivicFacing Boolean             @default(true)
+  employees     Employee[]
+  tickets       Ticket[]
+  categories    ComplaintCategory[]
 }
 
 model Jurisdiction {
@@ -35,9 +38,57 @@ model Jurisdiction {
   parentId  String?    // Self-relation to build hierarchy
   parent    Jurisdiction?  @relation("Hierarchy", fields: [parentId], references: [id])
   children  Jurisdiction[] @relation("Hierarchy")
+  track     String?    // URBAN, RURAL, REVENUE
   
   employees Employee[]
   tickets   Ticket[]
+}
+
+model Role {
+  id                String   @id @default(uuid())
+  code              String   @unique
+  slug              String   @unique
+  adminLevel        String
+  jurisdictionScope String
+  description       String
+}
+
+model ComplaintCategory {
+  id                  String               @id @default(uuid())
+  code                String               @unique
+  name                String
+  departmentId        String
+  department          Department           @relation(fields: [departmentId], references: [id])
+  defaultAssigneeRole String
+  defaultPriority     String
+  tickets             Ticket[]
+  escalations         CategoryEscalation[]
+}
+
+model CategoryEscalation {
+  id            String            @id @default(uuid())
+  categoryId    String
+  category      ComplaintCategory @relation(fields: [categoryId], references: [id])
+  level         String            // L1, L2, L3, L4
+  assigneeTitle String
+  slaDays       Int
+}
+
+model TicketStateTransition {
+  id          String @id @default(uuid())
+  fromState   String
+  toState     String
+  performedBy String
+  trigger     String
+}
+
+model Zone {
+  id         String @id @default(uuid())
+  zoneNumber String @unique
+  name       String
+  region     String
+  wardFrom   Int
+  wardTo     Int
 }
 
 model Employee {
@@ -67,8 +118,9 @@ model Ticket {
   ticketNumber   String       @unique
   title          String
   description    String
-  status         String       @default("open") // open, assigned, in_progress, resolved, closed
-  priority       String       @default("normal") // low, normal, high, critical
+  status         String       @default("SUBMITTED") // SUBMITTED, ASSIGNED, IN_PROGRESS, ESCALATED, RESOLVED, REOPENED, CLOSED
+  priority       String       @default("MEDIUM")    // LOW, MEDIUM, HIGH, CRITICAL
+  channel        String       @default("WEB")       // APP, WEB, HELPLINE, EMAIL, WALK_IN
   lat            Float?
   lng            Float?
   
@@ -77,6 +129,9 @@ model Ticket {
   
   departmentId   String?
   department     Department?  @relation(fields: [departmentId], references: [id])
+  
+  categoryId     String?
+  category       ComplaintCategory? @relation(fields: [categoryId], references: [id])
   
   jurisdictionId String?
   jurisdiction   Jurisdiction? @relation(fields: [jurisdictionId], references: [id])
@@ -104,3 +159,4 @@ model TicketHistory {
   
   createdAt    DateTime  @default(now())
 }
+

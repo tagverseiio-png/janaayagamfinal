@@ -9,7 +9,15 @@ import GeoCamera from '../../shared/components/GeoCamera';
 import { normalizeDept, getFirstResponder } from '../../data/hierarchyData';
 import api from '../../services/api';
 
+const categoryTranslations = {
+  'CAT-WTR': { en: 'Water', ta: 'குடிநீர்' },
+  'CAT-ELE': { en: 'Electricity', ta: 'மின்சாரம்' },
+  'CAT-RDC': { en: 'Pot Holes (Road)', ta: 'குழிகள் (சாலை)' },
+  'CAT-SAN': { en: 'Sanitation', ta: 'சுகாதாரம்' }
+};
+
 export default function SubmitTicket() {
+
   const { i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -42,7 +50,7 @@ export default function SubmitTicket() {
   useEffect(() => {
     const lAddr = localStorage.getItem('jn_living_address') || "";
     const lDist = localStorage.getItem('jn_living_district') || "Chennai";
-    const lWard = localStorage.getItem('jn_ward_name') || "Ward 1";
+    const lWard = localStorage.getItem('jn_ward_name') || "Ward 1: Kodungaiyur (West)";
     
     setLivingAddress(lAddr);
     setLivingDistrict(lDist);
@@ -70,7 +78,19 @@ export default function SubmitTicket() {
     }
   }, [locationCaptured, location]);
 
-  const categoryKeys = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
+  const [categoriesList, setCategoriesList] = useState([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await api.get('/metadata/categories');
+        setCategoriesList(response.data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
@@ -148,19 +168,27 @@ export default function SubmitTicket() {
     }
 
     // Determine target ward and district for routing
-    const targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
+    let targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
+    if (targetWard === 'Ward 1') {
+      targetWard = 'Ward 1: Kodungaiyur (West)';
+    }
+    
     const targetDistrict = locationMode === 'home' ? livingDistrict : (localStorage.getItem('jn_district') || 'Chennai');
     const targetJurisdictionId = locationMode === 'home' ? localStorage.getItem('jn_jurisdiction_id') : null;
 
+    const selectedCat = categoriesList.find(c => c.code === category);
+    const catName = selectedCat ? (categoryTranslations[category] ? categoryTranslations[category].en : selectedCat.name) : category;
+
     try {
       const res = await api.post('/tickets', {
-        title: `${category.toUpperCase()} Issue in ${targetWard}`,
+        title: `${catName} Issue in ${targetWard}`,
         description,
-        departmentName: category,
-        jurisdictionName: targetDistrict,
+        categoryCode: category,
+        jurisdictionName: targetWard,
         jurisdictionId: targetJurisdictionId,
         lat: location ? parseFloat(location.lat) : undefined,
-        lng: location ? parseFloat(location.lng) : undefined
+        lng: location ? parseFloat(location.lng) : undefined,
+        channel: 'WEB'
       });
       
       setSubmittedTicketId(res.data.ticketNumber);
@@ -170,6 +198,7 @@ export default function SubmitTicket() {
       toast.error('Failed to submit ticket. Please try again.');
     }
   };
+
 
   return (
     <div className="pb-24">
@@ -355,22 +384,25 @@ export default function SubmitTicket() {
                     1. {tLabel("Select Category", "வகைத் தேர்வு")}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {categoryKeys.map((key) => {
-                      const isSelected = category === key;
+                    {categoriesList.map((cat) => {
+                      const isSelected = category === cat.code;
+                      const displayName = categoryTranslations[cat.code]
+                        ? tLabel(categoryTranslations[cat.code].en, categoryTranslations[cat.code].ta)
+                        : cat.name;
                       return (
                         <button
-                          key={key}
+                          key={cat.code}
                           type="button"
-                          onClick={() => setCategory(key)}
+                          onClick={() => setCategory(cat.code)}
                           className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-[#8B1A1A]/5 border-2 border-[#8B1A1A] text-[#8B1A1A] font-extrabold shadow-sm'
                               : 'bg-slate-50/50 border-slate-200 hover:border-slate-300'
                           }`}
                         >
-                          <CategoryIcon category={key} />
-                          <span className="text-[10px] font-extrabold tracking-wide uppercase">
-                            {tLabel(key, key)}
+                          <CategoryIcon category={cat.code} />
+                          <span className="text-[10px] font-extrabold tracking-wide uppercase leading-tight text-center">
+                            {displayName}
                           </span>
                         </button>
                       );

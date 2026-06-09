@@ -50,27 +50,70 @@ export const loginEmployee = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+export const signupCitizen = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { phone, name, district } = req.body;
+
+    if (!phone || !name) {
+      res.status(400).json({ error: 'Phone and name are required' });
+      return;
+    }
+
+    const existing = await prisma.citizen.findUnique({
+      where: { phone }
+    });
+
+    if (existing) {
+      res.status(409).json({ error: 'Phone already registered. Please login.' });
+      return;
+    }
+
+    const citizen = await prisma.citizen.create({
+      data: {
+        phone,
+        name,
+        district: district || null
+      }
+    });
+
+    const payload: TokenPayload = {
+      id: citizen.id,
+      role: 'citizen',
+      type: 'citizen'
+    };
+
+    const token = generateToken(payload);
+
+    res.status(201).json({
+      message: 'Registration successful',
+      token,
+      citizen
+    });
+  } catch (error) {
+    console.error('Citizen Signup Error:', error);
+    res.status(500).json({ error: 'Internal server error during signup' });
+  }
+};
+
 export const loginCitizen = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { phone, name, pincode } = req.body;
+    const { phone } = req.body;
 
     if (!phone) {
       res.status(400).json({ error: 'Phone is required' });
       return;
     }
 
-    let citizen = await prisma.citizen.findUnique({
+    const citizen = await prisma.citizen.findUnique({
       where: { phone }
     });
 
     if (!citizen) {
-      citizen = await prisma.citizen.create({
-        data: {
-          phone,
-          name: name || 'Verified Citizen',
-          // Assuming we resolve district from pincode in frontend and pass it
-        }
+      res.status(404).json({
+        error: 'Account not found. Please sign up first.',
+        code: 'NOT_REGISTERED'
       });
+      return;
     }
 
     const payload: TokenPayload = {
@@ -94,106 +137,25 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
 
 export const loginEmployeeAadhaar = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      aadhaar,
-      name,
-      category,
-      role,
-      departmentName,
-      jurisdictionLevel,
-      jurisdictionName
-    } = req.body;
+    const { aadhaar } = req.body;
 
-    if (!aadhaar || !name || !category || !role) {
-      res.status(400).json({ error: 'Aadhaar, name, category, and role are required' });
+    if (!aadhaar) {
+      res.status(400).json({ error: 'Aadhaar is required' });
       return;
     }
 
-    // Resolve department
-    let departmentId: string | null = null;
-    if (departmentName) {
-      let dept = await prisma.department.findUnique({
-        where: { name: departmentName }
-      });
-      if (!dept) {
-        dept = await prisma.department.findFirst({
-          where: { name: { contains: departmentName } }
-        });
-      }
-      if (!dept) {
-        dept = await prisma.department.create({
-          data: { name: departmentName }
-        });
-      }
-      departmentId = dept.id;
-    }
-
-    // Resolve jurisdiction
-    let jurisdictionId: string | null = null;
-    if (jurisdictionLevel && jurisdictionName) {
-      let juris = await prisma.jurisdiction.findFirst({
-        where: {
-          level: jurisdictionLevel,
-          name: { contains: jurisdictionName }
-        }
-      });
-      if (!juris && jurisdictionLevel === 'STATE') {
-        juris = await prisma.jurisdiction.findFirst({
-          where: { level: 'STATE' }
-        });
-      }
-      if (!juris) {
-        // Fallback case-insensitive / partial match
-        juris = await prisma.jurisdiction.findFirst({
-          where: { name: { contains: jurisdictionName } }
-        });
-      }
-      if (!juris) {
-        const stateNode = await prisma.jurisdiction.findFirst({ where: { level: 'STATE' } });
-        juris = await prisma.jurisdiction.create({
-          data: {
-            level: jurisdictionLevel,
-            name: jurisdictionName,
-            parentId: stateNode?.id || null
-          }
-        });
-      }
-      jurisdictionId = juris.id;
-    }
-
     // Look up employee by Aadhaar username
-    let employee = await prisma.employee.findUnique({
+    const employee = await prisma.employee.findUnique({
       where: { username: aadhaar },
       include: { department: true, jurisdiction: true }
     });
 
-    const defaultPasswordHash = await bcrypt.hash('aadhaar-otp-auth-secure', 10);
-
     if (!employee) {
-      employee = await prisma.employee.create({
-        data: {
-          username: aadhaar,
-          password: defaultPasswordHash,
-          name,
-          category,
-          role,
-          departmentId,
-          jurisdictionId
-        },
-        include: { department: true, jurisdiction: true }
+      res.status(401).json({
+        error: 'No employee account found. Contact your administrator.',
+        code: 'EMPLOYEE_NOT_FOUND'
       });
-    } else {
-      employee = await prisma.employee.update({
-        where: { id: employee.id },
-        data: {
-          name,
-          category,
-          role,
-          departmentId,
-          jurisdictionId
-        },
-        include: { department: true, jurisdiction: true }
-      });
+      return;
     }
 
     const payload: TokenPayload = {

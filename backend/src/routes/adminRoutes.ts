@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { getEmployees, createEmployee, deleteEmployee } from '../controllers/adminController';
-import { authenticate } from '../middleware/auth';
+import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 
-// In a real app we'd add an authorize(['CM', 'Superadmin']) middleware here
 router.use(authenticate);
+router.use(authorize('Superadmin', 'SUPER_ADMIN'));
 
 router.get('/employees', getEmployees);
 router.post('/employees', createEmployee);

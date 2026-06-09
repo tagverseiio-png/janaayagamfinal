@@ -1,60 +1,43 @@
 export const DEPT_HIERARCHY = {
   Water: [
     { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'VAO', label: 'Village Verification & Site Inspection' },
-    { role: 'AEO', label: 'AEO Assessment & Assignment' },
-    { role: 'Deputy AE', label: 'Deputy Area Engineer Review' },
-    { role: 'Area Engineer', label: 'Area Engineer Approval' },
-    { role: 'GM', label: 'GM Final Review' },
-    { role: 'Executive Director', label: 'Executive Director Clearance' },
-    { role: 'Director', label: 'Director Final Approval' },
+    { role: 'WARD_AEO', label: 'Ward (AEO)' },
+    { role: 'DEPUTY_AREA_ENGINEER', label: 'Deputy Area Engineer' },
+    { role: 'AREA_ENGINEER', label: 'Area Engineer' },
+    { role: 'SUPER_AGENT', label: 'Super Agent' },
+    { role: 'G.M', label: 'G.M' },
+    { role: 'EXECUTIVE_DIRECTOR', label: 'Executive Director' },
+    { role: 'DEPT_DIRECTOR', label: 'Department Director' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Electricity: [
     { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'Ward Officer', label: 'Ward Officer First Response' },
-    { role: 'Lineman', label: 'Lineman Site Inspection' },
-    { role: 'Deputy AE', label: 'Deputy AE Assessment' },
-    { role: 'Asst AE', label: 'Assistant Area Engineer Review' },
-    { role: 'Area Engineer', label: 'Area Engineer Approval' },
-    { role: 'Super Agent', label: 'Super Agent Clearance' },
-    { role: 'GM', label: 'GM Final Review' },
+    { role: 'LINE_MAN', label: 'Line Man' },
+    { role: 'DEPUTY_AREA_ENGINEER', label: 'Deputy Area Engineer' },
+    { role: 'ASST_AREA_ENGINEER', label: 'Assistant Area Engineer' },
+    { role: 'AREA_ENGINEER', label: 'Area Engineer' },
+    { role: 'SUPER_AGENT', label: 'Super Agent' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Sanitation: [
     { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'Ward Officer', label: 'Ward Officer Response' },
-    { role: 'DSI', label: 'DSI Site Inspection' },
-    { role: 'Sanitary Inspector', label: 'Sanitary Inspector Review' },
-    { role: 'Health Inspector', label: 'Health Inspector Assessment' },
-    { role: 'City Health Officer', label: 'CHO Approval' },
-    { role: 'Commissioner', label: 'Commissioner Clearance' },
+    { role: 'DSI', label: 'Division Sanitary Inspector (DSI)' },
+    { role: 'SANITARY_INSPECTOR', label: 'Sanitary Inspector (SI)' },
+    { role: 'HEALTH_INSPECTOR', label: 'Health Inspector' },
+    { role: 'CITY_HEALTH_OFFICER', label: 'City Health Officer' },
+    { role: 'DEPT_COMMISSIONER', label: 'Department Commissioner' },
+    { role: 'COMMISSIONER', label: 'Commissioner' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Roads: [
     { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'Ward Officer', label: 'Ward Officer Inspection' },
-    { role: 'AE', label: 'Assistant Engineer Assessment' },
-    { role: 'Deputy Engineer', label: 'Deputy Engineer Review' },
-    { role: 'Executive Engineer', label: 'Executive Engineer Approval' },
-    { role: 'SE', label: 'Superintending Engineer Clearance' },
-    { role: 'Chief Engineer', label: 'Chief Engineer Final Approval' },
-    { role: 'Resolved', label: 'Issue Resolved' },
-  ],
-  Health: [
-    { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'Ward Officer', label: 'Ward Officer Response' },
-    { role: 'Medical Officer', label: 'Medical Officer Assessment' },
-    { role: 'Medical Superintendent', label: 'MS Review' },
-    { role: 'Director of Health Services', label: 'Director Clearance' },
-    { role: 'Resolved', label: 'Issue Resolved' },
-  ],
-  Education: [
-    { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'Headmaster', label: 'Headmaster Response' },
-    { role: 'BEO', label: 'Block Education Officer Review' },
-    { role: 'DEO', label: 'DEO Assessment' },
-    { role: 'Director', label: 'Director Approval' },
+    { role: 'WARD_AEO', label: 'Ward (AEO)' },
+    { role: 'DEPUTY_AREA_ENGINEER', label: 'Deputy Area Engineer' },
+    { role: 'AREA_ENGINEER', label: 'Area Engineer' },
+    { role: 'SUPER_AGENT', label: 'Super Agent' },
+    { role: 'G.M', label: 'G.M' },
+    { role: 'EXECUTIVE_DIRECTOR', label: 'Executive Director' },
+    { role: 'DEPT_DIRECTOR', label: 'Department Director' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   'Higher Education': [
@@ -379,7 +362,11 @@ export const DEPT_HIERARCHY = {
 // Map a citizen category (any case) to a department hierarchy key
 export const normalizeDept = (category) => {
   if (!category) return 'Water';
-  
+  let catStr = category;
+  if (typeof category === 'object') {
+    catStr = category.name || category.code || 'Water';
+  }
+  const normalizedCategory = catStr.toLowerCase().trim();
   const keyMap = {
     'roads': 'Roads',
     'pwd': 'Roads',
@@ -430,7 +417,6 @@ export const normalizeDept = (category) => {
     'civil supplies': 'Civil Supplies'
   };
 
-  const normalizedCategory = category.toLowerCase().trim();
   const mappedKey = keyMap[normalizedCategory];
   
   if (mappedKey && DEPT_HIERARCHY[mappedKey]) {
@@ -438,24 +424,33 @@ export const normalizeDept = (category) => {
   }
   
   // Fallback Capitalization logic
-  const key = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  const key = catStr.charAt(0).toUpperCase() + catStr.slice(1).toLowerCase();
   return DEPT_HIERARCHY[key] ? key : 'Water';
 };
 
 // First official a freshly filed ticket is routed to (index 0 is the Citizen)
 export const getFirstResponder = (category) => DEPT_HIERARCHY[normalizeDept(category)][1].role;
 
+// Helper to normalize roles for robust comparison
+export const normalizeRole = (role) => (role || '').toUpperCase().replace(/\s+/g, '_');
+
 // Next role up the chain after the current holder (never past 'Resolved')
 export const getNextRole = (category, currentRole) => {
   const h = DEPT_HIERARCHY[normalizeDept(category)];
-  const idx = h.findIndex(s => s.role === currentRole);
+  if (!h) return 'Higher Authority';
+  
+  const target = normalizeRole(currentRole);
+  const idx = h.findIndex(s => normalizeRole(s.role) === target);
   return h[Math.min((idx < 0 ? 1 : idx) + 1, h.length - 1)].role;
 };
 
 // Get current step index based on ticket assignedTo role
 export const getCurrentStep = (category, assignedTo) => {
   const hierarchy = DEPT_HIERARCHY[normalizeDept(category)];
-  const idx = hierarchy.findIndex(h => h.role === assignedTo);
+  if (!hierarchy) return 0;
+  
+  const target = normalizeRole(assignedTo);
+  const idx = hierarchy.findIndex(h => normalizeRole(h.role) === target);
   return idx === -1 ? 1 : idx;
 };
 
@@ -473,16 +468,19 @@ const ROLE_ALIASES = { SI: 'Sanitary Inspector', DE: 'Deputy Engineer', DAE: 'De
 // Out-of-chain roles (e.g. escalated to BDO/Collector/Minister) map to the top dept role.
 export const canonicalRole = (category, role) => {
   const chain = DEPT_HIERARCHY[normalizeDept(category)];
+  if (!chain) return role;
   const aliased = ROLE_ALIASES[role] || role;
-  if (chain.some(s => s.role === aliased)) return aliased;
+  const normalizedAliased = normalizeRole(aliased);
+  if (chain.some(s => normalizeRole(s.role) === normalizedAliased)) return aliased;
   return chain[chain.length - 2].role;
 };
 
 // Build a timeline aligned to the chain from the current owner role
 export const buildTimeline = (category, assignedTo, createdAt) => {
   const chain = DEPT_HIERARCHY[normalizeDept(category)];
+  if (!chain) return [];
   const cur = getCurrentStep(category, assignedTo);
-  const resolved = assignedTo === 'Resolved';
+  const resolved = normalizeRole(assignedTo) === 'RESOLVED';
   return chain.map((s, i) => ({
     role: s.role,
     label: s.label,

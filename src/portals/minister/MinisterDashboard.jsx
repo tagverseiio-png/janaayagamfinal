@@ -45,7 +45,8 @@ export default function MinisterDashboard() {
           ...t,
           category: t.department?.name || 'Unknown',
           district: t.jurisdiction?.name || 'Unknown',
-          id: t.ticketNumber,
+          displayId: t.ticketNumber,
+          id: t.id,
           description: t.description
         }));
         setDeptTickets(formatted.filter(t => t.category === selectedDept));
@@ -55,6 +56,26 @@ export default function MinisterDashboard() {
     };
     fetchTickets();
   }, [selectedDept]);
+  
+  const handleAction = async (id, action) => {
+    try {
+      const newStatus = action === 'Intervene' ? 'In Progress' : 'In Progress';
+      await api.patch(`/tickets/${id}`, { status: newStatus });
+      
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        displayId: t.ticketNumber,
+        id: t.id,
+        description: t.description
+      }));
+      setDeptTickets(formatted.filter(t => t.category === selectedDept));
+    } catch (err) {
+      console.error('Failed to update ticket:', err);
+    }
+  };
   
   const totalOpen = deptTickets.filter(t => t.status !== 'Resolved').length;
   const resolvedCount = deptTickets.filter(t => t.status === 'Resolved').length;
@@ -67,7 +88,7 @@ export default function MinisterDashboard() {
   const avgResolutionTime = selectedDept === 'Water' ? '2.4 Days' : selectedDept === 'Health' ? '1.2 Days' : '3.5 Days';
 
   const tableTickets = deptTickets.filter(t => 
-    t.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    t.displayId.toLowerCase().includes(searchQuery.toLowerCase()) || 
     t.district.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -96,28 +117,33 @@ export default function MinisterDashboard() {
     };
   }).sort((a, b) => b.rate - a.rate);
 
-  const districtMarkers = [
-    { name: 'Chennai', lat: 13.0827, lng: 80.2707, open: 14 },
-    { name: 'Coimbatore', lat: 11.0168, lng: 76.9558, open: 39 },
-    { name: 'Madurai', lat: 9.9252, lng: 78.1198, open: 27 },
-    { name: 'Tiruchirappalli', lat: 10.7905, lng: 78.7047, open: 33 },
-    { name: 'Salem', lat: 11.6643, lng: 78.1460, open: 15 },
-    { name: 'Tirunelveli', lat: 8.7139, lng: 77.7567, open: 6 },
-    { name: 'Vellore', lat: 12.9165, lng: 79.1325, open: 49 },
-    { name: 'Erode', lat: 11.3410, lng: 77.7172, open: 12 },
-    { name: 'Thanjavur', lat: 10.7870, lng: 79.1378, open: 2 },
-    { name: 'Dindigul', lat: 10.3624, lng: 77.9695, open: 3 },
-    { name: 'Thoothukudi', lat: 8.7642, lng: 78.1348, open: 11 },
-    { name: 'Tiruppur', lat: 11.1085, lng: 77.3411, open: 9 },
-    { name: 'Tiruvannamalai', lat: 12.2253, lng: 79.0747, open: 44 },
-    { name: 'Tiruvarur', lat: 10.7726, lng: 79.6368, open: 52 },
-    { name: 'Villupuram', lat: 11.9401, lng: 79.4861, open: 25 },
-    { name: 'Cuddalore', lat: 11.7480, lng: 79.7714, open: 14 },
-    { name: 'Kanniyakumari', lat: 8.0883, lng: 77.5385, open: 1 },
-    { name: 'Theni', lat: 10.0104, lng: 77.4768, open: 21 },
-    { name: 'Namakkal', lat: 11.2189, lng: 78.1674, open: 9 },
-    { name: 'Karur', lat: 10.9601, lng: 78.0766, open: 12 },
-  ];
+  const DISTRICT_COORDS = {
+    'Chennai': { lat: 13.0827, lng: 80.2707 },
+    'Coimbatore': { lat: 11.0168, lng: 76.9558 },
+    'Madurai': { lat: 9.9252, lng: 78.1198 },
+    'Tiruchirappalli': { lat: 10.7905, lng: 78.7047 },
+    'Salem': { lat: 11.6643, lng: 78.1460 },
+    'Tirunelveli': { lat: 8.7139, lng: 77.7567 },
+    'Vellore': { lat: 12.9165, lng: 79.1325 },
+    'Erode': { lat: 11.3410, lng: 77.7172 },
+    'Thanjavur': { lat: 10.7870, lng: 79.1378 },
+    'Dindigul': { lat: 10.3624, lng: 77.9695 },
+    'Thoothukudi': { lat: 8.7642, lng: 78.1348 },
+    'Tiruppur': { lat: 11.1085, lng: 77.3411 },
+    'Tiruvannamalai': { lat: 12.2253, lng: 79.0747 },
+    'Tiruvarur': { lat: 10.7726, lng: 79.6368 },
+    'Villupuram': { lat: 11.9401, lng: 79.4861 },
+    'Cuddalore': { lat: 11.7480, lng: 79.7714 },
+    'Kanniyakumari': { lat: 8.0883, lng: 77.5385 },
+    'Theni': { lat: 10.0104, lng: 77.4768 },
+    'Namakkal': { lat: 11.2189, lng: 78.1674 },
+    'Karur': { lat: 10.9601, lng: 78.0766 }
+  };
+
+  const districtMarkers = Object.entries(DISTRICT_COORDS).map(([name, coords]) => {
+    const open = deptTickets.filter(t => t.district === name && t.status !== 'Resolved').length;
+    return { name, ...coords, open };
+  });
 
   const generateReport = () => {
     alert("Department Report Generated successfully.");
@@ -235,7 +261,7 @@ export default function MinisterDashboard() {
             {deptTickets.slice(0, 10).map(ticket => (
               <div key={ticket.id} className={`p-3 rounded-xl border ${ticket.priority === 'Critical' ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200'} cursor-pointer hover:shadow-md`}>
                 <div className="flex justify-between items-start mb-1">
-                  <span className="font-mono font-black text-xs">{ticket.id}</span>
+                  <span className="font-mono font-black text-xs">{ticket.displayId}</span>
                   <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${ticket.priority === 'Critical' ? 'bg-red-200 text-red-800 animate-pulse' : 'bg-slate-100 text-slate-600'}`}>{ticket.priority}</span>
                 </div>
                 <p className="text-xs font-bold text-slate-700 line-clamp-2">{ticket.description}</p>
@@ -279,7 +305,7 @@ export default function MinisterDashboard() {
           <tbody className="text-xs font-bold text-slate-700">
             {tableTickets.map(t => (
               <tr key={t.id} className="border-b hover:bg-slate-50">
-                <td className="p-4 font-mono font-black">{t.id}</td>
+                <td className="p-4 font-mono font-black">{t.displayId}</td>
                 <td className="p-4">{t.district}</td>
                 <td className="p-4 truncate max-w-xs">{t.description}</td>
                 <td className="p-4">{t.status}</td>
@@ -312,7 +338,7 @@ export default function MinisterDashboard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
-            {districtRanking.map((row, index) => (
+            {districtPerformanceData.map((row, index) => (
               <tr key={row.name} className="hover:bg-slate-50">
                 <td className="px-5 py-4 font-black text-slate-500">#{index + 1}</td>
                 <td className="px-4 py-4 font-black">{row.name}</td>
@@ -376,7 +402,7 @@ export default function MinisterDashboard() {
             {crisisTickets.map(ticket => (
               <div key={ticket.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-mono font-black text-sm">{ticket.id}</span>
+                  <span className="font-mono font-black text-sm">{ticket.displayId}</span>
                   <span className="text-[10px] font-black uppercase text-rose-600 bg-rose-100 px-2 py-0.5 rounded">Critical</span>
                 </div>
                 <p className="text-sm font-bold text-slate-800 mb-2">{ticket.description}</p>
@@ -405,14 +431,14 @@ export default function MinisterDashboard() {
             <div key={ticket.id} className="p-5 border border-red-100 bg-red-50/30 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="font-mono font-black text-sm text-red-700">{ticket.id}</span>
+                  <span className="font-mono font-black text-sm text-red-700">{ticket.displayId}</span>
                   <span className="text-[10px] font-bold bg-white px-2 py-0.5 rounded border shadow-sm text-slate-600 uppercase">{ticket.district}</span>
                 </div>
                 <p className="text-sm text-slate-800 font-bold">{ticket.description}</p>
               </div>
               <div className="flex gap-2 w-full md:w-auto">
-                <button className="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors shadow">Direct Intervene</button>
-                <button className="flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors border border-slate-300 shadow-sm">Review</button>
+                <button onClick={() => handleAction(ticket.id, 'Intervene')} className="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors shadow">Direct Intervene</button>
+                <button onClick={() => handleAction(ticket.id, 'Review')} className="flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors border border-slate-300 shadow-sm">Review</button>
               </div>
             </div>
           ))}

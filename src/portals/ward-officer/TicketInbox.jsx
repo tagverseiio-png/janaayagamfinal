@@ -204,7 +204,7 @@ export default function TicketInbox() {
  // Escalation submit — advance the ticket to the next role in its department chain
  const handleEscalateConfirm = () => {
  const dept = activeTicket.department || activeTicket.category;
- const current = activeTicket.assignedTo;
+ const current = typeof activeTicket.assignedTo === 'string' ? activeTicket.assignedTo : activeTicket.assignedTo?.role;
  const nextRole = getNextRole(dept, current);
  const chain = DEPT_HIERARCHY[normalizeDept(dept)];
  const curIdx = chain.findIndex(s => s.role === current);
@@ -224,7 +224,8 @@ export default function TicketInbox() {
 
  const getEscalateConfirmText = () => {
  const dept = activeTicket?.department || activeTicket?.category;
- const nextRole = activeTicket ? getNextRole(dept, activeTicket.assignedTo) : '';
+ const current = activeTicket ? (typeof activeTicket.assignedTo === 'string' ? activeTicket.assignedTo : activeTicket.assignedTo?.role) : null;
+ const nextRole = activeTicket ? getNextRole(dept, current) : '';
  const isTamil = t('app_name') === 'ஜனநாயகம்';
  return isTamil ? `நிச்சயமா? இது ${nextRole}-க்கு அனுப்பப்படும்.` : `Are you sure? This escalates to ${nextRole}.`;
  };
@@ -390,7 +391,7 @@ export default function TicketInbox() {
  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200 bg-rose-50 text-[10.5px] font-black uppercase text-rose-600 hover:bg-rose-100 shadow-sm"
  >
  <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
- <span>Escalate → {getNextRole(ticket.department || ticket.category, ticket.assignedTo)}</span>
+ <span>Escalate → {getNextRole(ticket.department || ticket.category, typeof ticket.assignedTo === 'string' ? ticket.assignedTo : ticket.assignedTo?.role)}</span>
  </button>
 
  {/* 5. Notify MLA Button */}

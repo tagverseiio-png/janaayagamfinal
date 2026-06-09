@@ -49,10 +49,11 @@ export default function TrackTicket() {
     }
   };
 
-  const deptKey = ticket ? (ticket.department || ticket.category) : null;
+  const deptKey = ticket ? (ticket.categoryName || (typeof ticket.category === 'string' ? ticket.category : ticket.category?.name) || 'Water') : null;
   const hierarchy = ticket ? DEPT_HIERARCHY[normalizeDept(deptKey)] : [];
-  const currentStep = ticket ? getCurrentStep(deptKey, ticket.assignedTo) : 0;
-  const progress = ticket ? getProgressPercent(deptKey, ticket.assignedTo) : 0;
+  const assignedToRole = ticket?.assignedTo ? (typeof ticket.assignedTo === 'string' ? ticket.assignedTo : ticket.assignedTo.role) : null;
+  const currentStep = ticket ? getCurrentStep(deptKey, assignedToRole) : 0;
+  const progress = ticket ? getProgressPercent(deptKey, assignedToRole) : 0;
 
   const statusColor = { Open: 'bg-yellow-100 text-yellow-700', 'In Progress': 'bg-blue-100 text-blue-700', Escalated: 'bg-red-100 text-red-700', Resolved: 'bg-green-100 text-green-700' };
   const priorityColor = { Critical: 'text-red-600', High: 'text-orange-500', Medium: 'text-yellow-600', Low: 'text-green-600' };
@@ -217,7 +218,9 @@ export default function TrackTicket() {
               </div>
               <div className="text-right">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Currently With</p>
-                <p className="text-[#8B1A1A] font-extrabold text-sm mt-0.5 capitalize">{ticket.assignedTo}</p>
+                <p className="text-[#8B1A1A] font-extrabold text-sm mt-0.5 capitalize">
+                  {ticket.assignedTo ? (typeof ticket.assignedTo === 'string' ? ticket.assignedTo : ticket.assignedTo.name || ticket.assignedTo.role) : 'Unassigned'}
+                </p>
               </div>
             </div>
           </div>

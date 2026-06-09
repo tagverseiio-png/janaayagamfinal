@@ -102,3 +102,56 @@ export const deleteJurisdiction = async (req: Request, res: Response): Promise<v
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getComplaintCategories = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const categories = await prisma.complaintCategory.findMany({
+      include: {
+        department: true,
+        escalations: {
+          orderBy: { level: 'asc' }
+        }
+      },
+      orderBy: { name: 'asc' }
+    });
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching complaint categories:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getRoles = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const roles = await prisma.role.findMany({
+      orderBy: { code: 'asc' }
+    });
+    res.json(roles);
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getZones = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const zones = await prisma.zone.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json(zones);
+  } catch (error) {
+    console.error('Error fetching zones:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getLifecycleTransitions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const transitions = await prisma.ticketStateTransition.findMany();
+    res.json(transitions);
+  } catch (error) {
+    console.error('Error fetching lifecycle transitions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

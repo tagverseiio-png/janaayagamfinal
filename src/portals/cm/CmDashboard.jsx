@@ -38,9 +38,25 @@ export default function CmDashboard({ overviewMode = false }) {
   const [SEED_TICKETS, setTickets] = useState([]);
   const [STATE_STATS, setStats] = useState({ totalOpen: 0, totalResolved: 0, criticalPriority: 0, breachDistricts: 0, cmEscalations: 0, activeSectors: 0 });
   const [DISTRICT_STATS, setDistrictStats] = useState({});
-  const RESOLUTION_TREND = [];
-  const EMERGENCY_CONTACTS = [];
-  const getCategoryCount = () => [];
+  const RESOLUTION_TREND = [
+    { day: 'Day 1', filed: 45, resolved: 30 },
+    { day: 'Day 2', filed: 52, resolved: 38 },
+    { day: 'Day 3', filed: 38, resolved: 42 },
+    { day: 'Day 4', filed: 65, resolved: 45 },
+    { day: 'Day 5', filed: 48, resolved: 50 },
+    { day: 'Day 6', filed: 42, resolved: 55 },
+    { day: 'Day 7', filed: 35, resolved: 60 }
+  ];
+  const EMERGENCY_CONTACTS = [
+    { dept: 'Water Supply', officer: 'Sec. Hariharan', phone: '+91 94440 12345' },
+    { dept: 'Electricity (TANGEDCO)', officer: 'Dir. Subramani', phone: '+91 94440 67890' },
+    { dept: 'Highways Dept', officer: 'CE Karthikeyan', phone: '+91 94440 54321' }
+  ];
+  const getCategoryCount = () => {
+    const counts = {};
+    SEED_TICKETS.forEach(t => { counts[t.category] = (counts[t.category] || 0) + 1; });
+    return Object.entries(counts).map(([name, count]) => ({ name, count }));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +74,9 @@ export default function CmDashboard({ overviewMode = false }) {
           ...t,
           category: t.department?.name || 'Unknown',
           district: t.jurisdiction?.name || 'Unknown',
-          id: t.ticketNumber,
+          district: t.jurisdiction?.name || 'Unknown',
+          displayId: t.ticketNumber,
+          id: t.id,
           description: t.description
         }));
         setTickets(formattedTickets);
@@ -79,6 +97,26 @@ export default function CmDashboard({ overviewMode = false }) {
     };
     fetchData();
   }, []);
+
+  const handleAction = async (id, action) => {
+    try {
+      const newStatus = action === 'Intervene' ? 'In Progress' : 'In Progress';
+      await api.patch(`/tickets/${id}`, { status: newStatus });
+      
+      const ticketsRes = await api.get('/tickets');
+      const formattedTickets = ticketsRes.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        displayId: t.ticketNumber,
+        id: t.id,
+        description: t.description
+      }));
+      setTickets(formattedTickets);
+    } catch (err) {
+      console.error('Failed to update ticket:', err);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('jn_emp_role');
@@ -107,10 +145,10 @@ DEPARTMENT COMPLAINT VOLUME
 ${getCategoryCount().map(c => `- ${c.name}: ${c.count} complaints`).join('\n')}
 
 TOP 5 PERFORMING DISTRICTS
-- Dynamic data not available in summary report
+${top5Districts.map(d => `- ${d.name}: ${d.rate}% resolved`).join('\n')}
 
 DISTRICTS NEEDING ATTENTION
-- Dynamic data not available in summary report
+${bottom5Districts.map(d => `- ${d.name}: ${d.rate}% resolution`).join('\n')}
 
 ========================================
 Confidential — Government of Tamil Nadu`;
@@ -166,7 +204,7 @@ Confidential — Government of Tamil Nadu`;
 
   // Filtered tickets for State Tickets table
   const tableTickets = SEED_TICKETS.filter(t => 
-    t.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    t.displayId.toLowerCase().includes(searchQuery.toLowerCase()) || 
     t.district.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -347,7 +385,7 @@ Confidential — Government of Tamil Nadu`;
             {latestTickets.map(ticket => (
               <div key={ticket.id} className={`p-3 rounded-xl border ${ticket.priority === 'Critical' ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200'} cursor-pointer hover:shadow-md`}>
                 <div className="flex justify-between items-start mb-1">
-                  <span className="font-mono font-black text-xs">{ticket.id}</span>
+                  <span className="font-mono font-black text-xs">{ticket.displayId}</span>
                   <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${ticket.priority === 'Critical' ? 'bg-red-200 text-red-800 animate-pulse' : 'bg-slate-100 text-slate-600'}`}>{ticket.priority}</span>
                 </div>
                 <p className="text-xs font-bold text-slate-700 line-clamp-2">{ticket.description}</p>
@@ -391,7 +429,7 @@ Confidential — Government of Tamil Nadu`;
           <tbody className="text-xs font-bold text-slate-700">
             {tableTickets.map(t => (
               <tr key={t.id} className="border-b hover:bg-slate-50">
-                <td className="p-4 font-mono font-black">{t.id}</td>
+                <td className="p-4 font-mono font-black">{t.displayId}</td>
                 <td className="p-4">{t.category}</td>
                 <td className="p-4">{t.district}</td>
                 <td className="p-4">{t.status}</td>
@@ -572,14 +610,14 @@ Confidential — Government of Tamil Nadu`;
           <div key={ticket.id} className="p-5 border border-red-100 bg-red-50/30 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <span className="font-mono font-black text-sm text-red-700">{ticket.id}</span>
+                <span className="font-mono font-black text-sm text-red-700">{ticket.displayId}</span>
                 <span className="text-[10px] font-bold bg-white px-2 py-0.5 rounded border shadow-sm text-slate-600 uppercase">{ticket.district}</span>
               </div>
               <p className="text-sm text-slate-800 font-bold">{ticket.description}</p>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
-              <button className="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors shadow">Direct Intervene</button>
-              <button className="flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors border border-slate-300 shadow-sm">Assign Min.</button>
+              <button onClick={() => handleAction(ticket.id, 'Intervene')} className="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors shadow">Direct Intervene</button>
+              <button onClick={() => handleAction(ticket.id, 'Review')} className="flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase px-6 py-3 rounded-xl transition-colors border border-slate-300 shadow-sm">Assign Min.</button>
             </div>
           </div>
         ))}
@@ -645,28 +683,33 @@ Confidential — Government of Tamil Nadu`}
     </div>
   );
 
-  const districtMarkers = [
-    { name: 'Chennai', lat: 13.0827, lng: 80.2707, open: 14, resolved: 245, critical: 8 },
-    { name: 'Coimbatore', lat: 11.0168, lng: 76.9558, open: 39, resolved: 180, critical: 5 },
-    { name: 'Madurai', lat: 9.9252, lng: 78.1198, open: 27, resolved: 156, critical: 3 },
-    { name: 'Tiruchirappalli', lat: 10.7905, lng: 78.7047, open: 33, resolved: 145, critical: 4 },
-    { name: 'Salem', lat: 11.6643, lng: 78.1460, open: 15, resolved: 134, critical: 2 },
-    { name: 'Tirunelveli', lat: 8.7139, lng: 77.7567, open: 6, resolved: 98, critical: 1 },
-    { name: 'Vellore', lat: 12.9165, lng: 79.1325, open: 49, resolved: 145, critical: 7 },
-    { name: 'Erode', lat: 11.3410, lng: 77.7172, open: 12, resolved: 89, critical: 2 },
-    { name: 'Thanjavur', lat: 10.7870, lng: 79.1378, open: 2, resolved: 56, critical: 0 },
-    { name: 'Dindigul', lat: 10.3624, lng: 77.9695, open: 3, resolved: 67, critical: 1 },
-    { name: 'Thoothukudi', lat: 8.7642, lng: 78.1348, open: 11, resolved: 78, critical: 2 },
-    { name: 'Tiruppur', lat: 11.1085, lng: 77.3411, open: 9, resolved: 78, critical: 1 },
-    { name: 'Tiruvannamalai', lat: 12.2253, lng: 79.0747, open: 44, resolved: 134, critical: 7 },
-    { name: 'Tiruvarur', lat: 10.7726, lng: 79.6368, open: 52, resolved: 89, critical: 8 },
-    { name: 'Villupuram', lat: 11.9401, lng: 79.4861, open: 25, resolved: 98, critical: 4 },
-    { name: 'Cuddalore', lat: 11.7480, lng: 79.7714, open: 14, resolved: 98, critical: 2 },
-    { name: 'Kanniyakumari', lat: 8.0883, lng: 77.5385, open: 1, resolved: 34, critical: 0 },
-    { name: 'Theni', lat: 10.0104, lng: 77.4768, open: 21, resolved: 67, critical: 4 },
-    { name: 'Namakkal', lat: 11.2189, lng: 78.1674, open: 9, resolved: 56, critical: 1 },
-    { name: 'Karur', lat: 10.9601, lng: 78.0766, open: 12, resolved: 67, critical: 2 },
-  ];
+  const DISTRICT_COORDS = {
+    'Chennai': { lat: 13.0827, lng: 80.2707 },
+    'Coimbatore': { lat: 11.0168, lng: 76.9558 },
+    'Madurai': { lat: 9.9252, lng: 78.1198 },
+    'Tiruchirappalli': { lat: 10.7905, lng: 78.7047 },
+    'Salem': { lat: 11.6643, lng: 78.1460 },
+    'Tirunelveli': { lat: 8.7139, lng: 77.7567 },
+    'Vellore': { lat: 12.9165, lng: 79.1325 },
+    'Erode': { lat: 11.3410, lng: 77.7172 },
+    'Thanjavur': { lat: 10.7870, lng: 79.1378 },
+    'Dindigul': { lat: 10.3624, lng: 77.9695 },
+    'Thoothukudi': { lat: 8.7642, lng: 78.1348 },
+    'Tiruppur': { lat: 11.1085, lng: 77.3411 },
+    'Tiruvannamalai': { lat: 12.2253, lng: 79.0747 },
+    'Tiruvarur': { lat: 10.7726, lng: 79.6368 },
+    'Villupuram': { lat: 11.9401, lng: 79.4861 },
+    'Cuddalore': { lat: 11.7480, lng: 79.7714 },
+    'Kanniyakumari': { lat: 8.0883, lng: 77.5385 },
+    'Theni': { lat: 10.0104, lng: 77.4768 },
+    'Namakkal': { lat: 11.2189, lng: 78.1674 },
+    'Karur': { lat: 10.9601, lng: 78.0766 }
+  };
+
+  const districtMarkers = Object.entries(DISTRICT_COORDS).map(([name, coords]) => {
+    const stats = DISTRICT_STATS[name] || { open: 0, resolved: 0, critical: 0 };
+    return { name, ...coords, ...stats };
+  });
 
   return (
     <div className="flex h-screen bg-[#F0EBE3] font-sans">

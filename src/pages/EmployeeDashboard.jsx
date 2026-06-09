@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, LogOut, CheckCircle, AlertTriangle, Clock, MapPin, Search, BarChart2, FileText, List, Users, TrendingUp, Activity, Target } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TnMap from '../shared/components/TnMap';
+import TicketCard from '../shared/components/TicketCard';
+import TicketActionModals from '../shared/components/TicketActionModals';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
+
+// Leaflet default icon fix
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export default function EmployeeDashboard() {
   const { t, lang, toggleLang } = useLanguage();
@@ -18,6 +32,8 @@ export default function EmployeeDashboard() {
   const [loading, setLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalState, setModalState] = useState(null);
+  const [activeTicketId, setActiveTicketId] = useState(null);
   
   const isElected = ['MLA', 'Ward Member'].includes(role);
   const isAdministrative = ['District Collector', 'DRO', 'BDO', 'VAO', 'Revenue Inspector', 'Ward Officer'].includes(role);
@@ -44,25 +60,15 @@ export default function EmployeeDashboard() {
     api.get('/tickets').then(res => {
       let filtered = res.data.map(t => ({
         ...t,
-        category: t.department?.name || 'Unknown',
+        category: t.categoryName || t.department?.name || 'Unknown',
         district: t.jurisdiction?.name || 'Unknown',
         ward: t.jurisdiction?.name || 'Unknown',
-        id: t.ticketNumber
+        id: t.ticketNumber,
+        dbId: t.id,
+        created_at: t.createdAt,
+        sla_deadline: t.slaDeadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
+        citizen_name: t.citizenName
       }));
-      
-      // 1. Department Filter
-      if (isDepartment && dept) {
-        filtered = filtered.filter(t => t.category.toLowerCase().includes(dept.toLowerCase()) || dept.toLowerCase().includes(t.category.toLowerCase()));
-      }
-
-      // 2. Jurisdiction Filter
-      if (juris.district) {
-        filtered = filtered.filter(t => t.district === juris.district);
-      }
-      if (juris.ward) {
-        filtered = filtered.filter(t => t.ward === juris.ward);
-      }
-
       setTickets(filtered);
     }).catch(console.error);
   }, [navigate, isDepartment]);
@@ -79,17 +85,69 @@ export default function EmployeeDashboard() {
   };
 
   const handleAction = (id, action) => {
-    setTickets(tickets.map(t => {
-      if (t.id === id) {
-        let newStatus = t.status;
-        if (action === 'Accept') newStatus = 'In Progress';
-        if (action === 'Resolve') newStatus = 'Resolved';
-        if (action === 'Escalate') newStatus = 'Escalated';
-        return { ...t, status: newStatus };
+    setActiveTicketId(id);
+    if (action === 'view') {
+      setModalState('view');
+      return;
+    }
+    
+    // Open the appropriate modal
+    if (action === 'Resolve' || action === 'close' || action === 'resolve') {
+      setModalState('resolve');
+    } else if (action === 'Accept' || action === 'assign') {
+      setModalState('assign');
+    } else if (action === 'Escalate' || action === 'escalate') {
+      setModalState('escalate');
+    }
+  };
+
+  const handleModalSubmit = async (id, actionType, payload = {}) => {
+    try {
+      let newStatus = 'Open';
+      if (actionType === 'assign') newStatus = 'In Progress';
+      if (actionType === 'resolve') newStatus = 'Resolved';
+      if (actionType === 'escalate') newStatus = 'Escalated';
+
+      const ticketToUpdate = tickets.find(t => t.id === id);
+      const dbId = ticketToUpdate ? ticketToUpdate.dbId : id;
+
+      if (actionType === 'escalate') {
+        setTickets(tickets.filter(t => t.dbId !== dbId));
+      } else {
+        setTickets(tickets.map(t => t.dbId === dbId ? { ...t, status: newStatus } : t));
       }
-      return t;
-    }));
-    toast.success(`Ticket ${id} marked as ${action}`);
+      
+      await api.patch(`/tickets/${dbId}`, { status: newStatus, ...payload });
+      toast.success(`Ticket ${id} marked as ${newStatus}`);
+
+      // Refresh tickets
+      const res = await api.get('/tickets');
+      let filtered = res.data.map(t => ({
+        ...t,
+        category: t.categoryName || t.department?.name || 'Unknown',
+        district: t.jurisdiction?.name || 'Unknown',
+        ward: t.jurisdiction?.name || 'Unknown',
+        id: t.ticketNumber,
+        dbId: t.id,
+        created_at: t.createdAt,
+        sla_deadline: t.slaDeadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
+        citizen_name: t.citizenName
+      }));
+      
+      if (isDepartment && department) {
+        filtered = filtered.filter(t => t.category.toLowerCase().includes(department.toLowerCase()) || department.toLowerCase().includes(t.category.toLowerCase()));
+      }
+      if (jurisdiction.district) {
+        filtered = filtered.filter(t => t.district === jurisdiction.district);
+      }
+      if (jurisdiction.ward) {
+        filtered = filtered.filter(t => t.ward === jurisdiction.ward);
+      }
+      setTickets(filtered);
+    } catch (err) {
+      toast.error('Failed to update ticket status');
+      console.error(err);
+    }
   };
 
   const formatJurisdiction = () => {
@@ -116,13 +174,13 @@ export default function EmployeeDashboard() {
     open: tickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length,
     resolved: tickets.filter(t => t.status === 'Resolved').length,
     escalated: tickets.filter(t => t.status === 'Escalated').length,
-    breached: tickets.filter(t => t.status !== 'Resolved' && new Date() > new Date(t.slaDeadline)).length
+    breached: tickets.filter(t => t.status !== 'Resolved' && new Date() > new Date(t.sla_deadline)).length
   };
 
   const tableTickets = tickets.filter(t => 
-    t.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.district.toLowerCase().includes(searchQuery.toLowerCase())
+    (t.id || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (t.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (t.district || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const renderSidebar = () => {
@@ -247,7 +305,7 @@ export default function EmployeeDashboard() {
 
   // --- ADMINISTRATIVE DASHBOARD ---
   const renderAdminDashboard = () => {
-    const depts = ['Water', 'Electricity', 'Roads', 'Sanitation', 'Police', 'Revenue'];
+    const depts = ['Water', 'Electricity', 'Pot Holes (Road)', 'Sanitation'];
     const deptPerf = depts.map(d => {
       const dTickets = tickets.filter(t => t.category.includes(d));
       const total = dTickets.length || 1; // avoid /0
@@ -330,36 +388,97 @@ export default function EmployeeDashboard() {
 
   // --- DEPARTMENT OFFICIALS DASHBOARD ---
   const renderDepartmentDashboard = () => {
+    const pieData = [
+      { name: 'Resolved', value: stats.resolved, color: '#10B981' },
+      { name: 'Open', value: stats.open, color: '#3B82F6' },
+      { name: 'Escalated', value: stats.escalated, color: '#EF4444' }
+    ].filter(d => d.value > 0);
+
+    const slaData = [
+      { name: 'Safe', value: stats.total - stats.breached, fill: '#10B981' },
+      { name: 'Breached', value: stats.breached, fill: '#EF4444' }
+    ];
+
     return (
       <div className="space-y-6">
-        <h2 className="text-lg font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
-          <Activity className="w-5 h-5 text-blue-600" /> {department} Operations
+        <h2 className="text-xl font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
+          <Activity className="w-6 h-6 text-[#8B1A1A]" /> {department} Operations Overview
         </h2>
+        
+        {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 rounded-2xl shadow-sm">
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Open Tickets</span>
-            <div className="mt-2 text-3xl font-black">{stats.open}</div>
+          <div className="bg-gradient-to-br from-[#8B1A1A] to-red-900 text-white p-5 rounded-2xl shadow-md border border-red-800/50 relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Total Tickets</span>
+            <div className="mt-2 text-4xl font-black">{stats.total}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Field Agents Active</span>
-            <div className="mt-2 text-3xl font-black text-blue-600">124</div>
+          <div className="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-slate-200">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Open & Active</span>
+            <div className="mt-2 text-4xl font-black text-blue-600">{stats.open}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+          <div className="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-slate-200">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">SLA Breaches</span>
-            <div className="mt-2 text-3xl font-black text-rose-500">{stats.breached}</div>
+            <div className="mt-2 text-4xl font-black text-rose-500">{stats.breached}</div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+          <div className="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-slate-200">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Resolution Rate</span>
-            <div className="mt-2 text-3xl font-black text-emerald-500">
+            <div className="mt-2 text-4xl font-black text-emerald-500">
               {stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}%
             </div>
           </div>
         </div>
 
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col items-center">
+            <h3 className="w-full text-left font-extrabold text-slate-800 tracking-wide uppercase text-xs mb-4">Ticket Status Distribution</h3>
+            <div className="w-full h-[250px]">
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-400 font-bold text-sm">No ticket data available</div>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col items-center">
+            <h3 className="w-full text-left font-extrabold text-slate-800 tracking-wide uppercase text-xs mb-4">SLA Compliance</h3>
+            <div className="w-full h-[250px]">
+              {stats.total > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={slaData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fontWeight: 'bold' }} axisLine={false} tickLine={false} />
+                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                      {slaData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-400 font-bold text-sm">No SLA data available</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Map & Queue Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-blue-600" />
+              <MapPin className="w-4 h-4 text-[#8B1A1A]" />
               <h3 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm">{department} Live Map</h3>
             </div>
             <div className="h-[350px] w-full bg-slate-50 relative">
@@ -367,29 +486,28 @@ export default function EmployeeDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="font-extrabold text-slate-800 tracking-wide uppercase text-sm flex items-center gap-2">
-                <Shield className="w-4 h-4 text-blue-600" />
+                <Shield className="w-4 h-4 text-[#8B1A1A]" />
                 Live Operations Queue
               </h2>
             </div>
             
-            <div className="overflow-x-auto max-h-[350px] overflow-y-auto">
+            <div className="overflow-x-auto max-h-[350px] overflow-y-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
-                <thead className="sticky top-0 bg-white">
-                  <tr className="border-b border-slate-100">
+                <thead className="sticky top-0 bg-white/90 backdrop-blur-sm shadow-sm z-10">
+                  <tr>
                     <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket ID</th>
                     <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue & Location</th>
                     <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">SLA Deadline</th>
-                    <th className="py-3 px-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {tickets.slice(0, 15).map(ticket => (
-                    <tr key={ticket.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={ticket.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => setActiveMenu('tickets')}>
                       <td className="py-4 px-5">
-                        <span className="text-xs font-black text-blue-800 bg-blue-100 px-2 py-1 rounded-md">{ticket.id}</span>
+                        <span className="text-xs font-black text-[#8B1A1A] bg-red-50 px-2 py-1 rounded-md">{ticket.id}</span>
                       </td>
                       <td className="py-4 px-5">
                         <p className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.description}</p>
@@ -398,22 +516,15 @@ export default function EmployeeDashboard() {
                         </div>
                       </td>
                       <td className="py-4 px-5 text-xs font-bold text-slate-600">
-                        {new Date(ticket.slaDeadline).toLocaleDateString()}
-                      </td>
-                      <td className="py-4 px-5">
-                        <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
-                          ticket.status === 'Open' ? 'bg-[#FF9800]/10 text-[#FF9800]' :
-                          ticket.status === 'Resolved' ? 'bg-[#4CAF50]/10 text-[#4CAF50]' :
-                          ticket.status === 'In Progress' ? 'bg-[#2196F3]/10 text-[#2196F3]' :
-                          'bg-[#F44336]/10 text-[#F44336]'
-                        }`}>
-                          {ticket.status}
-                        </span>
+                        {new Date(ticket.sla_deadline || ticket.slaDeadline).toLocaleDateString()}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {tickets.length === 0 && (
+                 <div className="p-8 text-center text-slate-400 font-bold text-sm">No active operations in queue</div>
+              )}
             </div>
           </div>
         </div>
@@ -442,41 +553,25 @@ export default function EmployeeDashboard() {
           />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto border border-slate-200 rounded-xl">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest sticky top-0">
-            <tr>
-              <th className="p-4 border-b">ID</th>
-              <th className="p-4 border-b">Category</th>
-              <th className="p-4 border-b">Description</th>
-              <th className="p-4 border-b">Status</th>
-              <th className="p-4 border-b text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-xs font-bold text-slate-700">
+      {tableTickets.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 font-bold bg-slate-50 border border-slate-100 rounded-xl p-6">
+          <FileText className="w-12 h-12 text-slate-300 mb-3" />
+          <p>No tickets found matching your search.</p>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto pr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {tableTickets.map(t => (
-              <tr key={t.id} className="border-b hover:bg-slate-50">
-                <td className="p-4 font-mono font-black text-[#8B1A1A]">{t.id}</td>
-                <td className="p-4">{t.category}</td>
-                <td className="p-4 max-w-xs">
-                  <p className="truncate">{t.description}</p>
-                  <span className="text-[10px] text-slate-400">{t.district}</span>
-                </td>
-                <td className="p-4">
-                  <span className={`px-2 py-1 rounded text-[10px] uppercase font-black ${t.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {t.status}
-                  </span>
-                </td>
-                <td className="p-4 text-right">
-                  {t.status !== 'Resolved' && (
-                    <button onClick={() => handleAction(t.id, 'Resolve')} className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-bold transition-colors">Resolve</button>
-                  )}
-                </td>
-              </tr>
+              <TicketCard 
+                key={t.id} 
+                ticket={t} 
+                role={role.toLowerCase()} 
+                onAction={(id, action) => handleAction(id, action)} 
+              />
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -523,6 +618,14 @@ export default function EmployeeDashboard() {
           </AnimatePresence>
         </div>
       </main>
+
+      <TicketActionModals 
+        activeTicket={tickets.find(t => t.id === activeTicketId)} 
+        modalState={modalState} 
+        setModalState={setModalState} 
+        onSubmitAction={handleModalSubmit}
+        role={role}
+      />
     </div>
   );
 }

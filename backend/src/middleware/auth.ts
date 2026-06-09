@@ -37,3 +37,16 @@ export const requireEmployee = (req: Request, res: Response, next: NextFunction)
   }
   next();
 };
+
+export const authorize = (...allowedRoles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      res.status(403).json({
+        error: 'Forbidden: Insufficient permissions. Only Super Admin can perform this action.'
+      });
+      return;
+    }
+    next();
+  };
+};
+

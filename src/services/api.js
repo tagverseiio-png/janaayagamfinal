@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://13.235.135.81:5001/api',
+  baseURL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5001/api`,
 });
 
 // Add a request interceptor to attach the JWT token
