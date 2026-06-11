@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Phone, Shield, Flame, Activity, Heart, Users, Landmark, Zap, AlertTriangle, Dog, Brain, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Phone, Shield, Flame, Activity, Heart, Users, Landmark, Zap, AlertTriangle, Dog, Brain, HelpCircle, AlertOctagon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import api from '../../services/api';
 
 export default function SOSContact() {
   const { i18n } = useTranslation();
@@ -9,6 +11,49 @@ export default function SOSContact() {
 
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
+
+  const [sosLoading, setSosLoading] = useState(false);
+
+  const sendSOSTicket = async (lat, lng) => {
+    try {
+      setSosLoading(true);
+      await api.post('/tickets', {
+        title: 'SILENT SOS EMERGENCY DISPATCH',
+        description: 'Urgent Silent SOS dispatch request triggered by citizen. Immediate response required. Geolocation confirmed.',
+        lat,
+        lng,
+        categoryCode: 'CAT-SAN'
+      });
+      toast.success(tLabel(
+        'SILENT SOS GENERATED! Dispatching Emergency Services...',
+        'சைலண்ட் SOS உருவாக்கப்பட்டது! அவசர சேவைகள் அனுப்பப்படுகின்றன...'
+      ));
+    } catch (err) {
+      console.error(err);
+      toast.error(tLabel('Failed to dispatch Silent SOS', 'சைலண்ட் SOS அனுப்ப முடியவில்லை'));
+    } finally {
+      setSosLoading(false);
+    }
+  };
+
+  const triggerSilentSOS = () => {
+    let lat = parseFloat(localStorage.getItem('jn_living_lat') || '13.0827');
+    let lng = parseFloat(localStorage.getItem('jn_living_lng') || '80.2707');
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          await sendSOSTicket(position.coords.latitude, position.coords.longitude);
+        },
+        async (error) => {
+          console.warn('Geolocation failed, falling back to stored coordinates', error);
+          await sendSOSTicket(lat, lng);
+        }
+      );
+    } else {
+      sendSOSTicket(lat, lng);
+    }
+  };
 
   const helplines = [
     { category: 'CORE', items: [
@@ -36,7 +81,7 @@ export default function SOSContact() {
   ];
 
   return (
-    <div className="pb-24 min-h-screen bg-slate-50">
+    <div className="pb-24 min-h-screen bg-slate-50 font-sans">
       {/* Header */}
       <div className="bg-white px-4 py-2.5 border-b border-slate-200/60 shadow-sm sticky top-0 z-50 flex items-center gap-3 h-14">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-400 hover:text-[#8B1A1A]">
@@ -48,28 +93,56 @@ export default function SOSContact() {
       </div>
 
       <div className="p-4 space-y-6">
-        {/* Primary CTA */}
-        <div className="bg-red-600 rounded-3xl p-6 shadow-xl shadow-red-200 text-white space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <h3 className="text-xl font-black">{tLabel('Emergency Response', 'அவசரக்கால பதில்')}</h3>
-              <p className="text-xs font-bold opacity-80 uppercase tracking-widest">{tLabel('Immediate Assistance', 'உடனடி உதவி')}</p>
+        {/* Primary CTA Group */}
+        <div className="space-y-3">
+          <div className="bg-red-650 rounded-3xl p-5 shadow-lg shadow-red-200 text-white space-y-3 bg-red-600">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <h3 className="text-lg font-black">{tLabel('Emergency Call', 'அவசர அழைப்பு')}</h3>
+                <p className="text-[10px] font-black opacity-80 uppercase tracking-widest">{tLabel('Immediate Voice Response', 'உடனடி குரல் தொடர்பு')}</p>
+              </div>
+              <div className="p-2.5 bg-white/20 rounded-2xl">
+                <Phone className="w-6 h-6 text-white animate-pulse" />
+              </div>
             </div>
-            <div className="p-3 bg-white/20 rounded-2xl">
-              <Phone className="w-8 h-8 text-white animate-pulse" />
-            </div>
+            
+            <a
+              href="tel:112"
+              className="w-full bg-white text-red-600 font-black text-base py-3.5 rounded-2xl flex items-center justify-center gap-2.5 shadow-md active:scale-[0.98] transition-all"
+            >
+              <Phone className="w-5 h-5 fill-red-600" />
+              <span>{tLabel('CALL 112', 'அழைக்கவும் 112')}</span>
+            </a>
           </div>
-          
-          <a
-            href="tel:112"
-            className="w-full bg-white text-red-600 font-black text-lg py-4 rounded-2xl flex items-center justify-center gap-3 shadow-md active:scale-[0.98] transition-all"
-          >
-            <Phone className="w-6 h-6 fill-red-600" />
-            <span>{tLabel('CALL 112', 'அழைக்கவும் 112')}</span>
-          </a>
-          <p className="text-[10px] text-center font-bold opacity-70 uppercase tracking-tighter">
-            {tLabel('Single Emergency Number for India', 'இந்தியாவிற்கான ஒற்றை அவசர எண்')}
-          </p>
+
+          {/* Silent SOS CTA */}
+          <div className="bg-slate-900 rounded-3xl p-5 shadow-lg shadow-slate-350 text-white space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <h3 className="text-lg font-black">{tLabel('Silent SOS Dispatch', 'அமைதியான SOS உதவி')}</h3>
+                <p className="text-[10px] font-black opacity-80 uppercase tracking-widest">{tLabel('Discreet Geotagged Help', 'இரகசிய இருப்பிட உதவி')}</p>
+              </div>
+              <div className="p-2.5 bg-white/10 rounded-2xl border border-white/5">
+                <AlertOctagon className="w-6 h-6 text-red-500 animate-bounce" />
+              </div>
+            </div>
+            
+            <button
+              onClick={triggerSilentSOS}
+              disabled={sosLoading}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-black text-base py-3.5 rounded-2xl flex items-center justify-center gap-2.5 shadow-md active:scale-[0.98] transition-all cursor-pointer"
+            >
+              {sosLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <AlertOctagon className="w-5 h-5" />
+              )}
+              <span>{tLabel('TRIGGER SILENT SOS', 'சைலண்ட் SOS தூண்டு')}</span>
+            </button>
+            <p className="text-[9px] text-center font-bold opacity-60 uppercase tracking-wide leading-normal">
+              {tLabel('Sends your exact live coordinates and raises a high-priority dispatch alarm.', 'உங்கள் துல்லியமான இருப்பிடத்தை அனுப்பி, உயர் முன்னுரிமை அலாரத்தை எழுப்புகிறது.')}
+            </p>
+          </div>
         </div>
 
         {/* Helplines List */}

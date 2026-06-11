@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle } from 'lucide-react';
+import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle, User } from 'lucide-react';
 import CategoryIcon from '../../shared/components/CategoryIcon';
 import GeoCamera from '../../shared/components/GeoCamera';
 import { normalizeDept, getFirstResponder } from '../../data/hierarchyData';
@@ -59,8 +59,8 @@ export default function SubmitTicket() {
 
   async function assignWardFromCoords(lat, lng) {
     try {
-      const response = await fetch(`/api/ward-lookup?lat=${lat}&lng=${lng}`);
-      const data = await response.json();
+      const response = await api.get(`/ward-lookup?lat=${lat}&lng=${lng}`);
+      const data = response.data;
       if (data?.ward) {
         setAssignedWard(data.ward);
       } else {
@@ -144,12 +144,14 @@ export default function SubmitTicket() {
     captureLocation();
   };
 
-  // GeoCamera callback
+  // GeoCamera callback — photoUrl (not imageUrl)
   const handleCameraCapture = (photoData) => {
-    setPhoto(photoData.imageUrl);
+    setPhoto(photoData.photoUrl);
     setIsGeotagged(true);
-    setLocation({ lat: photoData.lat, lng: photoData.lng });
-    setLocationCaptured(true);
+    if (photoData.lat && photoData.lng) {
+      setLocation({ lat: photoData.lat, lng: photoData.lng });
+      setLocationCaptured(true);
+    }
     setShowCamera(false);
     toast.success(tLabel("Geo-tagged photo stamped successfully!", "புவி-குறிக்கப்பட்ட புகைப்படம் வெற்றிகரமாக இணைக்கப்பட்டது!"));
   };
@@ -200,7 +202,8 @@ export default function SubmitTicket() {
     const catName = selectedCat ? (categoryTranslations[category] ? categoryTranslations[category].en : selectedCat.name) : category;
 
     try {
-      const res = await api.post('/tickets', {
+      // Send as JSON with base64 photo — backend decodes and saves to disk
+      const payload = {
         title: `${catName} Issue in ${targetWard}`,
         description,
         categoryCode: category,
@@ -208,14 +211,19 @@ export default function SubmitTicket() {
         jurisdictionId: targetJurisdictionId,
         lat: location ? parseFloat(location.lat) : undefined,
         lng: location ? parseFloat(location.lng) : undefined,
-        channel: 'WEB'
-      });
+        channel: 'WEB',
+        photo: photo || undefined
+      };
+
+      const res = await api.post('/tickets', payload);
       
       setSubmittedTicketId(res.data.ticketNumber);
       setStep(2);
+      toast.success(tLabel('Grievance submitted successfully!', 'புகார் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!'));
     } catch (err) {
       console.error('Failed to submit ticket:', err);
-      toast.error('Failed to submit ticket. Please try again.');
+      const errMsg = err.response?.data?.error || 'Failed to submit ticket. Please try again.';
+      toast.error(errMsg);
     }
   };
 
@@ -226,7 +234,8 @@ export default function SubmitTicket() {
       setShowDuplicateModal(false);
       navigate('/citizen');
     } catch (err) {
-      toast.error(tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை."));
+      const errMsg = err.response?.data?.error || tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை.");
+      toast.error(errMsg);
     }
   };
 
@@ -295,10 +304,9 @@ export default function SubmitTicket() {
       {showCamera && (
         <div className="fixed inset-0 z-[200] bg-black">
           <GeoCamera 
-            onCapture={handleCameraCapture} 
-            onClose={() => setShowCamera(false)} 
-            userName={localStorage.getItem('jn_name') || ''}
-            userWard={locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward_name') || 'Ward 1')}
+            onCapture={handleCameraCapture}
+            onCancel={() => setShowCamera(false)}
+            title="Grievance Verification"
           />
         </div>
       )}
@@ -677,7 +685,7 @@ export default function SubmitTicket() {
               <div className="pt-4 border-t border-slate-100">
                 <p className="text-xs text-slate-500 mb-4 font-bold">Track your complaint at:</p>
                 <button
-                  onClick={() => navigate('/track', { state: { ticketId: submittedTicketId } })}
+                  onClick={() => navigate('/citizen/tickets', { state: { ticketId: submittedTicketId } })}
                   className="w-full bg-[#8B1A1A] hover:bg-[#6b1414] text-white font-extrabold text-sm py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Track Now →

@@ -11,14 +11,15 @@ async function main() {
 
   // 1. CLEAN EXISTING DATA
   console.log('Cleaning existing database records...');
+  await prisma.ticketClaim.deleteMany({});
   await prisma.ticketHistory.deleteMany({});
   await prisma.ticket.deleteMany({});
   await prisma.employee.deleteMany({});
-  await prisma.jurisdiction.deleteMany({});
-  await prisma.department.deleteMany({});
-  await prisma.role.deleteMany({});
   await prisma.categoryEscalation.deleteMany({});
   await prisma.complaintCategory.deleteMany({});
+  await prisma.department.deleteMany({});
+  await prisma.jurisdiction.deleteMany({});
+  await prisma.role.deleteMany({});
   await prisma.ticketStateTransition.deleteMany({});
   await prisma.zone.deleteMany({});
   await prisma.citizen.deleteMany({});
@@ -32,11 +33,12 @@ async function main() {
     { name: 'Backward Classes, MBC and Minorities Welfare', slug: 'bc-mbc-minorities-welfare', primaryDomain: 'Welfare', isCivicFacing: false },
     { name: 'Commercial Taxes and Registration', slug: 'commercial-taxes-registration', primaryDomain: 'Registration/Taxes', isCivicFacing: true },
     { name: 'Co-operation, Food and Consumer Protection', slug: 'cooperation-food-consumer', primaryDomain: 'Ration/PDS/Consumer', isCivicFacing: true },
-    { name: 'Energy', slug: 'energy', primaryDomain: 'Electricity', isCivicFacing: true },
+    { name: 'Electricity & Energy Resources', slug: 'electricity', primaryDomain: 'Electricity', isCivicFacing: true },
     { name: 'Environment and Forests', slug: 'environment-forests', primaryDomain: 'Environment/Pollution', isCivicFacing: true },
     { name: 'Finance', slug: 'finance', primaryDomain: 'Finance', isCivicFacing: false },
     { name: 'Handlooms, Handicrafts, Textiles and Khadi', slug: 'handlooms-textiles', primaryDomain: 'Industry', isCivicFacing: false },
     { name: 'Health and Family Welfare', slug: 'health-family-welfare', primaryDomain: 'Health Services', isCivicFacing: true },
+    { name: 'Health & Sanitation', slug: 'sanitation', primaryDomain: 'Health Services', isCivicFacing: true },
     { name: 'Higher Education', slug: 'higher-education', primaryDomain: 'Education', isCivicFacing: false },
     { name: 'Highways and Minor Ports', slug: 'highways-minor-ports', primaryDomain: 'Roads (Highways)', isCivicFacing: true },
     { name: 'Home, Prohibition and Excise', slug: 'home-prohibition-excise', primaryDomain: 'Police/Public Safety', isCivicFacing: true },
@@ -138,44 +140,34 @@ async function main() {
   const complaintCategories = [
     { code: 'CAT-WTR', name: 'Water', departmentSlug: 'municipal-admin-water-supply', defaultAssigneeRole: 'WARD_AEO', defaultPriority: 'HIGH' },
     { code: 'CAT-RDC', name: 'Pot Holes (Road)', departmentSlug: 'municipal-admin-water-supply', defaultAssigneeRole: 'WARD_AEO', defaultPriority: 'MEDIUM' },
-    { code: 'CAT-ELE', name: 'Electricity', departmentSlug: 'energy', defaultAssigneeRole: 'LINE_MAN', defaultPriority: 'HIGH' },
-    { code: 'CAT-SAN', name: 'Sanitation', departmentSlug: 'municipal-admin-water-supply', defaultAssigneeRole: 'DSI', defaultPriority: 'HIGH' }
+    { code: 'CAT-ELE', name: 'Electricity', departmentSlug: 'electricity', defaultAssigneeRole: 'LINE_MAN', defaultPriority: 'HIGH' },
+    { code: 'CAT-SAN', name: 'Sanitation', departmentSlug: 'sanitation', defaultAssigneeRole: 'DSI', defaultPriority: 'HIGH' }
   ];
 
   const categoryEscalations = [
     { categoryCode: 'CAT-WTR', escalations: [
       { level: 'L1', assigneeTitle: 'Ward (AEO)', slaDays: 3 },
-      { level: 'L2', assigneeTitle: 'Deputy Area Engineer', slaDays: 7 },
-      { level: 'L3', assigneeTitle: 'Area Engineer', slaDays: 10 },
-      { level: 'L4', assigneeTitle: 'Super Agent', slaDays: 15 },
-      { level: 'L5', assigneeTitle: 'G.M', slaDays: 20 },
-      { level: 'L6', assigneeTitle: 'Executive Director', slaDays: 25 },
-      { level: 'L7', assigneeTitle: 'Department Director', slaDays: 30 }
+      { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
+      { level: 'L3', assigneeTitle: 'Commissioner', slaDays: 20 }
     ]},
     { categoryCode: 'CAT-RDC', escalations: [
       { level: 'L1', assigneeTitle: 'Ward (AEO)', slaDays: 3 },
-      { level: 'L2', assigneeTitle: 'Deputy Area Engineer', slaDays: 7 },
-      { level: 'L3', assigneeTitle: 'Area Engineer', slaDays: 10 },
-      { level: 'L4', assigneeTitle: 'Super Agent', slaDays: 15 },
-      { level: 'L5', assigneeTitle: 'G.M', slaDays: 20 },
-      { level: 'L6', assigneeTitle: 'Executive Director', slaDays: 25 },
-      { level: 'L7', assigneeTitle: 'Department Director', slaDays: 30 }
+      { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
+      { level: 'L3', assigneeTitle: 'Commissioner', slaDays: 20 }
     ]},
     { categoryCode: 'CAT-ELE', escalations: [
-      { level: 'L1', assigneeTitle: 'Ward (AEO) / E.B', slaDays: 2 },
-      { level: 'L2', assigneeTitle: 'Line Man', slaDays: 3 },
-      { level: 'L3', assigneeTitle: 'Deputy Area Engineer', slaDays: 7 },
-      { level: 'L4', assigneeTitle: 'Assistant Area Engineer', slaDays: 10 },
-      { level: 'L5', assigneeTitle: 'Area Engineer', slaDays: 15 },
-      { level: 'L6', assigneeTitle: 'Super Agent', slaDays: 20 }
+      { level: 'L1', assigneeTitle: 'Assistant Area Engineer', slaDays: 5 },
+      { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
+      { level: 'L3', assigneeTitle: 'Minister (Electricity & Energy Resources)', slaDays: 15 }
     ]},
     { categoryCode: 'CAT-SAN', escalations: [
-      { level: 'L1', assigneeTitle: 'Division Sanitary Inspector (DSI)', slaDays: 2 },
-      { level: 'L2', assigneeTitle: 'Sanitary Inspector (SI)', slaDays: 5 },
+      { level: 'L1', assigneeTitle: 'Division Sanitary Inspector', slaDays: 2 },
+      { level: 'L2', assigneeTitle: 'Sanitary Inspector', slaDays: 5 },
       { level: 'L3', assigneeTitle: 'Health Inspector', slaDays: 10 },
-      { level: 'L4', assigneeTitle: 'City Health Officer', slaDays: 15 },
+      { level: 'L4', assigneeTitle: 'City Health Inspector', slaDays: 15 },
       { level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 20 },
-      { level: 'L6', assigneeTitle: 'Commissioner', slaDays: 25 }
+      { level: 'L6', assigneeTitle: 'Commissioner', slaDays: 25 },
+      { level: 'L7', assigneeTitle: 'Minister (Health)', slaDays: 30 }
     ]}
   ];
 
@@ -467,7 +459,8 @@ async function main() {
 
   // Map departments to variables
   const maDept = await prisma.department.findUnique({ where: { slug: 'municipal-admin-water-supply' } });
-  const energyDept = await prisma.department.findUnique({ where: { slug: 'energy' } });
+  const energyDept = await prisma.department.findUnique({ where: { slug: 'electricity' } });
+  const sanitationDept = await prisma.department.findUnique({ where: { slug: 'sanitation' } });
   const revDept = await prisma.department.findUnique({ where: { slug: 'revenue-disaster-mgmt' } });
 
   const defaultUsers = [
@@ -582,15 +575,8 @@ async function main() {
       name: 'Division Sanitary Inspector (DSI)',
       category: 'Field Officer',
       role: 'DSI',
-      departmentId: maDept?.id,
+      departmentId: sanitationDept?.id,
       jurisdictionId: wardNode?.id,
-    },
-    {
-      username: 'deputy_area_engineer',
-      name: 'Deputy Area Engineer',
-      category: 'Department Official',
-      role: 'DEPUTY_AREA_ENGINEER',
-      departmentId: maDept?.id,
     },
     {
       username: 'area_engineer',
@@ -598,35 +584,6 @@ async function main() {
       category: 'Department Official',
       role: 'AREA_ENGINEER',
       departmentId: maDept?.id,
-    },
-    {
-      username: 'super_agent',
-      name: 'Super Agent',
-      category: 'Administrative Officer',
-      role: 'SUPER_AGENT',
-      departmentId: maDept?.id,
-    },
-    {
-      username: 'g_m',
-      name: 'General Manager',
-      category: 'Department Official',
-      role: 'G.M',
-      departmentId: maDept?.id,
-    },
-    {
-      username: 'executive_director',
-      name: 'Executive Director',
-      category: 'Department Official',
-      role: 'EXECUTIVE_DIRECTOR',
-      departmentId: maDept?.id,
-    },
-    {
-      username: 'dept_director',
-      name: 'Department Director',
-      category: 'Administrative Officer',
-      role: 'DEPT_DIRECTOR',
-      departmentId: maDept?.id,
-      jurisdictionId: stateNode.id,
     }
   ];
 

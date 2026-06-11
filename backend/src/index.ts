@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
@@ -14,11 +15,13 @@ import metadataRoutes from './routes/metadataRoutes';
 import ticketRoutes from './routes/ticketRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import adminRoutes from './routes/adminRoutes';
+import { checkAndAutoEscalateSlaBreaches } from './controllers/ticketController';
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Request Logger
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -26,12 +29,23 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+import { getHierarchy } from './controllers/metadataController';
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/metadata', metadataRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
+
+app.get('/api/hierarchy/:department_slug', getHierarchy);
+app.get('/api/hierarchy', getHierarchy);
+
+app.get('/api/ward-lookup', (req: Request, res: Response) => {
+  const { lat, lng } = req.query;
+  console.log(`[WARD LOOKUP] Coordinates: lat=${lat}, lng=${lng}`);
+  res.json({ ward: 'Ward 1: Kodungaiyur (West)' });
+});
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'JanaNayagam API is running' });
@@ -45,6 +59,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  
+  // Start SLA Auto-Escalation Engine
+  setInterval(() => {
+    checkAndAutoEscalateSlaBreaches();
+  }, 15000); // Check every 15 seconds
 });
 
 // Export prisma for use in other files

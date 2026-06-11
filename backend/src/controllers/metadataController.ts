@@ -155,3 +155,77 @@ export const getLifecycleTransitions = async (req: Request, res: Response): Prom
   }
 };
 
+export const getHierarchy = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const department = req.params.department_slug || req.query.department;
+    
+    if (!department) {
+      // Return full list of all hierarchies
+      const departments = await prisma.department.findMany({
+        include: {
+          categories: {
+            include: {
+              escalations: {
+                orderBy: { level: 'asc' }
+              }
+            }
+          }
+        }
+      });
+      
+      const fullList = departments.map(d => ({
+        department: d.name,
+        slug: d.slug,
+        steps: d.categories[0]?.escalations.map(e => ({
+          role: e.assigneeTitle,
+          label: e.assigneeTitle,
+          slaDays: e.slaDays
+        })) || []
+      }));
+      res.json(fullList);
+      return;
+    }
+
+    const deptStr = String(department).toLowerCase().trim();
+    
+    // Query department by slug case-insensitively
+    const dept = await prisma.department.findFirst({
+      where: {
+        slug: {
+          equals: deptStr,
+          mode: 'insensitive'
+        }
+      },
+      include: {
+        categories: {
+          include: {
+            escalations: {
+              orderBy: { level: 'asc' }
+            }
+          }
+        }
+      }
+    });
+
+    if (!dept) {
+      res.status(404).json({ error: `Department hierarchy not found for: ${department}` });
+      return;
+    }
+
+    const steps = dept.categories[0]?.escalations.map(e => ({
+      role: e.assigneeTitle,
+      label: e.assigneeTitle,
+      slaDays: e.slaDays
+    })) || [];
+
+    res.json({
+      department: dept.name,
+      slug: dept.slug,
+      steps: steps
+    });
+  } catch (error) {
+    console.error('Error fetching hierarchy:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

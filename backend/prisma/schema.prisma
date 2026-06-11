@@ -11,14 +11,16 @@ datasource db {
 }
 
 model Citizen {
-  id        String   @id @default(uuid())
-  phone     String   @unique
-  name      String
-  district  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tickets   Ticket[]
-  claims    TicketClaim[]
+  id            String   @id @default(uuid())
+  phone         String   @unique
+  name          String
+  district      String?
+  isVolunteer   Boolean  @default(false)
+  volunteerWard String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tickets       Ticket[]
+  claims        TicketClaim[]
 }
 
 model Department {
@@ -143,6 +145,11 @@ model Ticket {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   deadline       DateTime?
+
+  photo          String?
+  proofPhoto     String?
+  rating         Int?
+  reopenReason   String?
 
   history        TicketHistory[]
   claims         TicketClaim[]

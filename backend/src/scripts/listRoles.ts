@@ -8,10 +8,7 @@ import { prisma } from '../index';
     'Line Man',
     'DSI',
     'Sanitary Inspector',
-    'Deputy Area Engineer',
     'Area Engineer',
-    'Super Agent',
-    'Department Director',
     'Commissioner',
   ];
 

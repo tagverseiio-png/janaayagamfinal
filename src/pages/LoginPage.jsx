@@ -78,6 +78,8 @@ export default function LoginPage() {
       localStorage.setItem('jn_user_id', citizen.id);
       localStorage.setItem('jn_role', 'citizen');
       localStorage.setItem('jn_name', citizen.name);
+      localStorage.setItem('jn_is_volunteer', citizen.isVolunteer ? 'true' : 'false');
+      localStorage.setItem('jn_volunteer_ward', citizen.volunteerWard || '');
 
       // Handle location detail restoration
       const storedDistrict = localStorage.getItem('jn_district') || citizen.district || 'Chennai';

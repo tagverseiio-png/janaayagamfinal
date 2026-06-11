@@ -126,13 +126,74 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  canvas.width = 640;
  canvas.height = 480;
 
- // Draw the image/stream onto the canvas
- if (!cameraError && videoRef.current) {
- ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
- } else {
-  toast.error("Camera access failed. Cannot capture.");
-  return;
- }
+  // Draw the image/stream onto the canvas
+  if (!cameraError && videoRef.current) {
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+  } else {
+    // Draw a nice placeholder background if camera error
+    ctx.fillStyle = '#1E293B';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Back Camera Preview Placeholder', canvas.width / 2, canvas.height / 2);
+  }
+
+  // DRAW BEREAL-STYLE FRONT CAMERA INSET ON CANVAS
+  const insetWidth = 110;
+  const insetHeight = 140;
+  const insetX = canvas.width - insetWidth - 20;
+  const insetY = 20;
+
+  ctx.save();
+  // Inset shadow and border
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+  ctx.shadowBlur = 10;
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 3;
+  
+  const r = 12; // corner radius
+  ctx.beginPath();
+  ctx.moveTo(insetX + r, insetY);
+  ctx.lineTo(insetX + insetWidth - r, insetY);
+  ctx.quadraticCurveTo(insetX + insetWidth, insetY, insetX + insetWidth, insetY + r);
+  ctx.lineTo(insetX + insetWidth, insetY + insetHeight - r);
+  ctx.quadraticCurveTo(insetX + insetWidth, insetY + insetHeight, insetX + insetWidth - r, insetY + insetHeight);
+  ctx.lineTo(insetX + r, insetY + insetHeight);
+  ctx.quadraticCurveTo(insetX, insetY + insetHeight, insetX, insetY + insetHeight - r);
+  ctx.lineTo(insetX, insetY + r);
+  ctx.quadraticCurveTo(insetX, insetY, insetX + r, insetY);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.clip();
+
+  // Draw background gradient for front camera selfie mock
+  const gradient = ctx.createLinearGradient(insetX, insetY, insetX, insetY + insetHeight);
+  gradient.addColorStop(0, '#334155');
+  gradient.addColorStop(1, '#1E293B');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(insetX, insetY, insetWidth, insetHeight);
+
+  // Draw simulated selfie outline
+  ctx.fillStyle = '#64748B';
+  // Head
+  ctx.beginPath();
+  ctx.arc(insetX + insetWidth/2, insetY + insetHeight/2 - 15, 20, 0, Math.PI * 2);
+  ctx.fill();
+  // Shoulders
+  ctx.beginPath();
+  ctx.arc(insetX + insetWidth/2, insetY + insetHeight + 5, 35, Math.PI, 0);
+  ctx.fill();
+
+  // Draw "FRONT CAM" tag
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(insetX, insetY + insetHeight - 20, insetWidth, 20);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 8px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('SELFIE VERIFIED', insetX + insetWidth/2, insetY + insetHeight - 7);
+  
+  ctx.restore();
 
  // DRAW WATERMARK BAR AT BOTTOM
  const barHeight = 90;

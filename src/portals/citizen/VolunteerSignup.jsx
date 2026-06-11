@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Handshake, ShieldCheck, MapPin, User, Phone, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import api from '../../services/api';
 
 export default function VolunteerSignup() {
   const { i18n } = useTranslation();
@@ -19,12 +20,21 @@ export default function VolunteerSignup() {
     aadhaar: ''
   });
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // Mock signup process
-    toast.success(tLabel('Registration Successful!', 'பதிவு வெற்றிகரமாக முடிந்தது!'));
-    localStorage.setItem('jn_is_volunteer', 'true');
-    setStep(2);
+    try {
+      await api.patch('/auth/citizen/volunteer', {
+        isVolunteer: true,
+        volunteerWard: formData.ward
+      });
+      toast.success(tLabel('Registration Successful!', 'பதிவு வெற்றிகரமாக முடிந்தது!'));
+      localStorage.setItem('jn_is_volunteer', 'true');
+      localStorage.setItem('jn_volunteer_ward', formData.ward);
+      setStep(2);
+    } catch (err) {
+      console.error(err);
+      toast.error(tLabel('Failed to register as volunteer', 'தன்னார்வலராக பதிவு செய்ய முடியவில்லை'));
+    }
   };
 
   return (

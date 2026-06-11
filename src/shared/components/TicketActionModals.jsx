@@ -14,6 +14,7 @@ export default function TicketActionModals({
   const { t } = useTranslation();
   const [resolveStep, setResolveStep] = useState(1);
   const [resolutionNotes, setResolutionNotes] = useState('');
+  const [escalationNotes, setEscalationNotes] = useState('');
   const [resolutionPhoto, setResolutionPhoto] = useState('');
   const [showGeoCamera, setShowGeoCamera] = useState(false);
   const [agentName, setAgentName] = useState('');
@@ -60,9 +61,11 @@ export default function TicketActionModals({
     const nextAuthority = getNextRole(category, role);
     
     onSubmitAction(activeTicket.id, 'escalate', { 
-      escalateToRole: nextAuthority 
+      escalateToRole: nextAuthority,
+      notes: escalationNotes
     });
     setModalState(null);
+    setEscalationNotes('');
   };
 
   const getEscalateConfirmText = () => {
@@ -353,8 +356,7 @@ export default function TicketActionModals({
               <div className="mx-auto w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center border border-rose-200">
                 <ShieldAlert className="w-6 h-6 text-rose-600" />
               </div>
-              
-              <div className="space-y-2">
+                <div className="space-y-2">
                 <h4 className="font-black text-slate-800 text-base uppercase">
                   Escalate Grievance
                 </h4>
@@ -363,16 +365,32 @@ export default function TicketActionModals({
                 </p>
               </div>
 
+              <div className="space-y-1 text-left">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1 block">
+                  Escalation Reason/Notes (Required)
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  maxLength={200}
+                  value={escalationNotes}
+                  onChange={(e) => setEscalationNotes(e.target.value)}
+                  placeholder="Explain why this grievance is being escalated (required)..."
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#8B1A1A] outline-none px-4 py-3 rounded-xl text-slate-850 text-xs shadow-sm resize-none leading-relaxed font-bold"
+                ></textarea>
+              </div>
+
               <div className="flex gap-2">
                 <button
-                  onClick={() => setModalState(null)}
+                  onClick={() => { setModalState(null); setEscalationNotes(''); }}
                   className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs uppercase transition-colors"
                 >
                   Cancel
                 </button>
                 <button
+                  disabled={!escalationNotes.trim()}
                   onClick={handleEscalateConfirm}
-                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs uppercase transition-colors shadow-md"
+                  className="flex-1 py-3 rounded-xl bg-rose-650 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-rose-700 text-white font-extrabold text-xs uppercase transition-colors shadow-md"
                 >
                   Yes, Escalate
                 </button>

@@ -179,3 +179,29 @@ export const loginEmployeeAadhaar = async (req: Request, res: Response): Promise
     res.status(500).json({ error: 'Internal server error during login' });
   }
 };
+
+export const updateVolunteerStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const citizenId = req.user?.id;
+    if (!citizenId || req.user?.type !== 'citizen') {
+      res.status(403).json({ error: 'Only citizens can update volunteer status' });
+      return;
+    }
+    const { isVolunteer, volunteerWard } = req.body;
+    const citizen = await prisma.citizen.update({
+      where: { id: citizenId },
+      data: {
+        isVolunteer: isVolunteer === true,
+        volunteerWard: volunteerWard || null
+      }
+    });
+    res.json({
+      message: 'Volunteer status updated successfully',
+      citizen
+    });
+  } catch (error) {
+    console.error('Update Volunteer Status Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

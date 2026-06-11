@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, AlertTriangle, MapPin, Users, User, Shield, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import api from '../../services/api';
 
 import CitizenDashboard from './CitizenDashboard';
 import SubmitTicket from './SubmitTicket';
@@ -35,6 +36,80 @@ export default function CitizenPortal() {
       sessionStorage.setItem('jn_location_prompted', 'true');
     }
   }, []);
+
+  const prevTicketsRef = useRef([]);
+
+  useEffect(() => {
+    let active = true;
+
+    const checkStatusChanges = async () => {
+      try {
+        const res = await api.get('/tickets');
+        if (!active) return;
+        
+        const newTickets = res.data;
+        const prevTickets = prevTicketsRef.current;
+        
+        if (prevTickets.length > 0) {
+          newTickets.forEach(ticket => {
+            const prev = prevTickets.find(t => t.id === ticket.id);
+            if (prev) {
+              const prevStatus = prev.status.toUpperCase();
+              const newStatus = ticket.status.toUpperCase();
+              const prevRole = prev.assignedTo?.role;
+              const newRole = ticket.assignedTo?.role;
+
+              if (prevStatus !== newStatus || prevRole !== newRole) {
+                let msg = "";
+                const ticketNo = ticket.ticketNumber;
+                
+                if (newStatus === 'ESCALATED') {
+                  const roleName = ticket.assignedTo?.role || tLabel('Higher Authority', 'உயர் அதிகாரி');
+                  msg = tLabel(
+                    `Update on #JN-${ticketNo}: Your grievance has been escalated to the ${roleName}.`,
+                    `செய்தி #JN-${ticketNo}: உங்கள் புகார் ${roleName}க்கு மேல்முறையீடு செய்யப்பட்டுள்ளது.`
+                  );
+                } else if (newStatus === 'RESOLVED') {
+                  msg = tLabel(
+                    `Update on #JN-${ticketNo}: Your grievance has been resolved by the department.`,
+                    `செய்தி #JN-${ticketNo}: உங்கள் புகார் துறை மூலம் தீர்க்கப்பட்டது.`
+                  );
+                } else if (newStatus === 'CLOSED') {
+                  msg = tLabel(
+                    `Update on #JN-${ticketNo}: Grievance closed successfully.`,
+                    `செய்தி #JN-${ticketNo}: புகார் வெற்றிகரமாக மூடப்பட்டது.`
+                  );
+                } else if (newStatus === 'REOPENED') {
+                  msg = tLabel(
+                    `Update on #JN-${ticketNo}: Grievance reopened.`,
+                    `செய்தி #JN-${ticketNo}: புகார் மீண்டும் திறக்கப்பட்டது.`
+                  );
+                } else {
+                  msg = tLabel(
+                    `Update on #JN-${ticketNo}: Grievance status updated to ${newStatus}.`,
+                    `செய்தி #JN-${ticketNo}: புகாரின் நிலை ${newStatus} ஆக மாற்றப்பட்டுள்ளது.`
+                  );
+                }
+                
+                toast.info(msg, { duration: 7000 });
+              }
+            }
+          });
+        }
+        prevTicketsRef.current = newTickets;
+      } catch (err) {
+        console.error('Failed to poll tickets for notifications:', err);
+      }
+    };
+
+    checkStatusChanges();
+    const interval = setInterval(checkStatusChanges, 30000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [prevTicketsRef, i18n.language]);
 
 
 
@@ -163,7 +238,7 @@ export default function CitizenPortal() {
           {/* Tab 3: Track (Centre circular raised button) */}
           <div className="flex flex-col items-center justify-center flex-1 relative -mt-3.5">
             <button
-              onClick={() => navigate('/track')}
+              onClick={() => navigate('/citizen/tickets')}
               className={`w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(139,26,26,0.4)] transition-all transform active:scale-95 cursor-pointer ${
                 isTrackActive 
                   ? 'bg-[#8B1A1A] border-4 border-[#F0EBE3] text-white' 

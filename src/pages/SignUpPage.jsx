@@ -190,6 +190,8 @@ export default function SignUpPage() {
       localStorage.setItem('jn_user_id', citizen.id);
       localStorage.setItem('jn_role', 'citizen');
       localStorage.setItem('jn_name', citizen.name);
+      localStorage.setItem('jn_is_volunteer', citizen.isVolunteer ? 'true' : 'false');
+      localStorage.setItem('jn_volunteer_ward', citizen.volunteerWard || '');
 
       // Save Pincode & Location details
       localStorage.setItem('jn_pincode', pincode);

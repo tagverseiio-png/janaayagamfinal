@@ -40,14 +40,14 @@ import { prisma } from '../index';
       console.warn('No first responder found for role:', category.defaultAssigneeRole);
     }
 
-    // Escalate to Deputy Area Engineer
-    const deputy = await prisma.employee.findFirst({ where: { departmentId: dept.id, role: { contains: 'Deputy Area Engineer' } } });
-    if (deputy) {
-      await prisma.ticket.update({ where: { id: ticket.id }, data: { assignedToId: deputy.id, status: 'Escalated' } });
-      await prisma.ticketHistory.create({ data: { ticketId: ticket.id, action: 'escalated', notes: 'Escalated to Deputy AE', employeeId: deputy.id } });
-      console.log('Escalated to deputy:', deputy.name, deputy.role);
+    // Escalate to Area Engineer
+    const ae = await prisma.employee.findFirst({ where: { departmentId: dept.id, role: { contains: 'Area Engineer' } } });
+    if (ae) {
+      await prisma.ticket.update({ where: { id: ticket.id }, data: { assignedToId: ae.id, status: 'Escalated' } });
+      await prisma.ticketHistory.create({ data: { ticketId: ticket.id, action: 'escalated', notes: 'Escalated to AE', employeeId: ae.id } });
+      console.log('Escalated to Area Engineer:', ae.name, ae.role);
     } else {
-      console.warn('No deputy found to escalate to');
+      console.warn('No Area Engineer found to escalate to');
     }
 
     const final = await prisma.ticket.findUnique({ where: { id: ticket.id }, include: { assignedTo: true } });

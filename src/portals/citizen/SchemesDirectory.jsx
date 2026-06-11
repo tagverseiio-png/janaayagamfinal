@@ -26,43 +26,75 @@ export default function SchemesDirectory() {
   const schemes = [
     {
       id: 1,
-      name: tLabel('Magalir Urimai Thogai', 'மகளிர் உரிமைத் தொகை'),
+      name: tLabel('Kalaignar Magalir Urimai Thittam', 'கலைஞர் மகளிர் உரிமைத் திட்டம்'),
       category: 'Women',
-      eligibility: tLabel('Women heads of households', 'குடும்பத் தலைவிகள்'),
-      description: tLabel('Monthly assistance of ₹1000 for eligible women heads of families.', 'தகுதியுள்ள குடும்பத் தலைவிகளுக்கு மாதம் ரூ.1000 நிதியுதவி.'),
-      benefits: '₹1000/month'
+      eligibility: tLabel('Women heads of families, family income < ₹2.5L/yr, land holding < 5 acres', 'குடும்பத் தலைவிகள், குடும்ப ஆண்டு வருமானம் < ₹2.5 லட்சம், நிலம் < 5 ஏக்கர்'),
+      description: tLabel('Monthly financial assistance of ₹1,000 to improve livelihood and self-respect of eligible women heads of families.', 'தகுதியுள்ள குடும்பத் தலைவிகளின் வாழ்வாதாரம் மற்றும் சுயமரியாதையை மேம்படுத்த மாதம் ரூ.1000 நிதியுதவி.'),
+      benefits: '₹1,000 / month'
     },
     {
       id: 2,
       name: tLabel('Pudhumai Penn Scheme', 'புதுமைப் பெண் திட்டம்'),
       category: 'Education',
-      eligibility: tLabel('Girls from Govt schools for higher education', 'அரசுப் பள்ளியில் பயின்ற மாணவிகள்'),
-      description: tLabel('₹1000 per month for girls pursuing higher education who studied in Govt schools from 6th to 12th.', '6 முதல் 12-ஆம் வகுப்பு வரை அரசுப் பள்ளியில் பயின்று உயர்கல்வி கற்கும் மாணவிகளுக்கு மாதம் ரூ.1000.'),
-      benefits: '₹1000/month'
+      eligibility: tLabel('Girls pursuing higher education who studied in Govt schools from 6th to 12th', '6 முதல் 12-ஆம் வகுப்பு வரை அரசுப் பள்ளியில் பயின்று உயர்கல்வி கற்கும் மாணவிகள்'),
+      description: tLabel('Provides ₹1,000 per month directly to the bank accounts of girls to encourage pursuit of higher professional degrees.', 'மாணவிகளின் உயர்கல்வி சேர்க்கையை அதிகரிக்க நேரடியாக அவர்களது வங்கிக் கணக்கில் மாதம் ரூ.1,000 செலுத்துதல்.'),
+      benefits: '₹1,000 / month'
     },
     {
       id: 3,
-      name: tLabel('Naan Mudhalvan', 'நான் முதல்வன்'),
-      category: 'Employment',
-      eligibility: tLabel('Students and Youth', 'மாணவர்கள் மற்றும் இளைஞர்கள்'),
-      description: tLabel('Skill development and career guidance for students across Tamil Nadu.', 'தமிழக மாணவர்களுக்கான திறன் மேம்பாடு மற்றும் தொழில் வழிகாட்டுதல்.'),
-      benefits: 'Skill Training'
+      name: tLabel('Chief Minister’s Breakfast Scheme', 'முதலமைச்சரின் காலை உணவுத் திட்டம்'),
+      category: 'Education',
+      eligibility: tLabel('Students in Govt Primary schools (Classes 1 to 5)', 'அரசுத் தொடக்கப் பள்ளிகளில் 1 முதல் 5 ஆம் வகுப்பு வரை பயிலும் மாணவர்கள்'),
+      description: tLabel('Provides free nutritious breakfast to primary school students on all working days to reduce malnutrition and dropout rates.', 'ஊட்டச்சத்துக் குறைபாட்டைக் குறைக்கவும், இடைநிற்றலைத் தவிர்க்கவும் தொடக்கப் பள்ளி மாணவர்களுக்கு இலவச காலை உணவு.'),
+      benefits: 'Free Breakfast'
     },
     {
       id: 4,
-      name: tLabel('Makkalai Thedi Maruthuvam', 'மக்களைத் தேடி மருத்துவம்'),
-      category: 'Health',
-      eligibility: tLabel('All citizens above 45 and those with NCDs', '45 வயதிற்கு மேற்பட்டவர்கள்'),
-      description: tLabel('Healthcare services at the doorstep for non-communicable diseases.', 'தொற்றாத நோய்களுக்கான மருத்துவ சேவைகளை வீட்டு வாசலிலேயே வழங்குதல்.'),
-      benefits: 'Home Healthcare'
+      name: tLabel('NEEDS (New Entrepreneur-cum-Enterprise Development)', 'புதிய தொழில்முனைவோர் மற்றும் தொழில் நிறுவன மேம்பாட்டு திட்டம்'),
+      category: 'Employment',
+      eligibility: tLabel('Educated youth (Degree/Diploma) aged 21-35 (up to 45 for special categories)', '21-35 வயதுடைய படித்த இளைஞர்கள் (பட்டம்/டிப்ளமோ பெற்றவர்கள்)'),
+      description: tLabel('Assists educated youth in starting manufacturing or service enterprises with state subsidies up to 25% and loan support.', '25% வரை அரசு மானியத்துடன் உற்பத்தி அல்லது சேவைத் தொழில்களைத் தொடங்க படித்த இளைஞர்களுக்கு உதவுதல்.'),
+      benefits: '25% State Subsidy'
     },
     {
       id: 5,
-      name: tLabel('Chief Minister’s Comprehensive Health Insurance', 'முதலமைச்சரின் விரிவான மருத்துவக் காப்பீடு'),
+      name: tLabel('CMCHIS (CM Comprehensive Health Insurance)', 'முதலமைச்சரின் விரிவான மருத்துவக் காப்பீடு (CMCHIS)'),
       category: 'Health',
-      eligibility: tLabel('Families with annual income below ₹1.2L', 'ஆண்டு வருமானம் ரூ.1.2 லட்சத்திற்கு கீழ் உள்ள குடும்பங்கள்'),
-      description: tLabel('Cashless treatment in empaneled hospitals for critical illnesses.', 'தேர்வு செய்யப்பட்ட மருத்துவமனைகளில் பணமில்லா மருத்துவ சிகிச்சை.'),
-      benefits: 'Up to ₹5 Lakhs'
+      eligibility: tLabel('Families residing in TN with annual family income below ₹1.2 Lakhs', 'ஆண்டு வருமானம் ரூ.1.2 லட்சத்திற்கு குறைவாக உள்ள தமிழ்நாட்டுக் குடும்பங்கள்'),
+      description: tLabel('Provides cashless tertiary healthcare treatment up to ₹5 Lakhs per family per year in empaneled public and private hospitals.', 'பொது மற்றும் தனியார் மருத்துவமனைகளில் குடும்பத்திற்கு ஆண்டிற்கு ரூ.5 லட்சம் வரை பணமில்லா உயர் சிகிச்சை.'),
+      benefits: 'Up to ₹5 Lakhs / yr'
+    },
+    {
+      id: 6,
+      name: tLabel('MLACDS (Constituency Development Scheme)', 'சட்டமன்ற உறுப்பினர் தொகுதி மேம்பாட்டுத் திட்டம் (MLACDS)'),
+      category: 'Rural',
+      eligibility: tLabel('Infrastructure projects proposed by MLAs in their respective constituencies', 'சட்டமன்ற உறுப்பினர்களால் அந்தந்த தொகுதிகளில் பரிந்துரைக்கப்படும் உள்கட்டமைப்பு பணிகள்'),
+      description: tLabel('Enables MLAs to execute small infrastructure works such as drinking water supply, libraries, and roads in their constituencies.', 'தொகுதியில் குடிநீர் விநியோகம், நூலகங்கள் மற்றும் சாலைகள் போன்ற உள்கட்டமைப்புப் பணிகளை மேற்கொள்ள நிதி வழங்கப்படுகிறது.'),
+      benefits: '₹3 Crores / MLA'
+    },
+    {
+      id: 7,
+      name: tLabel('Solar Rooftop Subsidy Scheme', 'சூரிய ஒளி கூரை மானியத் திட்டம்'),
+      category: 'Energy',
+      eligibility: tLabel('Residential consumers installing grid-connected solar systems up to 3 kW', '3 கிலோவாட் வரை சூரிய ஒளி மின் உற்பத்தி அலகு நிறுவும் குடியிருப்புப் பயனாளிகள்'),
+      description: tLabel('Promotes clean energy generation by offering state and central financial subsidies to residential buildings installing solar panels.', 'குடியிருப்பு கட்டிடங்களில் சூரிய ஒளியில் மின்சாரம் தயாரித்து பயன்படுத்த மாநில மற்றும் மத்திய அரசு மானியங்களை வழங்குதல்.'),
+      benefits: 'Up to 40% Subsidy'
+    },
+    {
+      id: 8,
+      name: tLabel('Naan Mudhalvan', 'நான் முதல்வன் திட்டம்'),
+      category: 'Employment',
+      eligibility: tLabel('College students and youth across Tamil Nadu', 'தமிழகக் கல்லூரி மாணவர்கள் மற்றும் இளைஞர்கள்'),
+      description: tLabel('State-of-the-art skill development training, career counseling, and industry-oriented certifications for TN youth.', 'தொழில்துறைக்குத் தேவையான திறன் பயிற்சி, தொழில் வழிகாட்டுதல் மற்றும் சான்றிதழ்களை வழங்குதல்.'),
+      benefits: 'Free Industry Training'
+    },
+    {
+      id: 9,
+      name: tLabel('Makkalai Thedi Maruthuvam', 'மக்களைத் தேடி மருத்துவம்'),
+      category: 'Health',
+      eligibility: tLabel('Elderly, chronically ill, and patients requiring NCD screenings', 'முதியவர்கள், படுக்கையிலுள்ள நோயாளிகள் மற்றும் தொற்றா நோயால் பாதிக்கப்பட்டவர்கள்'),
+      description: tLabel('Door-to-door delivery of essential medicines, physical therapy, and diagnostic services directly to citizens homes.', 'அத்தியாவசிய மருந்துகள், இயன்முறை சிகிச்சை மற்றும் மருத்துவச் சேவைகளை நேரடியாக வீடுகளுக்கேச் சென்று வழங்குதல்.'),
+      benefits: 'Doorstep Healthcare'
     }
   ];
 

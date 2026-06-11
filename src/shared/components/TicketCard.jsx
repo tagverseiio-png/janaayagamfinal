@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Eye, User, ArrowUpRight, Check, CheckSquare } from 'lucide-react';
+import { MapPin, Eye, User, ArrowUpRight, Check, CheckSquare, AlertTriangle, Flag } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import StatusBadge from './StatusBadge';
 import SlaTimer from './SlaTimer';
@@ -8,6 +8,9 @@ import SlaTimer from './SlaTimer';
 export default function TicketCard({ ticket, role, onAction }) {
  const { t } = useTranslation();
  const { id, category, description, status, priority, created_at, sla_deadline, ward, district, citizen_name } = ticket;
+
+ const isCmFlagged = ticket.history?.some(h => h.action === 'CM_FLAG');
+ const isMlaFlagged = ticket.history?.some(h => h.action === 'MLA_FLAG');
 
  const priorityClasses = {
  low: 'ticket-border-low',
@@ -36,6 +39,19 @@ export default function TicketCard({ ticket, role, onAction }) {
  onClick={handleCardClick}
  className={`w-full bg-white border border-slate-200 rounded-[12px] p-[14px] flex flex-col gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer ${borderClass} select-none`}
  >
+  {isCmFlagged && (
+    <div className="w-full bg-red-650 text-white text-[10px] font-black uppercase py-1.5 px-3 rounded-lg animate-pulse text-center select-none shadow-sm flex items-center justify-center gap-1.5 border border-red-800">
+      <AlertTriangle className="w-3.5 h-3.5 text-yellow-300" />
+      <span>CM IS WATCHING</span>
+    </div>
+  )}
+  {isMlaFlagged && !isCmFlagged && (
+    <div className="w-full bg-[#FF6600] text-white text-[10px] font-black uppercase py-1.5 px-3 rounded-lg text-center select-none shadow-sm flex items-center justify-center gap-1.5 border border-orange-700">
+      <Flag className="w-3.5 h-3.5 text-white" />
+      <span>MLA FLAGGED</span>
+    </div>
+  )}
+
  {/* Row 1: Category Icon + Name (left) + Status Badge (right) */}
  <div className="flex justify-between items-center w-full">
  <div className="flex items-center gap-2">

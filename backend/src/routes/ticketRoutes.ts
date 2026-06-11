@@ -7,6 +7,7 @@ const router = Router();
 // Apply auth middleware to all ticket routes
 router.use(authenticate);
 
+// POST /api/tickets — JSON body with optional base64 photo field
 router.post('/', createTicket);
 router.get('/', getTickets);
 router.get('/check-duplicates', checkDuplicates);

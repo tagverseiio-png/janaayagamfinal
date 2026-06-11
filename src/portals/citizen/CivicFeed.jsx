@@ -33,6 +33,7 @@ export default function CivicFeed() {
   const [sortOption, setSortOption] = useState('Recent'); // 'Recent' | 'Most Upvoted' | 'Nearby'
   const [visibleCount, setVisibleCount] = useState(6);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [readStories, setReadStories] = useState({});
 
   const userWard = localStorage.getItem('jn_ward_name') || 'Your Ward';
   const userDistrict = localStorage.getItem('jn_district') || 'Chennai';
@@ -56,7 +57,7 @@ export default function CivicFeed() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = await api.get('/tickets');
+        const res = await api.get('/tickets?feed=true');
         const formatted = res.data.map(t => ({
           id: t.id,
           ticketNumber: t.ticketNumber,
@@ -69,7 +70,8 @@ export default function CivicFeed() {
           status: t.status,
           priority: t.priority,
           location: t.ward || 'Unknown',
-          photo: t.photo || `https://images.unsplash.com/photo-1584467541268-b040f83be3fd?q=80&w=400&auto=format&fit=crop`
+          photo: t.photo_url || t.photo || null,
+          assignedTo: t.assignedTo
         }));
         setAllItems(formatted);
       } catch (err) {
@@ -97,7 +99,8 @@ export default function CivicFeed() {
 
       toast.success(tLabel("Claim added successfully!", "உரிமை வெற்றிகரமாக சேர்க்கப்பட்டது!"));
     } catch (err) {
-      toast.error(tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை."));
+      const errMsg = err.response?.data?.error || tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை.");
+      toast.error(errMsg);
     }
   };
 
@@ -185,7 +188,6 @@ export default function CivicFeed() {
 
   // Smooth scroll helper for trending issues
   const scrollToTicket = (id) => {
-    setFilter('all');
     setActiveCategory('All');
     setActiveStory(null);
     setTimeout(() => {
@@ -368,9 +370,16 @@ export default function CivicFeed() {
               id={`feed-card-${item.id}`}
               className="bg-white border border-[#DDE1E7] rounded-[24px] overflow-hidden flex flex-col shadow-sm"
             >
-              {/* Photo larger (social-media style) */}
-              <div className="relative w-full aspect-square bg-slate-900 group">
-                <img src={item.photo} alt="Issue proof" className="w-full h-full object-cover" />
+              {/* Photo (social-media style) */}
+              <div className="relative w-full aspect-square bg-slate-100 group">
+                {item.photo ? (
+                  <img src={item.photo} alt="Issue proof" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400">
+                    <svg className="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">No photo</span>
+                  </div>
+                )}
                 
                 {/* Category & Ward Overlays */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -386,13 +395,15 @@ export default function CivicFeed() {
                 {/* Status Chip */}
                 <div className="absolute top-4 right-4">
                   <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border-2 uppercase tracking-widest shadow-lg ${
-                    item.status === 'RESOLVED'
+                    item.status === 'RESOLVED' || item.status === 'CLOSED'
                       ? 'bg-emerald-500/90 text-white border-emerald-400/50'
                       : item.status === 'ESCALATED'
                         ? 'bg-orange-500/90 text-white border-orange-400/50'
                         : 'bg-[#8B1A1A]/90 text-white border-red-400/50'
                   }`}>
-                    {item.status}
+                    {item.status === 'ESCALATED' && item.assignedTo?.role
+                      ? `ESCALATED — ${item.assignedTo.role}`
+                      : item.status}
                   </span>
                 </div>
               </div>
