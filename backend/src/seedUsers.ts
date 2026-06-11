@@ -122,7 +122,37 @@ async function main() {
     }
     categoryMap[cat.code] = rec.id;
   }
-  console.log('Categories seeded.');
+  
+  // Seed Escalations
+  await prisma.categoryEscalation.deleteMany({});
+  
+  // Electricity Escalations
+  if (categoryMap['CAT-ELE']) {
+    await prisma.categoryEscalation.createMany({
+      data: [
+        { categoryId: categoryMap['CAT-ELE'], level: 'L1', assigneeTitle: 'Assistant Area Engineer', slaDays: 2 },
+        { categoryId: categoryMap['CAT-ELE'], level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 4 },
+        { categoryId: categoryMap['CAT-ELE'], level: 'L3', assigneeTitle: 'Minister', slaDays: 7 }
+      ]
+    });
+  }
+
+  // Sanitation Escalations
+  if (categoryMap['CAT-SAN']) {
+    await prisma.categoryEscalation.createMany({
+      data: [
+        { categoryId: categoryMap['CAT-SAN'], level: 'L1', assigneeTitle: 'Division Sanitary Inspector', slaDays: 1 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L2', assigneeTitle: 'Sanitary Inspector', slaDays: 2 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L3', assigneeTitle: 'Health Inspector', slaDays: 3 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L4', assigneeTitle: 'City Health Inspector', slaDays: 4 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 5 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L6', assigneeTitle: 'Commissioner', slaDays: 7 },
+        { categoryId: categoryMap['CAT-SAN'], level: 'L7', assigneeTitle: 'Minister', slaDays: 10 }
+      ]
+    });
+  }
+  
+  console.log('Categories & Escalations seeded.');
 
   // 4. Seed Employee/Official Accounts
   const employees = [

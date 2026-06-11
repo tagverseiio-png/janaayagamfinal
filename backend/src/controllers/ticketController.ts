@@ -433,6 +433,7 @@ export const getTickets = async (req: Request, res: Response): Promise<void> => 
       include: {
         citizen: { select: { name: true, phone: true } },
         department: true,
+        category: true,
         jurisdiction: true,
         assignedTo: { select: { name: true, role: true } },
         history: {

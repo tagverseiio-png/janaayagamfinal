@@ -156,6 +156,7 @@ export const getLifecycleTransitions = async (req: Request, res: Response): Prom
 };
 
 export const getHierarchy = async (req: Request, res: Response): Promise<void> => {
+  console.log(`[getHierarchy] Called with query:`, req.query, `params:`, req.params);
   try {
     const department = req.params.department_slug || req.query.department;
     
@@ -188,13 +189,19 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
 
     const deptStr = String(department).toLowerCase().trim();
     
-    // Query department by slug case-insensitively
+    // Alias map for robust resolution
+    let searchSlug = deptStr;
+    if (deptStr.includes('electric') || deptStr.includes('energy')) searchSlug = 'electricity';
+    else if (deptStr.includes('health') || deptStr.includes('sanit')) searchSlug = 'sanitation';
+    else if (deptStr.includes('water')) searchSlug = 'water-resources';
+
+    // Query department by slug or exact name
     const dept = await prisma.department.findFirst({
       where: {
-        slug: {
-          equals: deptStr,
-          mode: 'insensitive'
-        }
+        OR: [
+          { slug: searchSlug },
+          { name: String(department) }
+        ]
       },
       include: {
         categories: {
@@ -207,12 +214,22 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
       }
     });
 
+    const categoryQuery = req.query.category as string;
+
     if (!dept) {
       res.status(404).json({ error: `Department hierarchy not found for: ${department}` });
       return;
     }
 
-    const steps = dept.categories[0]?.escalations.map(e => ({
+    let targetCategory = dept.categories[0];
+    if (categoryQuery) {
+      const found = dept.categories.find(c => c.name.toLowerCase() === String(categoryQuery).toLowerCase().trim() || c.id === categoryQuery);
+      if (found) {
+        targetCategory = found;
+      }
+    }
+
+    const steps = targetCategory?.escalations.map(e => ({
       role: e.assigneeTitle,
       label: e.assigneeTitle,
       slaDays: e.slaDays
@@ -221,6 +238,7 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
     res.json({
       department: dept.name,
       slug: dept.slug,
+      category: targetCategory?.name,
       steps: steps
     });
   } catch (error) {

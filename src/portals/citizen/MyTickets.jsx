@@ -129,29 +129,43 @@ export default function MyTickets() {
     return () => clearInterval(interval);
   }, []);
 
-  // Pre-fetch hierarchies for all unique departments in active tickets
+  // Pre-fetch hierarchies for all unique departments/categories in active tickets
   useEffect(() => {
     if (tickets.length === 0) return;
-    const deptsToFetch = [...new Set(tickets.map(t => t.department?.name || 'Water'))];
-    deptsToFetch.forEach(deptName => {
-      if (hierarchies[deptName]) return;
+    
+    // Build unique keys: "normalizedDeptName::categoryId"
+    const fetchKeys = [...new Set(tickets.map(t => {
+      const deptName = normalizeDept(t.department?.name || t.categoryName || 'Water');
+      const catId = t.categoryId || t.category?.id || '';
+      return `${deptName}::${catId}`;
+    }))];
+
+    fetchKeys.forEach(fetchKey => {
+      if (hierarchies[fetchKey]) return;
       
+      const [deptName, catId] = fetchKey.split('::');
+
       const fetchHierarchyForDept = async () => {
         setHierarchies(prev => ({
           ...prev,
-          [deptName]: { loading: true, steps: [], error: null }
+          [fetchKey]: { loading: true, steps: [], error: null }
         }));
         try {
-          const res = await api.get(`/hierarchy?department=${encodeURIComponent(deptName)}`);
+          let url = `/hierarchy?department=${encodeURIComponent(deptName)}`;
+          if (catId) url += `&category=${encodeURIComponent(catId)}`;
+          
+          console.log(`[Hierarchy Fetch] Requesting GET ${url}`);
+          const res = await api.get(url);
+          console.log(`[Hierarchy Fetch] Response for ${fetchKey}:`, res.data);
           setHierarchies(prev => ({
             ...prev,
-            [deptName]: { loading: false, steps: res.data.steps || [], error: null }
+            [fetchKey]: { loading: false, steps: res.data.steps || [], error: null }
           }));
         } catch (err) {
-          console.error(`Failed to fetch hierarchy for ${deptName}:`, err);
+          console.error(`[Hierarchy Fetch] Failed to fetch hierarchy for ${fetchKey}:`, err);
           setHierarchies(prev => ({
             ...prev,
-            [deptName]: { loading: false, steps: [], error: 'Unable to load status chain' }
+            [fetchKey]: { loading: false, steps: [], error: 'Unable to load status chain' }
           }));
         }
       };
@@ -299,9 +313,11 @@ export default function MyTickets() {
   // Stepper steps builder from SINGLE SOURCE OF TRUTH department chains
   const buildTimelineStepper = (ticket) => {
     const status = ticket.status.toUpperCase();
-    const deptName = ticket.department?.name || 'Water';
+    const deptName = normalizeDept(ticket.department?.name || ticket.categoryName || 'Water');
+    const catId = ticket.categoryId || ticket.category?.id || '';
+    const fetchKey = `${deptName}::${catId}`;
     
-    const hierarchyInfo = hierarchies[deptName];
+    const hierarchyInfo = hierarchies[fetchKey];
     if (!hierarchyInfo || hierarchyInfo.loading) {
       return { loading: true, steps: [], error: null };
     }
@@ -310,10 +326,11 @@ export default function MyTickets() {
     }
     
     const dbSteps = hierarchyInfo.steps || [];
-    if (dbSteps.length === 0) {
-      return { loading: false, steps: [], error: 'Unable to load status chain' };
-    }
+    console.log(`[Stepper Builder] deptName:`, deptName);
+    console.log(`[Stepper Builder] hierarchyInfo:`, hierarchyInfo);
+    console.log(`[Stepper Builder] dbSteps:`, dbSteps);
     
+
     // 1. Submitted Step
     const steps = [
       {
@@ -375,28 +392,13 @@ export default function MyTickets() {
       });
     });
 
-    // 3. Resolved Step
-    steps.push({
-      key: 'RESOLVED',
-      role: 'Resolved',
-      title: tLabel('Resolved', 'தீர்வு காணப்பட்டது'),
-      desc: tLabel('Issue resolved by department', 'பிரச்சினைக்கு துறை மூலம் தீர்வு காணப்பட்டது')
-    });
-
-    // 4. Closed Step
-    steps.push({
-      key: 'CLOSED',
-      role: 'Closed',
-      title: tLabel('Closed', 'மூடப்பட்டது'),
-      desc: tLabel('Citizen confirmed and closed', 'பொதுமக்கள் உறுதிசெய்து மூடினர்')
-    });
+    // 3. Removed Resolved/Closed generic steps as per user request
+    // The steps array now exactly matches Submitted + Hierarchy Officials
 
     // Find current active step index
     let activeIdx = 0;
-    if (status === 'RESOLVED') {
-      activeIdx = steps.length - 2; // Resolved index
-    } else if (status === 'CLOSED') {
-      activeIdx = steps.length - 1; // Closed index
+    if (status === 'RESOLVED' || status === 'CLOSED') {
+      activeIdx = steps.length; // Beyond the last official, so all are completed
     } else if (['ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'REOPENED'].includes(status)) {
       const currentRole = ticket.assignedTo?.role;
       const idx = steps.findIndex(s => matchRole(s.role, currentRole));
@@ -409,7 +411,7 @@ export default function MyTickets() {
     timestamps[0] = ticket.createdAt; // Submitted is always filed time
 
     // Find entry times for steps from history
-    for (let i = 1; i < steps.length - 2; i++) {
+    for (let i = 1; i < steps.length; i++) {
       const step = steps[i];
       const assignEvent = history.find(h => 
         h.employee?.role && matchRole(step.role, h.employee.role)
@@ -422,29 +424,11 @@ export default function MyTickets() {
       }
     }
 
-    // Resolved timestamp
-    const resolvedIdx = steps.length - 2;
-    const resolveEvent = history.find(h => h.action.includes('RESOLVED'));
-    if (resolveEvent) {
-      timestamps[resolvedIdx] = resolveEvent.createdAt;
-    } else if (['RESOLVED', 'CLOSED'].includes(status)) {
-      timestamps[resolvedIdx] = ticket.updatedAt;
-    }
-
-    // Closed timestamp
-    const closedIdx = steps.length - 1;
-    const closeEvent = history.find(h => h.action.includes('CLOSED'));
-    if (closeEvent) {
-      timestamps[closedIdx] = closeEvent.createdAt;
-    } else if (status === 'CLOSED') {
-      timestamps[closedIdx] = ticket.updatedAt;
-    }
-
     // Calculate step durations and skipped state
     const stepStates = [];
     
     // Find resolving role index for resolution skipping logic
-    let resolverIdx = steps.length - 3; // default is last officer
+    let resolverIdx = steps.length - 1; // default is last officer
     if (['RESOLVED', 'CLOSED'].includes(status)) {
       const resolveEv = history.find(h => h.action.includes('RESOLVED'));
       const resolverRole = resolveEv?.employee?.role || ticket.assignedTo?.role;
@@ -461,12 +445,8 @@ export default function MyTickets() {
       if (['RESOLVED', 'CLOSED'].includes(status)) {
         if (idx === 0 || (idx >= 1 && idx <= resolverIdx)) {
           stepState = 'completed';
-        } else if (idx > resolverIdx && idx < steps.length - 2) {
+        } else {
           stepState = 'skipped';
-        } else if (step.role === 'Resolved') {
-          stepState = 'completed';
-        } else if (step.role === 'Closed') {
-          stepState = status === 'CLOSED' ? 'completed' : 'pending';
         }
       } else {
         if (idx < activeIdx) {
@@ -479,7 +459,7 @@ export default function MyTickets() {
       }
 
       // Calculate Duration for completed intermediate steps
-      if (stepState === 'completed' && idx < steps.length - 2) {
+      if (stepState === 'completed' && idx < steps.length - 1) {
         // Find next completed/valid step index
         let nextValidIdx = null;
         for (let next = idx + 1; next < steps.length; next++) {
