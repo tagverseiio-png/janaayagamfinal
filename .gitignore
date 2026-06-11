@@ -24,3 +24,17 @@ dist-ssr
 
 testsprite_tests/tmp/config.json
 .node/
+
+# Environment / secrets — never commit these
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
+
+# Uploaded user files (stored on disk, not in git)
+backend/uploads/
+
+# SQLite database (local dev only)
+backend/prisma/*.db
+backend/prisma/*.db-journal
