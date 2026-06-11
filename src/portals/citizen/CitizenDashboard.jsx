@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
-import { Landmark, AlertTriangle, Activity, Users, Building, Radio } from 'lucide-react';
+import { Landmark, AlertTriangle, Activity, Handshake, BookOpen, PhoneCall, Share2, Radio } from 'lucide-react';
 import TnMap from '../../shared/components/TnMap';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -17,6 +17,7 @@ export default function CitizenDashboard() {
   const tLabel = (en, ta) => isTa ? ta : en;
 
   const livingAddr = localStorage.getItem('jn_living_address');
+  const isVolunteer = localStorage.getItem('jn_is_volunteer') === 'true';
   
   const [stats, setStats] = React.useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
 
@@ -85,74 +86,74 @@ export default function CitizenDashboard() {
       {/* ══ 2. QUICK ACTION GRID (2x2 on mobile, 4 cols on desktop) ══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
         
-        {/* Card 1: File Issue */}
+        {/* Card 1: Become a JanaNayagam */}
         <button
-          onClick={() => navigate('/citizen/submit')}
+          onClick={() => navigate(isVolunteer ? '/citizen/volunteer-dashboard' : '/citizen/volunteer-signup')}
           className="bg-white rounded-[16px] p-4 border border-slate-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#8B1A1A]/30 transition-all text-left flex flex-col justify-between"
         >
           <div className="p-2 bg-red-50 rounded-xl w-fit">
-            <AlertTriangle className="w-6 h-6 text-[#8B1A1A]" />
+            <Handshake className="w-6 h-6 text-[#8B1A1A]" />
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {t('fileIssue')}
+              {tLabel('Become a JanaNayagam', 'ஜனநாயகமாக மாறுங்கள்')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
-              {tLabel('Report new problem', 'புதிய புகார் அளிக்கவும்')}
+              {tLabel('Volunteer for your ward', 'உங்கள் வார்டுக்கு சேவை செய்யுங்கள்')}
             </p>
           </div>
         </button>
 
-        {/* Card 2: Track Status */}
+        {/* Card 2: Schemes */}
         <button
-          onClick={() => navigate('/citizen/tickets')}
+          onClick={() => navigate('/citizen/schemes')}
           className="bg-white rounded-[16px] p-4 border border-slate-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#8B1A1A]/30 transition-all text-left flex flex-col justify-between"
         >
           <div className="p-2 bg-teal-50 rounded-xl w-fit">
-            <Activity className="w-6 h-6 text-[#14B8A6]" />
+            <BookOpen className="w-6 h-6 text-[#14B8A6]" />
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {t('trackStatus')}
+              {tLabel('Schemes', 'திட்டங்கள்')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
-              {tLabel('View active complaints', 'உங்கள் புகார்களைக் காண்க')}
+              {tLabel('Govt schemes for you', 'உங்களுக்கான அரசு திட்டங்கள்')}
             </p>
           </div>
         </button>
 
-        {/* Card 3: Civic Feed */}
+        {/* Card 3: SOS Contact */}
         <button
-          onClick={() => navigate('/citizen/feed')}
+          onClick={() => navigate('/citizen/sos')}
           className="bg-white rounded-[16px] p-4 border border-slate-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#8B1A1A]/30 transition-all text-left flex flex-col justify-between"
         >
           <div className="p-2 bg-blue-50 rounded-xl w-fit">
-            <Users className="w-6 h-6 text-blue-500" />
+            <PhoneCall className="w-6 h-6 text-blue-500" />
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {t('civicFeed')}
+              {tLabel('SOS Contact', 'அவசர தொடர்பு')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
-              {tLabel('See local problems', 'அயல் புகார்களை காண்க')}
+              {tLabel('Emergency helplines', 'அவசர உதவி எண்கள்')}
             </p>
           </div>
         </button>
 
-        {/* Card 4: Hierarchy */}
+        {/* Card 4: Refer a Friend */}
         <button
-          onClick={() => navigate('/citizen/hierarchy')}
+          onClick={() => navigate('/citizen/refer')}
           className="bg-white rounded-[16px] p-4 border border-slate-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#8B1A1A]/30 transition-all text-left flex flex-col justify-between"
         >
           <div className="p-2 bg-indigo-50 rounded-xl w-fit">
-            <Building className="w-6 h-6 text-indigo-800" />
+            <Share2 className="w-6 h-6 text-indigo-800" />
           </div>
           <div className="mt-4">
             <h3 className="font-extrabold text-[14.5px] text-slate-800">
-              {t('hierarchy')}
+              {tLabel('Refer a Friend', 'நண்பரைப் பரிந்துரைக்கவும்')}
             </h3>
             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
-              {tLabel('Govt escalation flow', 'புகார் மேல்முறையீட்டு வழி')}
+              {tLabel('Invite others to JanaNayagam', 'ஜனநாயகத்திற்கு மற்றவர்களை அழைக்கவும்')}
             </p>
           </div>
         </button>

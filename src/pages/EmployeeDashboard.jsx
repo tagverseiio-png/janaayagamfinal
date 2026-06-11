@@ -67,7 +67,7 @@ export default function EmployeeDashboard() {
         dbId: t.id,
         created_at: t.createdAt,
         sla_deadline: t.slaDeadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
-        citizen_name: t.citizenName
+        citizen_name: t.citizen_name
       }));
       setTickets(filtered);
     }).catch(console.error);
@@ -131,7 +131,7 @@ export default function EmployeeDashboard() {
         dbId: t.id,
         created_at: t.createdAt,
         sla_deadline: t.slaDeadline || new Date(new Date(t.createdAt).getTime() + 48*60*60*1000).toISOString(),
-        citizen_name: t.citizenName
+        citizen_name: t.citizen_name
       }));
       
       if (isDepartment && department) {
@@ -171,10 +171,13 @@ export default function EmployeeDashboard() {
   
   const stats = {
     total: tickets.length,
-    open: tickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length,
-    resolved: tickets.filter(t => t.status === 'Resolved').length,
-    escalated: tickets.filter(t => t.status === 'Escalated').length,
-    breached: tickets.filter(t => t.status !== 'Resolved' && new Date() > new Date(t.sla_deadline)).length
+    open: tickets.filter(t => {
+      const s = (t.status || '').toLowerCase();
+      return s === 'open' || s === 'in progress' || s === 'assigned' || s === 'submitted';
+    }).length,
+    resolved: tickets.filter(t => (t.status || '').toLowerCase() === 'resolved').length,
+    escalated: tickets.filter(t => (t.status || '').toLowerCase() === 'escalated').length,
+    breached: tickets.filter(t => (t.status || '').toLowerCase() !== 'resolved' && new Date() > new Date(t.sla_deadline)).length
   };
 
   const tableTickets = tickets.filter(t => 

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
-  ArrowLeft, Sliders, ThumbsUp, MessageSquare, Share2, MoreHorizontal, 
-  Heart, Droplet, Lightbulb, Trash2, BookOpen, Leaf, HeartHandshake, User, Send 
+  ArrowLeft, Sliders, ThumbsUp, Share2, 
+  MapPin, User
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,57 +37,18 @@ export default function CivicFeed() {
   const userWard = localStorage.getItem('jn_ward_name') || 'Your Ward';
   const userDistrict = localStorage.getItem('jn_district') || 'Chennai';
 
-  // Dynamic comments tracking
-  const [expandedComments, setExpandedComments] = useState({});
-  const [commentInputs, setCommentInputs] = useState({});
-  const [cardComments, setCardComments] = useState({
-    1: [
-      { author: 'Sivakumar P.', text: tLabel('This pothole has been there since last monsoon. Needs urgent fix.', 'இந்த பள்ளம் கடந்த பருவமழை முதல் உள்ளது. உடனே சரிசெய்ய வேண்டும்.'), time: '1 hr ago', likes: 4 },
-      { author: 'Meera R.', text: tLabel('Bus drivers are swerving dangerous to avoid it.', 'பேருந்துகள் இதைத் தவிர்க்க ஆபத்தான முறையில் திரும்புகின்றன.'), time: '30 mins ago', likes: 2 }
-    ],
-    2: [
-      { author: 'Arun Kumar', text: tLabel('Extremely dark and unsafe for women walking home.', 'பெண்கள் நடந்து செல்ல மிகவும் இருட்டாகவும் பாதுகாப்பற்றதாகவும் உள்ளது.'), time: '4 hrs ago', likes: 5 }
-    ],
-    3: [
-      { author: 'Karthik S.', text: tLabel('Metrowater officials said it was due to valve leakage repair.', 'மெட்ரோவாட்டர் அதிகாரிகள் இது வால்வு கசிவு பழுது காரணமாக என்று கூறினர்.'), time: '12 hrs ago', likes: 9 },
-      { author: 'Janaki Raman', text: tLabel('Water tankers are taking advantage of this shortage!', 'தண்ணீர் லாரிகள் இந்த தட்டுப்பாட்டை தங்களுக்கு சாதகமாக பயன்படுத்துகின்றன!'), time: '8 hrs ago', likes: 6 }
-    ],
-    4: [
-      { author: 'Rajesh N.', text: tLabel('Finally garbage was cleared yesterday evening.', 'வழியாக நேற்று மாலை குப்பை அகற்றப்பட்டது.'), time: '1 day ago', likes: 1 }
-    ],
-    5: [
-      { author: 'Soundar G.', text: tLabel('Compund walls collapsed during the rain. Kids are playing nearby.', 'மழையில் சுவர் இடிந்து விழுந்தது. குழந்தைகள் அருகில் விளையாடுகிறார்கள்.'), time: '2 days ago', likes: 3 }
-    ],
-    6: [
-      { author: 'Dr. Priya', text: tLabel('Shortage of insulin vials is causing severe panic.', 'இன்சுலின் மருந்து பற்றாக்குறை பெரும் பீதியை ஏற்படுத்துகிறது.'), time: '3 days ago', likes: 12 }
-    ]
-  });
+  // Dynamic claims tracking
+  const [claimsState, setClaimsState] = useState({});
 
-  // Upvotes state synced with localStorage
-  const [upvotesState, setUpvotesState] = useState({});
-
-  // Stories Read state tracking
-  const [readStories, setReadStories] = useState({
-    critical: false,
-    roads: false,
-    water: false,
-    electricity: false,
-    health: false,
-    education: false,
-    agriculture: false,
-    welfare: false
-  });
-
-  // Load state on mount
   useEffect(() => {
-    // Sync upvotes from localStorage
-    const savedVotes = {};
-    for (let id = 1; id <= 12; id++) {
-      if (localStorage.getItem(`jn_upvoted_${id}`) === 'true') {
-        savedVotes[id] = true;
+    // Sync claims from localStorage
+    const savedClaims = {};
+    for (let id = 1; id <= 100; id++) {
+      if (localStorage.getItem(`jn_claimed_${id}`) === 'true') {
+        savedClaims[id] = true;
       }
     }
-    setUpvotesState(savedVotes);
+    setClaimsState(savedClaims);
   }, []);
 
   const [allItems, setAllItems] = useState([]);
@@ -97,20 +58,18 @@ export default function CivicFeed() {
       try {
         const res = await api.get('/tickets');
         const formatted = res.data.map(t => ({
-          id: t.id, // we might need ticketNumber or id
+          id: t.id,
           ticketNumber: t.ticketNumber,
-          category: t.department?.name || 'Unknown',
+          category: t.categoryName || 'Unknown',
           title: t.title,
           desc: t.description,
-          ward: t.jurisdiction?.name || 'Unknown',
-          time: new Date(t.createdAt).toLocaleDateString(),
-          timeTa: new Date(t.createdAt).toLocaleDateString(),
-          upvotes: 0,
+          ward: t.ward || 'Unknown',
+          time: new Date(t.created_at).toLocaleDateString(),
+          claimCount: t.claimCount || 0,
           status: t.status,
           priority: t.priority,
-          location: t.jurisdiction?.name || 'Unknown',
-          locationTa: t.jurisdiction?.name || 'Unknown',
-          photo: t.photo || null
+          location: t.ward || 'Unknown',
+          photo: t.photo || `https://images.unsplash.com/photo-1584467541268-b040f83be3fd?q=80&w=400&auto=format&fit=crop`
         }));
         setAllItems(formatted);
       } catch (err) {
@@ -120,64 +79,47 @@ export default function CivicFeed() {
     fetchTickets();
   }, []);
 
-  const handleUpvoteToggle = (id) => {
-    const isAlreadyVoted = !!upvotesState[id];
-    const nextVal = !isAlreadyVoted;
-    setUpvotesState(prev => ({ ...prev, [id]: nextVal }));
+  const handleClaimToggle = async (id) => {
+    const isAlreadyClaimed = !!claimsState[id];
+    if (isAlreadyClaimed) {
+      toast.info(tLabel("Already claimed.", "ஏற்கனவே உரிமை கோரப்பட்டது."));
+      return;
+    }
 
-    if (nextVal) {
-      localStorage.setItem(`jn_upvoted_${id}`, 'true');
-      toast.success(tLabel("Upvoted successfully! Verified face count logged.", "வெற்றிகரமாக வாக்களிக்கப்பட்டது! குறை உறுதி செய்யப்பட்டது."));
-    } else {
-      localStorage.removeItem(`jn_upvoted_${id}`);
-      toast.info(tLabel("Upvote removed.", "வாக்கு திரும்பப் பெறப்பட்டது."));
+    try {
+      await api.post('/tickets/claim', { ticketId: id });
+      setClaimsState(prev => ({ ...prev, [id]: true }));
+      localStorage.setItem(`jn_claimed_${id}`, 'true');
+      
+      setAllItems(prev => prev.map(item => 
+        item.id === id ? { ...item, claimCount: item.claimCount + 1 } : item
+      ));
+
+      toast.success(tLabel("Claim added successfully!", "உரிமை வெற்றிகரமாக சேர்க்கப்பட்டது!"));
+    } catch (err) {
+      toast.error(tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை."));
     }
   };
 
-  const handleShare = async (title, id) => {
+  const handleShare = async (title, ticketNumber) => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: title,
-          text: tLabel('Check out this civic complaint on JanaNayagam:', 'ஜனநாயகத்தில் இந்த புகாரைப் பாருங்கள்:'),
-          url: window.location.href
+          text: tLabel(`Help resolve this issue on JanaNayagam: ${title}`, `இந்த சிக்கலைத் தீர்க்க உதவுங்கள்: ${title}`),
+          url: window.location.origin + `/track?id=${ticketNumber}`
         });
       } catch (err) {
-        // Fallback
-        copyLink(id);
+        copyLink(ticketNumber);
       }
     } else {
-      copyLink(id);
+      copyLink(ticketNumber);
     }
   };
 
-  const copyLink = (id) => {
-    navigator.clipboard.writeText(`${window.location.origin}/citizen/feed#complaint-${id}`);
+  const copyLink = (ticketNumber) => {
+    navigator.clipboard.writeText(`${window.location.origin}/track?id=${ticketNumber}`);
     toast.success(tLabel("Link copied!", "இணைப்பு நகலெடுக்கப்பட்டது!"));
-  };
-
-  const handleCommentToggle = (id) => {
-    setExpandedComments(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleSendComment = (id) => {
-    const text = commentInputs[id] || '';
-    if (!text.trim()) return;
-
-    const newComment = {
-      author: localStorage.getItem('jn_name') || 'Citizen',
-      text: text.trim(),
-      time: tLabel('Just now', 'இப்போதுதான்'),
-      likes: 0
-    };
-
-    setCardComments(prev => ({
-      ...prev,
-      [id]: [...(prev[id] || []), newComment]
-    }));
-
-    setCommentInputs(prev => ({ ...prev, [id]: '' }));
-    toast.success(tLabel("Comment added successfully!", "கருத்து வெற்றிகரமாக சேர்க்கப்பட்டது!"));
   };
 
   const toggleSortOption = () => {
@@ -236,13 +178,9 @@ export default function CivicFeed() {
 
   // Sort logic
   if (sortOption === 'Most Upvoted') {
-    processedItems.sort((a, b) => {
-      const vA = a.upvotes + (upvotesState[a.id] ? 1 : 0);
-      const vB = b.upvotes + (upvotesState[b.id] ? 1 : 0);
-      return vB - vA;
-    });
+    processedItems.sort((a, b) => b.claimCount - a.claimCount);
   } else if (sortOption === 'Recent') {
-    processedItems.sort((a, b) => b.id - a.id);
+    processedItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
   }
 
   // Smooth scroll helper for trending issues
@@ -419,208 +357,95 @@ export default function CivicFeed() {
       </div>
 
       {/* ══ 4. FEED CARDS ══ */}
-      <div className="px-4 space-y-4 pt-1 select-none">
+      <div className="px-4 space-y-6 pt-1 select-none">
         {processedItems.map(item => {
-          const hasVoted = !!upvotesState[item.id];
-          const displayUpvotes = item.upvotes + (hasVoted ? 1 : 0);
-          const isCommentsOpen = !!expandedComments[item.id];
-          const comments = cardComments[item.id] || [];
+          const hasClaimed = !!claimsState[item.id];
+          const displayClaims = item.claimCount;
 
           return (
             <div 
               key={item.id}
               id={`feed-card-${item.id}`}
-              className="bg-white border border-[#DDE1E7] rounded-[12px] p-[14px] flex flex-col gap-3 shadow-xs"
+              className="bg-white border border-[#DDE1E7] rounded-[24px] overflow-hidden flex flex-col shadow-sm"
             >
-              
-              {/* TOP ROW: Social Header */}
-              <div className="flex justify-between items-center w-full">
-                <div className="flex items-center gap-2.5">
-                  {/* Category icon circle */}
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-slate-100 ${categoryColorThemes[item.category] || 'bg-slate-50 text-slate-600'}`}>
-                    {item.category === 'Roads' ? (
-                      <span className="text-sm">🛣️</span>
-                    ) : item.category === 'Water' ? (
-                      <span className="text-sm">💧</span>
-                    ) : item.category === 'Electricity' ? (
-                      <span className="text-sm">⚡</span>
-                    ) : item.category === 'Sanitation' ? (
-                      <span className="text-sm">🧹</span>
-                    ) : item.category === 'Education' ? (
-                      <span className="text-sm">🏫</span>
-                    ) : item.category === 'Health' ? (
-                      <span className="text-sm">🏥</span>
-                    ) : (
-                      <span className="text-sm">📋</span>
-                    )}
-                  </div>
-
-                  <div>
-                    <h5 className={`text-[13px] font-black uppercase leading-none ${
-                      item.category === 'Roads' ? 'text-red-700' : item.category === 'Water' ? 'text-blue-600' : 'text-slate-800'
-                    }`}>
-                      {tLabel(item.category, item.category)}
-                    </h5>
-                    <span className="text-[11px] text-slate-400 font-bold block mt-1 leading-none">
-                      Ward {item.ward} · {isTa ? item.timeTa : item.time}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Status Badges */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className={`text-[9px] font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wide ${
-                    item.status === 'resolved'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : item.status === 'escalated'
-                        ? 'bg-orange-50 text-orange-700 border-orange-200'
-                        : 'bg-[#FFF0EE] text-[#8B1A1A] border-red-150'
-                  }`}>
-                    {tLabel(item.status.toUpperCase(), item.status.toUpperCase())}
+              {/* Photo larger (social-media style) */}
+              <div className="relative w-full aspect-square bg-slate-900 group">
+                <img src={item.photo} alt="Issue proof" className="w-full h-full object-cover" />
+                
+                {/* Category & Ward Overlays */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  <span className="bg-white/90 backdrop-blur-md text-[#8B1A1A] text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg border border-white/20 uppercase tracking-widest">
+                    {item.category}
                   </span>
+                  <span className="bg-black/40 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg border border-white/10 uppercase tracking-widest flex items-center gap-1.5 w-fit">
+                    <MapPin className="w-3 h-3 text-white" />
+                    {item.ward}
+                  </span>
+                </div>
 
-                  {/* Three dot actions dropdown */}
-                  <div className="relative">
-                    <button 
-                      onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
-                      className="p-1 text-slate-400 hover:text-slate-600"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                    {openMenuId === item.id && (
-                      <div className="absolute right-0 top-6 w-32 bg-white rounded-lg shadow-lg border border-slate-100 z-10 text-xs font-bold py-1 overflow-hidden">
-                        <button 
-                          onClick={() => { setOpenMenuId(null); copyLink(item.id); }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700"
-                        >
-                          {tLabel("Copy Link", "இணைப்பை நகலெடு")}
-                        </button>
-                        <button 
-                          onClick={() => { setOpenMenuId(null); toast.info(tLabel('Reported for review', 'மதிப்பாய்வுக்கு புகாரளிக்கப்பட்டது')); }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 text-red-600"
-                        >
-                          {tLabel("Report Post", "பதிலைப் புகாரளி")}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                {/* Status Chip */}
+                <div className="absolute top-4 right-4">
+                  <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border-2 uppercase tracking-widest shadow-lg ${
+                    item.status === 'RESOLVED'
+                      ? 'bg-emerald-500/90 text-white border-emerald-400/50'
+                      : item.status === 'ESCALATED'
+                        ? 'bg-orange-500/90 text-white border-orange-400/50'
+                        : 'bg-[#8B1A1A]/90 text-white border-red-400/50'
+                  }`}>
+                    {item.status}
+                  </span>
                 </div>
               </div>
 
-              {/* MIDDLE SECTION */}
-              <div className="space-y-1">
-                <h4 className="text-[15px] font-black text-slate-800 leading-tight">
-                  {item.title}
-                </h4>
-                <p className="text-[13px] text-slate-500 font-bold leading-normal">
-                  {item.desc}
-                </p>
-                
-                {/* Photo Evidence overlay */}
-                {item.photo && (
-                  <div className="w-full h-[180px] rounded-lg overflow-hidden border border-slate-100 mt-2 shadow-xs bg-slate-900 select-none">
-                    <img src={item.photo} alt="Civic feed post proof" className="w-full h-full object-cover" />
-                  </div>
-                )}
-              </div>
-
-              {/* LOCATION ROW */}
-              <div className="flex items-center gap-1 text-[11px] text-slate-400 font-bold leading-none">
-                <span>📍</span>
-                <span>{isTa ? item.locationTa : item.location}</span>
-              </div>
-
-              {/* ACTION BUTTONS ROW */}
-              <div className="border-t border-[#F0F0F0] pt-1 flex items-center justify-around w-full">
-                
-                {/* Upvotes */}
-                <button
-                  onClick={() => handleUpvoteToggle(item.id)}
-                  className={`flex items-center justify-center gap-1.5 flex-1 h-9 font-black text-xs transition-colors cursor-pointer rounded-lg ${
-                    hasVoted 
-                      ? 'text-[#8B1A1A] bg-red-50/50' 
-                      : 'text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  <ThumbsUp className={`w-4 h-4 ${hasVoted ? 'fill-[#8B1A1A]' : ''}`} />
-                  <span>{tLabel(`Upvote · ${displayUpvotes}`, `வாக்கு · ${displayUpvotes}`)}</span>
-                </button>
-
-                {/* Comment triggers */}
-                <button
-                  onClick={() => handleCommentToggle(item.id)}
-                  className={`flex items-center justify-center gap-1.5 flex-1 h-9 font-black text-xs transition-colors cursor-pointer rounded-lg ${
-                    isCommentsOpen 
-                      ? 'text-[#8B1A1A] bg-red-50/50' 
-                      : 'text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>{tLabel(`Comment · ${comments.length}`, `கருத்து · ${comments.length}`)}</span>
-                </button>
-
-                {/* Share fallback buttons */}
-                <button
-                  onClick={() => handleShare(item.title, item.id)}
-                  className="flex items-center justify-center gap-1.5 flex-1 h-9 font-black text-xs text-slate-500 hover:bg-slate-50 cursor-pointer rounded-lg"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>{tLabel("Share", "பகிர்")}</span>
-                </button>
-
-              </div>
-
-              {/* Expandable Comments Drawer panel */}
-              {isCommentsOpen && (
-                <div className="border-t border-slate-100/80 pt-3.5 space-y-4">
-                  {/* Comments lists */}
-                  <div className="space-y-3">
-                    {comments.map((comm, idx) => (
-                      <div key={idx} className="flex gap-2.5 items-start">
-                        <div className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-[9px] select-none shrink-0">
-                          {comm.author.slice(0,2).toUpperCase()}
-                        </div>
-                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/30 rounded-2xl p-2.5 relative border border-slate-100">
-                          <div className="flex justify-between items-center text-[10.5px] font-black text-slate-800 dark:text-slate-200">
-                            <span>{comm.author}</span>
-                            <span className="text-[9px] text-slate-400 font-bold">{comm.time}</span>
-                          </div>
-                          <p className="text-[11.5px] text-slate-600 dark:text-slate-350 font-bold mt-1 leading-normal">
-                            {comm.text}
-                          </p>
-                          <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 mt-1.5 pl-0.5">
-                            <span>👍 {comm.likes} likes</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Comment composer Row */}
-                  <div className="flex items-center gap-2 pt-1.5">
-                    <div className="w-7 h-7 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-black text-xs select-none shrink-0">
-                      KA
-                    </div>
-                    <div className="flex-1 flex items-center bg-slate-50 border border-[#DDE1E7] rounded-full px-3 py-1 select-none">
-                      <input
-                        type="text"
-                        value={commentInputs[item.id] || ''}
-                        onChange={(e) => setCommentInputs({ ...commentInputs, [item.id]: e.target.value })}
-                        placeholder={tLabel("Add a comment...", "கருத்து சேர்க்கவும்...")}
-                        className="w-full bg-transparent outline-none text-xs font-bold text-slate-700 h-[28px]"
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleSendComment(item.id); }}
-                      />
-                      <button 
-                        onClick={() => handleSendComment(item.id)}
-                        className="p-1 text-[#8B1A1A] hover:opacity-80 shrink-0"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
+              {/* CARD BODY */}
+              <div className="p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <h4 className="text-lg font-black text-slate-800 leading-tight">
+                    {item.title}
+                  </h4>
+                  <p className="text-sm font-bold text-slate-500 leading-relaxed line-clamp-2">
+                    {item.desc}
+                  </p>
                 </div>
-              )}
+
+                {/* Unified Claim Stats */}
+                <div className="flex items-center gap-2 py-1">
+                   <div className="flex -space-x-2">
+                      {[1,2,3].map(i => (
+                        <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+                           <User className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                      ))}
+                   </div>
+                   <span className="text-xs font-black text-[#8B1A1A]">
+                      {displayClaims} {tLabel('Citizens Claimed', 'குடிமக்கள் உரிமை கோரினர்')}
+                   </span>
+                </div>
+
+                {/* ACTION BUTTONS ROW */}
+                <div className="flex items-center gap-3 w-full">
+                  {/* Claim Button */}
+                  <button
+                    onClick={() => handleClaimToggle(item.id)}
+                    className={`flex items-center justify-center gap-2 flex-1 h-12 rounded-2xl font-black text-sm transition-all shadow-md active:scale-[0.98] ${
+                      hasClaimed 
+                        ? 'bg-red-50 text-[#8B1A1A] border border-red-100 cursor-default' 
+                        : 'bg-[#8B1A1A] text-white hover:bg-[#6b1414]'
+                    }`}
+                  >
+                    <ThumbsUp className={`w-4 h-4 ${hasClaimed ? 'fill-[#8B1A1A]' : ''}`} />
+                    <span>{hasClaimed ? tLabel('Claimed', 'உரிமை கோரப்பட்டது') : tLabel('Claim Issue', 'உரிமை கோரு')}</span>
+                  </button>
+
+                  {/* Share button */}
+                  <button
+                    onClick={() => handleShare(item.title, item.ticketNumber)}
+                    className="flex items-center justify-center gap-2 w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all border border-slate-200"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
 
             </div>
           );

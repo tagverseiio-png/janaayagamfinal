@@ -64,7 +64,7 @@ const findEmployeeByEscalationRole = async (departmentId: string, escalateToRole
 
 export const createTicket = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, description, departmentId, jurisdictionId, departmentName, jurisdictionName, lat, lng } = req.body;
+    const { title, description, departmentId, jurisdictionId, categoryCode, departmentName, jurisdictionName, lat, lng } = req.body;
     const citizenId = req.user?.id;
 
     if (!citizenId || req.user?.type !== 'citizen') {
@@ -73,6 +73,18 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
     }
 
     let finalDeptId = departmentId;
+    let finalCategoryId = undefined;
+
+    if (categoryCode) {
+      const category = await prisma.complaintCategory.findUnique({
+        where: { code: categoryCode }
+      });
+      if (category) {
+        finalCategoryId = category.id;
+        if (!finalDeptId) finalDeptId = category.departmentId;
+      }
+    }
+
     if (!finalDeptId && departmentName) {
       const dept = await prisma.department.findFirst({ where: { name: { contains: departmentName } } });
       if (dept) finalDeptId = dept.id;
@@ -95,10 +107,29 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
         description,
         citizenId,
         departmentId: finalDeptId,
+        categoryId: finalCategoryId,
         jurisdictionId: finalJurisId,
         lat,
         lng,
         deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      },
+      include: {
+        citizen: { select: { name: true, phone: true } },
+        department: true,
+        category: true,
+        jurisdiction: {
+          include: {
+            parent: {
+              include: {
+                parent: {
+                  include: {
+                    parent: true
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     });
 
@@ -118,6 +149,91 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+export const checkDuplicates = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { categoryCode, lat, lng } = req.query;
+
+    if (!lat || !lng || !categoryCode) {
+      res.status(400).json({ error: 'Missing required parameters' });
+      return;
+    }
+
+    const latitude = parseFloat(lat as string);
+    const longitude = parseFloat(lng as string);
+
+    // Find a ticket in the same category within 7.5 meters
+    // SQLite doesn't have ST_Distance, so we use a simple bounding box first
+    // 0.0001 degrees is roughly 11 meters
+    const delta = 0.00007; // ~7.7 meters
+
+    const duplicate = await prisma.ticket.findFirst({
+      where: {
+        category: { code: categoryCode as string },
+        status: { in: ['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS'] },
+        lat: { gte: latitude - delta, lte: latitude + delta },
+        lng: { gte: longitude - delta, lte: longitude + delta }
+      },
+      include: {
+        category: true,
+        jurisdiction: true
+      }
+    });
+
+    res.json(duplicate ? formatTicketResponse(duplicate) : null);
+  } catch (error) {
+    console.error('Error checking duplicates:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const addClaim = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { ticketId } = req.body;
+    const citizenId = req.user?.id;
+
+    if (!citizenId || req.user?.type !== 'citizen') {
+      res.status(403).json({ error: 'Only citizens can add claims' });
+      return;
+    }
+
+    // Check if already claimed
+    const existingClaim = await prisma.ticketClaim.findUnique({
+      where: {
+        ticketId_citizenId: { ticketId, citizenId }
+      }
+    });
+
+    if (existingClaim) {
+      res.status(400).json({ error: 'You have already claimed this ticket' });
+      return;
+    }
+
+    // Add claim
+    await prisma.$transaction([
+      prisma.ticketClaim.create({
+        data: { ticketId, citizenId }
+      }),
+      prisma.ticket.update({
+        where: { id: ticketId },
+        data: { claimCount: { increment: 1 } }
+      }),
+      prisma.ticketHistory.create({
+        data: {
+          ticketId,
+          action: 'claim_added',
+          notes: 'Claim added via duplicate detection or feed'
+        }
+      })
+    ]);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error adding claim:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 const formatTicketResponse = (ticket: any) => {
   let ward = '';
   let district = '';
@@ -136,8 +252,8 @@ const formatTicketResponse = (ticket: any) => {
 
   return {
     ...ticket,
-    category: ticket.category?.code || 'CAT-WTR',
-    categoryName: ticket.category?.name || 'Water Supply & Sewerage',
+    category: ticket.category?.code || 'N/A',
+    categoryName: ticket.category?.name || 'Uncategorized',
     created_at: ticket.createdAt,
     sla_deadline: ticket.deadline,
     ward: ward || ticket.jurisdiction?.name || '',
@@ -212,11 +328,11 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     }
 
     const data: any = {};
-    if (status) data.status = status;
-    if (priority) data.priority = priority;
+    if (status) data.status = status.toUpperCase();
+    if (priority) data.priority = priority.toUpperCase();
     if (assignedToId) data.assignedToId = assignedToId;
 
-    if (status === 'Escalated' && req.body.escalateToRole) {
+    if (data.status === 'ESCALATED' && req.body.escalateToRole) {
       const currentTicket = await prisma.ticket.findUnique({
         where: { id: id as string },
         select: { departmentId: true }

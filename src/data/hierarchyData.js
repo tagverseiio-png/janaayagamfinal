@@ -12,6 +12,7 @@ export const DEPT_HIERARCHY = {
   ],
   Electricity: [
     { role: 'Citizen', label: 'Issue Filed' },
+    { role: 'WARD_AEO_OR_EB', label: 'Ward (AEO) / E.B' },
     { role: 'LINE_MAN', label: 'Line Man' },
     { role: 'DEPUTY_AREA_ENGINEER', label: 'Deputy Area Engineer' },
     { role: 'ASST_AREA_ENGINEER', label: 'Assistant Area Engineer' },

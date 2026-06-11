@@ -154,6 +154,10 @@ export default function SubmitTicket() {
     toast.success(tLabel("Geo-tagged photo stamped successfully!", "புவி-குறிக்கப்பட்ட புகைப்படம் வெற்றிகரமாக இணைக்கப்பட்டது!"));
   };
 
+  // Duplicate check state
+  const [duplicateTicket, setDuplicateTicket] = useState(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -167,6 +171,22 @@ export default function SubmitTicket() {
       return;
     }
 
+    // Step 1: Check for duplicates
+    try {
+      const dupRes = await api.get(`/tickets/check-duplicates?categoryCode=${category}&lat=${location.lat}&lng=${location.lng}`);
+      if (dupRes.data) {
+        setDuplicateTicket(dupRes.data);
+        setShowDuplicateModal(true);
+        return; // Wait for user choice
+      }
+    } catch (err) {
+      console.warn('Duplicate check failed, proceeding normally');
+    }
+
+    await proceedWithSubmission();
+  };
+
+  const proceedWithSubmission = async () => {
     // Determine target ward and district for routing
     let targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
     if (targetWard === 'Ward 1') {
@@ -199,9 +219,78 @@ export default function SubmitTicket() {
     }
   };
 
+  const handleClaimDuplicate = async () => {
+    try {
+      await api.post('/tickets/claim', { ticketId: duplicateTicket.id });
+      toast.success(tLabel("Your claim has been added. More claims = higher priority.", "உங்கள் உரிமை சேர்க்கப்பட்டுள்ளது. கூடுதல் உரிமைகள் = அதிக முன்னுரிமை."));
+      setShowDuplicateModal(false);
+      navigate('/citizen');
+    } catch (err) {
+      toast.error(tLabel("Failed to add claim.", "உரிமையைச் சேர்க்க முடியவில்லை."));
+    }
+  };
+
 
   return (
     <div className="pb-24">
+      {/* ── Duplicate Check Modal ── */}
+      {showDuplicateModal && duplicateTicket && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] p-6 shadow-2xl border border-slate-100 max-w-sm w-full space-y-6 text-center">
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto border border-amber-100">
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-black text-slate-800 leading-tight">
+                {tLabel("⚠ This issue may already exist", "⚠ இந்தப் புகார் ஏற்கனவே இருக்கலாம்")}
+              </h3>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 space-y-3 text-left">
+              {duplicateTicket.photo && (
+                <img src={duplicateTicket.photo} alt="Existing issue" className="w-full h-32 object-cover rounded-xl border border-slate-200" />
+              )}
+              <div className="space-y-1">
+                <p className="text-sm font-black text-slate-800">{duplicateTicket.title}</p>
+                <div className="flex items-center gap-2">
+                  <span className="bg-red-50 text-[#8B1A1A] text-[9px] font-black px-2 py-0.5 rounded-full border border-red-100 uppercase">
+                    {duplicateTicket.ward}
+                  </span>
+                  <span className="bg-emerald-50 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
+                    {duplicateTicket.status}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                   <span className="text-[10px] font-bold text-slate-400">🔥 {duplicateTicket.claimCount} Claims</span>
+                   <span className="text-[10px] font-bold text-slate-400">Filed: {new Date(duplicateTicket.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs font-bold text-slate-500 leading-relaxed">
+              {tLabel("Are you reporting the same problem? Support existing ones to increase priority.", "நீங்கள் அதே சிக்கலைப் புகாரளிக்கிறீர்களா? முன்னுரிமையை அதிகரிக்க ஏற்கனவே உள்ளவற்றை ஆதரிக்கவும்.")}
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={handleClaimDuplicate}
+                className="w-full bg-[#8B1A1A] text-white font-black text-sm py-4 rounded-2xl shadow-md active:scale-[0.98] transition-all"
+              >
+                {tLabel("✓ Yes, Same Problem", "✓ ஆம், அதே பிரச்சனை")}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDuplicateModal(false);
+                  proceedWithSubmission();
+                }}
+                className="w-full bg-slate-100 text-slate-500 font-black text-sm py-4 rounded-2xl border border-slate-200 active:scale-[0.98] transition-all"
+              >
+                {tLabel("✗ No, Different Issue", "✗ இல்லை, வேறு பிரச்சனை")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ── GeoCamera Overlay modal ── */}
       {showCamera && (
         <div className="fixed inset-0 z-[200] bg-black">
@@ -386,6 +475,7 @@ export default function SubmitTicket() {
                   <div className="grid grid-cols-2 gap-2">
                     {categoriesList.map((cat) => {
                       const isSelected = category === cat.code;
+                      const isActive = ['CAT-ELE', 'CAT-SAN'].includes(cat.code);
                       const displayName = categoryTranslations[cat.code]
                         ? tLabel(categoryTranslations[cat.code].en, categoryTranslations[cat.code].ta)
                         : cat.name;
@@ -393,13 +483,21 @@ export default function SubmitTicket() {
                         <button
                           key={cat.code}
                           type="button"
+                          disabled={!isActive}
                           onClick={() => setCategory(cat.code)}
-                          className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer relative overflow-hidden ${
                             isSelected
                               ? 'bg-[#8B1A1A]/5 border-2 border-[#8B1A1A] text-[#8B1A1A] font-extrabold shadow-sm'
-                              : 'bg-slate-50/50 border-slate-200 hover:border-slate-300'
+                              : isActive 
+                                ? 'bg-white border-slate-200 hover:border-slate-300'
+                                : 'bg-slate-50 border-slate-100 opacity-60 grayscale cursor-not-allowed'
                           }`}
                         >
+                          {!isActive && (
+                            <div className="absolute top-1 right-1 bg-slate-400 text-white text-[7px] font-black px-1 py-0.5 rounded uppercase">
+                              Soon
+                            </div>
+                          )}
                           <CategoryIcon category={cat.code} />
                           <span className="text-[10px] font-extrabold tracking-wide uppercase leading-tight text-center">
                             {displayName}
@@ -456,41 +554,47 @@ export default function SubmitTicket() {
                     4. {tLabel("Attach Photo Evidence", "சான்று புகைப்படம்")}
                   </label>
                   
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 gap-2.5">
                     {/* Option 1: GeoCamera Stamped Capture */}
                     <button
                       type="button"
                       onClick={() => setShowCamera(true)}
-                      className="bg-white border border-[#8B1A1A]/30 hover:bg-[#8B1A1A]/5 rounded-xl py-3 px-3 flex items-center justify-center gap-1.5 text-[#8B1A1A] font-extrabold text-xs cursor-pointer transition-all shadow-sm"
+                      className="bg-white border border-[#8B1A1A]/30 hover:bg-[#8B1A1A]/5 rounded-xl py-4 px-3 flex items-center justify-center gap-2 text-[#8B1A1A] font-extrabold text-sm cursor-pointer transition-all shadow-sm"
                     >
-                      <Camera className="w-4 h-4 text-[#8B1A1A]" />
-                      <span>{tLabel("📷 Capture Geo Photo", "📷 படம் எடுக்க")}</span>
+                      <Camera className="w-5 h-5 text-[#8B1A1A]" />
+                      <span>{tLabel("📷 Take Verified Photos", "📷 சரிபார்க்கப்பட்ட படம் எடுக்க")}</span>
                     </button>
-
-                    {/* Option 2: Gallery upload */}
-                    <label className="flex items-center justify-center gap-1.5 bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-sm rounded-xl py-3 px-3 text-slate-600 font-extrabold text-xs cursor-pointer transition-colors">
-                      <Camera className="w-4 h-4 text-slate-500" />
-                      <span>{tLabel("📁 Upload Gallery", "📁 கோப்பை இணைக்க")}</span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handlePhotoUpload} 
-                        className="hidden" 
-                      />
-                    </label>
                   </div>
 
                   {photo && (
-                    <div className="relative w-full aspect-video rounded-xl border border-slate-200 overflow-hidden shadow-md mt-2 group select-none">
+                    <div className="relative w-full aspect-[3/4] rounded-2xl border border-slate-200 overflow-hidden shadow-lg mt-2 group select-none bg-slate-900">
+                      {/* Main Photo (Back Camera) */}
                       <img src={photo} alt="Preview" className="w-full h-full object-cover" />
                       
-                      {/* verified badge overlay if geotagged */}
-                      {isGeotagged && (
-                        <div className="absolute top-3 left-3 bg-[#4CAF50] text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                          <MapPin className="w-2.5 h-2.5 text-white" />
-                          <span>{tLabel("📍 LOCATION VERIFIED", "📍 இருப்பிடம் சரிபார்க்கப்பட்டது")}</span>
+                      {/* Inset Photo (Mock Front Camera) */}
+                      <div className="absolute top-3 right-3 w-24 h-32 rounded-xl border-2 border-white/50 overflow-hidden shadow-xl bg-slate-800 ring-4 ring-black/10">
+                        <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                           <User className="w-8 h-8 text-white/20" />
                         </div>
-                      )}
+                        {/* Overlay text on inset */}
+                        <div className="absolute bottom-1 left-0 right-0 text-center">
+                          <span className="text-[8px] font-black text-white/60 uppercase">Selfie Verify</span>
+                        </div>
+                      </div>
+
+                      {/* Geo-tag Overlay */}
+                      <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/10 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-white tracking-widest uppercase">Dual Geo-Capture ✓</span>
+                          <span className="text-[9px] font-mono text-white/80">{new Date().toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-emerald-400" />
+                          <span className="text-[9px] font-bold text-white/90">
+                            {location?.lat}, {location?.lng} · {assignedWard || livingWard}
+                          </span>
+                        </div>
+                      </div>
 
                       <button
                         type="button"
@@ -500,7 +604,7 @@ export default function SubmitTicket() {
                         }}
                         className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center text-white text-xs font-black uppercase transition-opacity opacity-0 group-hover:opacity-100 cursor-pointer"
                       >
-                        Delete Preview
+                        Retake Photos
                       </button>
                     </div>
                   )}

@@ -274,7 +274,7 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  </div>
  <div className="bg-slate-50 border p-3 rounded-xl">
  <span className="text-[9px] text-slate-400 uppercase tracking-wider block mb-0.5">Reporter</span>
- <span className="text-slate-800 ">{activeTicket.citizenName || 'Anonymous'}</span>
+ <span className="text-slate-800 ">{activeTicket.citizen_name || 'Anonymous'}</span>
  </div>
  </div>
 

@@ -18,6 +18,7 @@ model Citizen {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tickets   Ticket[]
+  claims    TicketClaim[]
 }
 
 model Department {
@@ -144,6 +145,19 @@ model Ticket {
   deadline       DateTime?
 
   history        TicketHistory[]
+  claims         TicketClaim[]
+  claimCount     Int          @default(0)
+}
+
+model TicketClaim {
+  id        String   @id @default(uuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  citizenId String
+  citizen   Citizen  @relation(fields: [citizenId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([ticketId, citizenId])
 }
 
 model TicketHistory {

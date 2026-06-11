@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Globe, Shield, Activity, User, LogOut, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Activity, LogOut, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
- const { t, i18n } = useTranslation();
+ const { i18n } = useTranslation();
  const navigate = useNavigate();
 
  const isTa = i18n.language === 'ta';
@@ -17,6 +17,7 @@ export default function ProfilePage() {
  const district = localStorage.getItem('jn_district') || 'Chennai';
  const constituency = localStorage.getItem('jn_constituency') || 'Velachery';
  const department = localStorage.getItem('jn_department') || 'Municipal Administration';
+ const isVolunteer = localStorage.getItem('jn_is_volunteer') === 'true';
 
  const initials = name
  .split(' ')
@@ -111,10 +112,17 @@ export default function ProfilePage() {
  <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wide">
  {name}
  </h2>
- {/* Role badge */}
+ {/* Role & Volunteer badge */}
+ <div className="flex flex-wrap justify-center gap-2">
  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black uppercase bg-red-50 text-[#8B1A1A] border border-[#8B1A1A]/10 select-none">
  {roleDisplayNames[role] || role}
  </span>
+ {isVolunteer && (
+ <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-100 select-none">
+ {tLabel('Verified Volunteer', 'சரிபார்க்கப்பட்ட தன்னார்வலர்')}
+ </span>
+ )}
+ </div>
  {/* Jurisdiction */}
  <span className="text-[13px] text-slate-500 font-bold">
  {getJurisdictionLabel()}
@@ -124,6 +132,24 @@ export default function ProfilePage() {
  {/* Settings List */}
  <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden select-none">
  
+ {/* Row: Aadhaar (New) */}
+ <div className="flex items-center justify-between p-4 border-b border-slate-100">
+ <div className="flex flex-col">
+ <span className="text-sm font-extrabold text-slate-800">
+ {tLabel('Aadhaar Verification', 'ஆதார் சரிபார்ப்பு')}
+ </span>
+ <span className="text-[11px] text-slate-400 font-bold">
+ {tLabel('XXXX-XXXX-1234 (Masked)', 'XXXX-XXXX-1234 (மறைக்கப்பட்டது)')}
+ </span>
+ </div>
+ <button
+ onClick={() => toast.info(tLabel('OTP verification triggered for Aadhaar update', 'ஆதார் புதுப்பிப்பிற்கு OTP சரிபார்ப்பு தூண்டப்பட்டது'))}
+ className="text-[10px] font-black px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[#8B1A1A] uppercase tracking-wider"
+ >
+ {tLabel('Re-verify', 'மீண்டும் சரிபார்')}
+ </button>
+ </div>
+
  {/* Row: Language Toggle */}
  <div className="flex items-center justify-between p-4 border-b border-slate-100 ">
  <div className="flex flex-col">
@@ -174,8 +200,34 @@ export default function ProfilePage() {
  <ChevronRight className="w-4 h-4 text-slate-400" />
  </button>
 
+ {/* Row: Volunteer Dashboard (If volunteer) */}
+ {isVolunteer && (
+ <button
+ onClick={() => navigate('/citizen/volunteer-dashboard')}
+ className="w-full flex items-center justify-between p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors bg-emerald-50/20"
+ >
+ <div className="flex flex-col">
+ <span className="text-sm font-extrabold text-emerald-800 ">
+ {tLabel('Volunteer Dashboard', 'தன்னார்வலர் டாஷ்போர்டு')}
+ </span>
+ <span className="text-[11px] text-emerald-600 font-bold">
+ {tLabel('View ward stats and escalations', 'வார்டு புள்ளிவிவரங்களைக் காண்க')}
+ </span>
+ </div>
+ <Activity className="w-4 h-4 text-emerald-500" />
+ </button>
+ )}
+
  {/* Info Rows */}
  <div className="px-4 py-3 bg-slate-50/50 space-y-2 border-b border-slate-100 ">
+ <div className="flex justify-between items-center text-xs">
+ <span className="text-slate-400 font-bold">{tLabel('My Issues Filed', 'நான் அளித்த புகார்கள்')}</span>
+ <span className="text-slate-600 font-extrabold">3</span>
+ </div>
+ <div className="flex justify-between items-center text-xs">
+ <span className="text-slate-400 font-bold">{tLabel('My Claims Count', 'எனது உரிமைகள் எண்ணிக்கை')}</span>
+ <span className="text-slate-600 font-extrabold">12</span>
+ </div>
  <div className="flex justify-between items-center text-xs">
  <span className="text-slate-400 font-bold">{tLabel('App Version', 'பயன்பாட்டு பதிப்பு')}</span>
  <span className="text-slate-600 font-extrabold">JanaNayagam v1.0</span>

@@ -162,11 +162,12 @@ async function main() {
       { level: 'L7', assigneeTitle: 'Department Director', slaDays: 30 }
     ]},
     { categoryCode: 'CAT-ELE', escalations: [
-      { level: 'L1', assigneeTitle: 'Line Man', slaDays: 3 },
-      { level: 'L2', assigneeTitle: 'Deputy Area Engineer', slaDays: 7 },
-      { level: 'L3', assigneeTitle: 'Assistant Area Engineer', slaDays: 10 },
-      { level: 'L4', assigneeTitle: 'Area Engineer', slaDays: 15 },
-      { level: 'L5', assigneeTitle: 'Super Agent', slaDays: 20 }
+      { level: 'L1', assigneeTitle: 'Ward (AEO) / E.B', slaDays: 2 },
+      { level: 'L2', assigneeTitle: 'Line Man', slaDays: 3 },
+      { level: 'L3', assigneeTitle: 'Deputy Area Engineer', slaDays: 7 },
+      { level: 'L4', assigneeTitle: 'Assistant Area Engineer', slaDays: 10 },
+      { level: 'L5', assigneeTitle: 'Area Engineer', slaDays: 15 },
+      { level: 'L6', assigneeTitle: 'Super Agent', slaDays: 20 }
     ]},
     { categoryCode: 'CAT-SAN', escalations: [
       { level: 'L1', assigneeTitle: 'Division Sanitary Inspector (DSI)', slaDays: 2 },
@@ -585,14 +586,14 @@ async function main() {
       jurisdictionId: wardNode?.id,
     },
     {
-      username: 'deputy_ae',
+      username: 'deputy_area_engineer',
       name: 'Deputy Area Engineer',
       category: 'Department Official',
       role: 'DEPUTY_AREA_ENGINEER',
       departmentId: maDept?.id,
     },
     {
-      username: 'area_eng',
+      username: 'area_engineer',
       name: 'Area Engineer',
       category: 'Department Official',
       role: 'AREA_ENGINEER',
@@ -603,6 +604,21 @@ async function main() {
       name: 'Super Agent',
       category: 'Administrative Officer',
       role: 'SUPER_AGENT',
+      departmentId: maDept?.id,
+    },
+    {
+      username: 'g_m',
+      name: 'General Manager',
+      category: 'Department Official',
+      role: 'G.M',
+      departmentId: maDept?.id,
+    },
+    {
+      username: 'executive_director',
+      name: 'Executive Director',
+      category: 'Department Official',
+      role: 'EXECUTIVE_DIRECTOR',
+      departmentId: maDept?.id,
     },
     {
       username: 'dept_director',

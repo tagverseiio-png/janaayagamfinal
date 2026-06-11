@@ -196,7 +196,7 @@ import api from '../../services/api';
  </span>
  </td>
  <td className="px-4 py-4 whitespace-nowrap">
- {ticket.citizenName || 'Anonymous'}
+ {ticket.citizen_name || 'Anonymous'}
  </td>
  <td className="px-4 py-4">
  <StatusBadge status={ticket.status} />

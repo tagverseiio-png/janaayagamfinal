@@ -9,6 +9,11 @@ import SubmitTicket from './SubmitTicket';
 import MyTickets from './MyTickets';
 import CivicFeed from './CivicFeed';
 import EscalationHierarchy from './EscalationHierarchy';
+import SOSContact from './SOSContact';
+import SchemesDirectory from './SchemesDirectory';
+import ReferAFriend from './ReferAFriend';
+import VolunteerSignup from './VolunteerSignup';
+import VolunteerDashboard from './VolunteerDashboard';
 import LocationSettings from '../../shared/components/LocationSettings';
 import ProfilePage from '../../shared/components/ProfilePage';
 
@@ -118,19 +123,13 @@ export default function CitizenPortal() {
             <Route path="/hierarchy" element={<EscalationHierarchy />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/location" element={<LocationSettings />} />
+            <Route path="/volunteer-signup" element={<VolunteerSignup />} />
+            <Route path="/volunteer-dashboard" element={<VolunteerDashboard />} />
+            <Route path="/schemes" element={<SchemesDirectory />} />
+            <Route path="/sos" element={<SOSContact />} />
+            <Route path="/refer" element={<ReferAFriend />} />
           </Routes>
         </main>
-
-        {/* Floating Action Button (FAB) */}
-        {path !== '/citizen/submit' && (
-          <button
-            onClick={() => navigate('/citizen/submit')}
-            style={{ backgroundColor: '#8B1A1A' }}
-            className="fixed bottom-[80px] right-6 w-14 h-14 rounded-full text-white flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.2)] active:scale-95 transition-transform z-40 select-none cursor-pointer"
-          >
-            <span className="text-3xl font-light leading-none">+</span>
-          </button>
-        )}
 
         {/* ══ 3. FIXED BOTTOM TAB BAR ══ */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
