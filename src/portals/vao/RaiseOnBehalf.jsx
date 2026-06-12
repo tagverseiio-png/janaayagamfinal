@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { Camera, MapPin, Send, AlertCircle, Info } from 'lucide-react';
 import CategoryIcon from '../../shared/components/CategoryIcon';
 
+import api, { getMediaUrl } from '../../services/api';
+
 export default function RaiseOnBehalf() {
  const { t } = useTranslation();
  const navigate = useNavigate();
@@ -20,7 +22,6 @@ export default function RaiseOnBehalf() {
  const [locationCaptured, setLocationCaptured] = useState(false);
  const [manualLocation, setManualLocation] = useState('');
 
- const ward = '142'; // Pre-filled ward
  const categoryKeys = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
  const handlePhotoUpload = (e) => {
@@ -55,7 +56,7 @@ export default function RaiseOnBehalf() {
  );
  };
 
- const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
  e.preventDefault();
 
  // ID validation (12-digit Aadhaar or 10-character Alphanumeric Voter ID)
@@ -83,37 +84,31 @@ export default function RaiseOnBehalf() {
  return;
  }
 
- const ticketId = Math.floor(1000 + Math.random() * 9000).toString();
- const finalLocation = location || (manualLocation.trim() ? { manual: manualLocation } : null);
+ try {
+   const payload = {
+     title: `${category.toUpperCase()} issue raised by VAO for ${citizenName}`,
+     description,
+     categoryName: category,
+     citizen_name: citizenName,
+     photo: photo || null,
+     lat: location ? parseFloat(location.lat) : 13.0827,
+     lng: location ? parseFloat(location.lng) : 80.2707,
+     channel: 'VAO_PORTAL'
+   };
 
- const newTicket = {
- id: ticketId,
- category,
- description,
- status: 'open',
- priority: 'medium',
- created_at: new Date().toISOString(),
- sla_deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
- ward,
- citizen_name: citizenName,
- raised_by: 'VAO',
- citizen_id: rawId,
- photo,
- location: finalLocation
- };
+   const res = await api.post('/tickets', payload);
+   const ticketId = res.data.ticketNumber;
 
- // Save to localStorage
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- list.push(newTicket);
- localStorage.setItem('jn_tickets', JSON.stringify(list));
+   const isTamil = t('app_name') === 'ஜனநாயகம்';
+   const successMsg = isTamil
+     ? `குடிமகன் சார்பாக புகார் சமர்ப்பிக்கப்பட்டது. புகார் எண்: #${ticketId}`
+     : `Complaint submitted on behalf of citizen. Ticket ID: #${ticketId}`;
 
- const isTamil = t('app_name') === 'ஜனநாயகம்';
- const successMsg = isTamil
- ? `குடிமகன் சார்பாக புகார் சமர்ப்பிக்கப்பட்டது. புகார் எண்: #${ticketId}`
- : `Complaint submitted on behalf of citizen. Ticket ID: #${ticketId}`;
-
- toast.success(successMsg);
- navigate('/vao/tickets');
+   toast.success(successMsg);
+   navigate('/vao/tickets');
+ } catch (err) {
+   toast.error('Failed to submit ticket');
+ }
  };
 
  return (

@@ -10,6 +10,7 @@ import {
 import LanguageToggle from './LanguageToggle';
 import ProfilePage from './ProfilePage';
 import LocationSettings from './LocationSettings';
+import api from '../../services/api';
 
 export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  const { t, lang, toggleLang } = useLanguage();
@@ -51,14 +52,22 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
   navigate('/', { replace: true });
   };
 
- // Get count of tickets from localStorage for badges
+ // Get count of tickets from backend for badges
  const [ticketCount, setTicketCount] = useState(0);
  const [escalatedCount, setEscalatedCount] = useState(0);
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTicketCount(list.filter(t => t.status === 'open' || t.status === 'in_progress').length);
- setEscalatedCount(list.filter(t => t.status === 'escalated').length);
+   const fetchCounts = async () => {
+     try {
+       const res = await api.get('/tickets');
+       const list = res.data;
+       setTicketCount(list.filter(t => t.status === 'OPEN' || t.status === 'ASSIGNED' || t.status === 'IN_PROGRESS').length);
+       setEscalatedCount(list.filter(t => t.status === 'ESCALATED').length);
+     } catch (err) {
+       console.error("Failed to fetch counts for layout", err);
+     }
+   };
+   fetchCounts();
  }, [location.pathname]);
 
  // Resolve bottom tabs dynamically based on the role

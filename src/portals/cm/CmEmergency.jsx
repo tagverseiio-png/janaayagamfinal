@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import TableSkeleton from '../../shared/components/TableSkeleton';
 
+import api from '../../services/api';
+
 export default function CmEmergency() {
  const { t } = useTranslation();
  const [emergencyActive, setEmergencyActive] = useState(false);
@@ -19,28 +21,39 @@ export default function CmEmergency() {
  const [history, setHistory] = useState([]);
  const [loadingTable, setLoadingTable] = useState(true);
 
- const districtsList = [
- 'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
- 'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
- 'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
- 'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
- 'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
- ];
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => {
+        setDistricts(res.data);
+        setSelectedDistricts(res.data.map(d => d.name));
+      })
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      setLoadingTable(true);
+      const res = await api.get('/announcements');
+      const filtered = res.data.filter(a => a.title === 'STATE EMERGENCY DECREE');
+      setHistory(filtered.map(a => ({
+        id: a.id,
+        reason: a.text,
+        districts: [a.district],
+        created_at: a.createdAt
+      })));
+      setLoadingTable(false);
+    } catch (err) {
+      console.error('Failed to fetch emergency history:', err);
+      setLoadingTable(false);
+    }
+  };
 
   useEffect(() => {
     const active = localStorage.getItem('jn_state_emergency') === 'true';
     setEmergencyActive(active);
-
-    const list = JSON.parse(localStorage.getItem('jn_past_emergencies') || '[]');
-    setHistory(list);
-
- // Pre-select all 38 districts for step 2
- setSelectedDistricts(districtsList);
-
- const timer = setTimeout(() => {
- setLoadingTable(false);
- }, 1500);
- return () => clearTimeout(timer);
+    fetchHistory();
  }, []);
 
  const handleDeactivate = () => {
@@ -58,44 +71,29 @@ export default function CmEmergency() {
  };
 
  const handleSelectAllDistricts = () => {
- if (selectedDistricts.length === districtsList.length) {
+ if (selectedDistricts.length === districts.length) {
  setSelectedDistricts([]);
  } else {
- setSelectedDistricts(districtsList);
+ setSelectedDistricts(districts.map(d => d.name));
  }
  };
 
- const executeEmergencyDeclaration = () => {
- localStorage.setItem('jn_state_emergency', 'true');
- setEmergencyActive(true);
- setWizardOpen(false);
-
- // Save to history
- const emgId = 'EMG-' + Math.floor(1000 + Math.random() * 9000).toString();
- const newEmergency = {
- id: emgId,
- reason,
- districts: selectedDistricts,
- created_at: new Date().toISOString(),
- status: 'active'
- };
- const updatedHistory = [newEmergency, ...history];
- localStorage.setItem('jn_past_emergencies', JSON.stringify(updatedHistory));
- setHistory(updatedHistory);
-
- // Dynamic ticket SLA override: Contract all statewide SLAs to a super accelerated 12 hours!
- const tickets = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- const updatedTickets = tickets.map(t => {
- if (t.status !== 'resolved' && t.status !== 'closed') {
- const deadline = new Date();
- deadline.setHours(deadline.getHours() + 12); // Accelerated 12 Hours SLA
- return { ...t, sla_deadline: deadline.toISOString() };
- }
- return t;
- });
- localStorage.setItem('jn_tickets', JSON.stringify(updatedTickets));
-
- toast.success('STATE EMERGENCY DECREE SIGNED');
+ const executeEmergencyDeclaration = async () => {
+   try {
+     await api.post('/announcements', {
+       title: 'STATE EMERGENCY DECREE',
+       text: reason,
+       district: selectedDistricts.length === districts.length ? 'All' : selectedDistricts.join(', ')
+     });
+     
+     localStorage.setItem('jn_state_emergency', 'true');
+     setEmergencyActive(true);
+     setWizardOpen(false);
+     toast.success('STATE EMERGENCY DECREE SIGNED');
+     fetchHistory();
+   } catch (err) {
+     toast.error('Failed to sign emergency decree');
+   }
  };
 
  const englishSuccess = "State Emergency Declared. All Collectors, Ministers, and Secretaries notified.";

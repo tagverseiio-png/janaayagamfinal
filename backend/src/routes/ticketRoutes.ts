@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createTicket, getTickets, updateTicket, checkDuplicates, addClaim } from '../controllers/ticketController';
+import { createTicket, getTickets, updateTicket, checkDuplicates, addClaim, bulkUpdateTickets } from '../controllers/ticketController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -12,6 +12,7 @@ router.post('/', createTicket);
 router.get('/', getTickets);
 router.get('/check-duplicates', checkDuplicates);
 router.post('/claim', addClaim);
+router.patch('/bulk-update', bulkUpdateTickets);
 router.patch('/:id', updateTicket);
 
 export default router;

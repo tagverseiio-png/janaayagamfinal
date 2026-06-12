@@ -8,9 +8,9 @@ export const DEPT_HIERARCHY = {
   ],
   Electricity: [
     { role: 'Citizen', label: 'Issue Filed' },
-    { role: 'AAE', label: 'Assistant Area Engineer' },
-    { role: 'AE', label: 'Area Engineer' },
-    { role: 'Minister', label: 'Minister' },
+    { role: 'Assistant Area Engineer', label: 'Assistant Area Engineer (AAE)' },
+    { role: 'Area Engineer', label: 'Area Engineer (AE)' },
+    { role: 'Minister', label: 'Cabinet Minister' },
     { role: 'Resolved', label: 'Issue Resolved' },
   ],
   Sanitation: [
@@ -434,7 +434,7 @@ export const getNextRole = (category, currentRole) => {
   const h = DEPT_HIERARCHY[normalizeDept(category)];
   if (!h) return 'Higher Authority';
   
-  const target = normalizeRole(currentRole);
+  const target = normalizeRole(ROLE_ALIASES[currentRole] || currentRole);
   const idx = h.findIndex(s => normalizeRole(s.role) === target);
   return h[Math.min((idx < 0 ? 1 : idx) + 1, h.length - 1)].role;
 };
@@ -444,7 +444,7 @@ export const getCurrentStep = (category, assignedTo) => {
   const hierarchy = DEPT_HIERARCHY[normalizeDept(category)];
   if (!hierarchy) return 0;
   
-  const target = normalizeRole(assignedTo);
+  const target = normalizeRole(ROLE_ALIASES[assignedTo] || assignedTo);
   const idx = hierarchy.findIndex(h => normalizeRole(h.role) === target);
   return idx === -1 ? 1 : idx;
 };
@@ -457,7 +457,16 @@ export const getProgressPercent = (category, assignedTo) => {
 };
 
 // Abbreviated / legacy role names → their canonical chain role
-const ROLE_ALIASES = { SI: 'Sanitary Inspector', DE: 'Deputy Engineer', DAE: 'Deputy AE', RI: 'Revenue Inspector' };
+const ROLE_ALIASES = { 
+  SI: 'Sanitary Inspector', 
+  DE: 'Deputy Engineer', 
+  DAE: 'Deputy AE', 
+  RI: 'Revenue Inspector',
+  AAE: 'Assistant Area Engineer',
+  AE: 'Area Engineer',
+  'WARD_AEO': 'Assistant Area Engineer',
+  'AREA_ENGINEER': 'Area Engineer'
+};
 
 // Resolve any assignedTo to a real role in the department chain.
 // Out-of-chain roles (e.g. escalated to BDO/Collector/Minister) map to the top dept role.

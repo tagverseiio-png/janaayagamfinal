@@ -26,7 +26,8 @@ const ProtectedRoute = ({ requiredRole, children }) => {
 };
 
 const EmployeeProtectedRoute = ({ children }) => {
-  if (!localStorage.getItem('jn_emp_role')) {
+  const role = localStorage.getItem('jn_role');
+  if (role !== 'employee' || !localStorage.getItem('jn_emp_role')) {
     return <Navigate to="/employee-login" replace />;
   }
   return children;

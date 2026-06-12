@@ -18,13 +18,13 @@ export default function SecretaryDashboard() {
 
  const departments = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
- const districtsList = [
- 'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
- 'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
- 'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
- 'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
- 'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
- ];
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
 
   const [STATE_STATS, setStats] = useState({ totalOpen: 0, totalResolved: 0, criticalTickets: 0, slaBreachRate: 0, resolvedMonth: 0 });
 
@@ -61,15 +61,15 @@ export default function SecretaryDashboard() {
  const activeTickets = tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed');
 
  // Compute District Grid Counts Dynamically
-  const districtData = districtsList.map(dist => {
+  const districtData = districts.map(dist => {
     // Dynamic query from actual tickets matching district and selected sector
-    const distTickets = tickets.filter(ticket => ticket.district === dist && ticket.category.toLowerCase() === selectedDept);
+    const distTickets = tickets.filter(ticket => ticket.district === dist.name && ticket.category.toLowerCase() === selectedDept);
     
     const dOpen = distTickets.filter(t => t.status === 'open').length;
     const dResolved = distTickets.filter(t => t.status === 'resolved').length;
 
     return {
-      name: dist,
+      name: dist.name,
       open: dOpen,
       resolved: dResolved,
       avgDays: 0 // Cannot compute from mock, leaving as 0 or could calculate if we had resolvedAt

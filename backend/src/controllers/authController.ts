@@ -76,6 +76,10 @@ export const signupCitizen = async (req: Request, res: Response): Promise<void> 
       }
     });
 
+    const jurisdiction = district ? await prisma.jurisdiction.findFirst({
+      where: { name: district, level: 'DISTRICT' }
+    }) : null;
+
     const payload: TokenPayload = {
       id: citizen.id,
       role: 'citizen',
@@ -87,7 +91,10 @@ export const signupCitizen = async (req: Request, res: Response): Promise<void> 
     res.status(201).json({
       message: 'Registration successful',
       token,
-      citizen
+      citizen: {
+        ...citizen,
+        jurisdiction
+      }
     });
   } catch (error) {
     console.error('Citizen Signup Error:', error);
@@ -116,6 +123,10 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    const jurisdiction = citizen.district ? await prisma.jurisdiction.findFirst({
+      where: { name: citizen.district, level: 'DISTRICT' }
+    }) : null;
+
     const payload: TokenPayload = {
       id: citizen.id,
       role: 'citizen',
@@ -127,7 +138,10 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
     res.json({
       message: 'Login successful',
       token,
-      citizen
+      citizen: {
+        ...citizen,
+        jurisdiction
+      }
     });
   } catch (error) {
     console.error('Citizen Login Error:', error);

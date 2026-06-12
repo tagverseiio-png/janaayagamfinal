@@ -24,12 +24,22 @@ export default function CmDashboard() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [tickets, setTickets] = useState([]);
+  const [stats, setStats] = useState({
+    totalOpen: 0,
+    totalResolved: 0,
+    criticalPriority: 0,
+    totalTickets: 0,
+    resolutionRate: 0,
+    healthScore: 0,
+    districtPerformance: [],
+    sparklineData: [0,0,0,0,0,0,0]
+  });
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [flagReason, setFlagReason] = useState('');
   const [showFlagModal, setShowFlagModal] = useState(false);
 
   // Broadcast announcements state
-  const [announcements, setAnnouncements] = useState(() => JSON.parse(localStorage.getItem('jn_cm_announcements') || '[]'));
+  const [announcements, setAnnouncements] = useState([]);
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcastDistrict, setBroadcastDistrict] = useState('All');
@@ -44,11 +54,11 @@ export default function CmDashboard() {
       const formatted = res.data.map(t => ({
         ...t,
         category: t.categoryName || t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
+        district: t.district || 'Unknown',
         displayId: t.ticketNumber,
         id: t.id,
         description: t.description,
-        ward: t.jurisdiction?.name || 'Unknown'
+        ward: t.ward || 'Unknown'
       }));
       setTickets(formatted);
     } catch (err) {
@@ -56,8 +66,38 @@ export default function CmDashboard() {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/dashboard/stats');
+      setStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch dashboard stats:', err);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await api.get('/announcements');
+      setAnnouncements(res.data);
+    } catch (err) {
+      console.error('Failed to fetch announcements:', err);
+    }
+  };
+
+  const fetchLatestCabinetReport = async () => {
+    try {
+      const res = await api.get('/cabinet/latest');
+      setCabinetReport(res.data);
+    } catch (err) {
+      console.warn('No cabinet report found');
+    }
+  };
+
   useEffect(() => {
     fetchTickets();
+    fetchStats();
+    fetchAnnouncements();
+    fetchLatestCabinetReport();
   }, []);
 
   const handleLogout = () => {
@@ -94,93 +134,62 @@ export default function CmDashboard() {
     }
   };
 
-  // Cabinet Report Generation ranking ministers
-  const handleGenerateCabinetReport = () => {
-    const reportDate = new Date().toLocaleDateString();
-    
-    // Process efficiency metrics per department
-    const deptsList = ['Electricity', 'Health & Sanitation', 'Water (TWAD/Metro Water)', 'PWD / Roads'];
-    const rankings = deptsList.map(dept => {
-      const deptTickets = tickets.filter(t => t.category === dept || (dept === 'Health & Sanitation' && t.category === 'Sanitation'));
-      const resolved = deptTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-      const rate = deptTickets.length > 0 ? Math.round((resolved / deptTickets.length) * 150) / 1.5 : 100;
-      const roundedRate = Math.min(Math.round(rate), 100);
-      
-      let minister = 'Unassigned';
-      if (dept === 'Electricity') minister = 'C. T. R. Nirmal Kumar';
-      if (dept === 'Health & Sanitation') minister = 'Dr. K.G. Arunraj';
-      if (dept === 'Water (TWAD/Metro Water)') minister = 'Sec. Hariharan';
-      if (dept === 'PWD / Roads') minister = 'CE Karthikeyan';
-
-      return { dept, minister, rate: roundedRate, pending: deptTickets.length - resolved };
-    }).sort((a, b) => b.rate - a.rate);
-
-    const report = {
-      title: 'TAMIL NADU STATE CABINET EFFICIENCY SUMMARY',
-      date: reportDate,
-      rankings,
-      summaryText: 'Electricity and Sanitation sectors maintain peak response compliance. PWD roads projects require infrastructure budget allocations.'
-    };
-    setCabinetReport(report);
+  // Cabinet Report Generation
+  const handleGenerateCabinetReport = async () => {
+    try {
+      const res = await api.post('/cabinet/generate');
+      setCabinetReport(res.data);
+      toast.success('Cabinet audit generated successfully.');
+    } catch (err) {
+      console.error('Failed to generate cabinet report:', err);
+      alert('Failed to generate cabinet report.');
+    }
   };
 
   // Propose Broadcast Announcement
-  const handleBroadcast = (e) => {
+  const handleBroadcast = async (e) => {
     e.preventDefault();
     if (!broadcastTitle.trim() || !broadcastText.trim()) return;
 
-    const newBroadcast = {
-      id: Date.now().toString(),
-      title: broadcastTitle,
-      text: broadcastText,
-      district: broadcastDistrict,
-      date: new Date().toLocaleString()
-    };
-
-    const updated = [newBroadcast, ...announcements];
-    setAnnouncements(updated);
-    localStorage.setItem('jn_cm_announcements', JSON.stringify(updated));
-    setBroadcastTitle('');
-    setBroadcastText('');
-    alert('Statewide CM Announcement broadcasted successfully!');
+    try {
+      const res = await api.post('/announcements', {
+        title: broadcastTitle,
+        text: broadcastText,
+        district: broadcastDistrict
+      });
+      setAnnouncements([res.data, ...announcements]);
+      setBroadcastTitle('');
+      setBroadcastText('');
+      alert('Statewide CM Announcement broadcasted successfully!');
+    } catch (err) {
+      console.error('Failed to broadcast:', err);
+      alert('Failed to broadcast announcement.');
+    }
   };
 
   // Metrics
-  const totalOpen = tickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
-  const totalResolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-  const resolutionRate = tickets.length > 0 ? Math.round((totalResolved / tickets.length) * 100) : 100;
+  const totalOpen = stats.totalOpen;
+  const totalResolved = stats.totalResolved;
+  const resolutionRate = stats.resolutionRate;
   
   // Calculate State Health Score: resolution rate base, penalized by open & critical tickets
-  const criticalCount = tickets.filter(t => t.priority === 'Critical' || t.priority === 'CRITICAL').length;
-  const calculatedHealthScore = Math.max(0, Math.min(100, Math.round(
-    resolutionRate * 0.7 + (100 - Math.min(100, criticalCount * 4)) * 0.3
-  )));
+  const criticalCount = stats.criticalPriority;
+  const calculatedHealthScore = stats.healthScore;
 
   // Sparkline history data simulator for last 7 days
-  const sparklineData = [82, 85, 87, 86, 89, 91, calculatedHealthScore];
+  const sparklineData = stats.sparklineData;
 
-  // Districts list for Performance League
-  const districtsList = [
-    'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Vellore', 'Erode', 
-    'Thanjavur', 'Dindigul', 'Thoothukudi', 'Tiruppur', 'Tiruvannamalai', 'Tiruvarur', 'Villupuram', 
-    'Cuddalore', 'Kanniyakumari', 'Theni', 'Namakkal', 'Karur'
-  ];
+  const [districts, setDistricts] = useState([]);
 
-  const districtPerformanceData = districtsList.map(dist => {
-    const distTickets = tickets.filter(t => t.district === dist);
-    const dOpen = distTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
-    const dResolved = distTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-    const dTotal = distTickets.length;
-    const rate = dTotal > 0 ? Math.round((dResolved / dTotal) * 100) : 100;
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
 
-    return {
-      name: dist,
-      open: dOpen,
-      resolved: dResolved,
-      total: dTotal,
-      rate: rate
-    };
-  }).sort((a, b) => a.rate - b.rate); // WORST-FIRST ORDER (worst resolution rates first)
+  const districtPerformanceData = stats.districtPerformance.length > 0 
+    ? stats.districtPerformance 
+    : districts.map(d => ({ name: d.name, open: 0, resolved: 0, total: 0, rate: 100 }));
 
   // Leaflet map cluster coordinates
   const DISTRICT_COORDS = {
@@ -206,9 +215,10 @@ export default function CmDashboard() {
     'Karur': { lat: 10.9601, lng: 78.0766 }
   };
 
-  const districtMarkers = Object.entries(DISTRICT_COORDS).map(([name, coords]) => {
-    const open = tickets.filter(t => t.district === name && t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
-    return { name, ...coords, open };
+  const districtMarkers = districts.map(d => {
+    const coords = DISTRICT_COORDS[d.name] || { lat: 11.1271, lng: 78.6569 };
+    const open = tickets.filter(t => t.district === d.name && t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
+    return { name: d.name, ...coords, open };
   });
 
   const renderSidebar = () => {
@@ -565,7 +575,7 @@ Confidential — Office of the Chief Minister`}
               className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl p-2.5 outline-none cursor-pointer"
             >
               <option value="All">Statewide (All Citizens)</option>
-              {districtsList.map(d => <option key={d} value={d}>{d}</option>)}
+              {districts.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
             </select>
           </div>
         </div>

@@ -6,15 +6,7 @@ import { toast } from 'sonner';
 import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle, User } from 'lucide-react';
 import CategoryIcon from '../../shared/components/CategoryIcon';
 import GeoCamera from '../../shared/components/GeoCamera';
-import { normalizeDept, getFirstResponder } from '../../data/hierarchyData';
-import api from '../../services/api';
-
-const categoryTranslations = {
-  'CAT-WTR': { en: 'Water', ta: 'குடிநீர்' },
-  'CAT-ELE': { en: 'Electricity', ta: 'மின்சாரம்' },
-  'CAT-RDC': { en: 'Pot Holes (Road)', ta: 'குழிகள் (சாலை)' },
-  'CAT-SAN': { en: 'Sanitation', ta: 'சுகாதாரம்' }
-};
+import api, { getMediaUrl } from '../../services/api';
 
 export default function SubmitTicket() {
 
@@ -199,7 +191,7 @@ export default function SubmitTicket() {
     const targetJurisdictionId = locationMode === 'home' ? localStorage.getItem('jn_jurisdiction_id') : null;
 
     const selectedCat = categoriesList.find(c => c.code === category);
-    const catName = selectedCat ? (categoryTranslations[category] ? categoryTranslations[category].en : selectedCat.name) : category;
+    const catName = selectedCat ? selectedCat.name : category;
 
     try {
       // Send as JSON with base64 photo — backend decodes and saves to disk
@@ -257,7 +249,7 @@ export default function SubmitTicket() {
 
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/60 space-y-3 text-left">
               {duplicateTicket.photo && (
-                <img src={duplicateTicket.photo} alt="Existing issue" className="w-full h-32 object-cover rounded-xl border border-slate-200" />
+                <img src={getMediaUrl(duplicateTicket.photo)} alt="Existing issue" className="w-full h-32 object-cover rounded-xl border border-slate-200" />
               )}
               <div className="space-y-1">
                 <p className="text-sm font-black text-slate-800">{duplicateTicket.title}</p>
@@ -483,32 +475,25 @@ export default function SubmitTicket() {
                   <div className="grid grid-cols-2 gap-2">
                     {categoriesList.map((cat) => {
                       const isSelected = category === cat.code;
-                      const isActive = ['CAT-ELE', 'CAT-SAN'].includes(cat.code);
-                      const displayName = categoryTranslations[cat.code]
-                        ? tLabel(categoryTranslations[cat.code].en, categoryTranslations[cat.code].ta)
-                        : cat.name;
+                      const isDisabled = !['CAT-ELE', 'CAT-SAN'].includes(cat.code);
+                      const displayName = cat.name;
                       return (
                         <button
                           key={cat.code}
                           type="button"
-                          disabled={!isActive}
+                          disabled={isDisabled}
                           onClick={() => setCategory(cat.code)}
-                          className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer relative overflow-hidden ${
+                          className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all relative overflow-hidden ${
+                            isDisabled ? 'bg-slate-50 border-slate-100 opacity-40 cursor-not-allowed' :
                             isSelected
                               ? 'bg-[#8B1A1A]/5 border-2 border-[#8B1A1A] text-[#8B1A1A] font-extrabold shadow-sm'
-                              : isActive 
-                                ? 'bg-white border-slate-200 hover:border-slate-300'
-                                : 'bg-slate-50 border-slate-100 opacity-60 grayscale cursor-not-allowed'
+                              : 'bg-white border-slate-200 hover:border-slate-300 cursor-pointer'
                           }`}
                         >
-                          {!isActive && (
-                            <div className="absolute top-1 right-1 bg-slate-400 text-white text-[7px] font-black px-1 py-0.5 rounded uppercase">
-                              Soon
-                            </div>
-                          )}
                           <CategoryIcon category={cat.code} />
                           <span className="text-[10px] font-extrabold tracking-wide uppercase leading-tight text-center">
                             {displayName}
+                            {isDisabled && <span className="block text-[8px] opacity-60">(Disabled)</span>}
                           </span>
                         </button>
                       );
@@ -671,8 +656,12 @@ export default function SubmitTicket() {
                   <span className="text-3xl font-black text-[#8B1A1A] tracking-wider">{submittedTicketId}</span>
                   <button 
                     onClick={() => {
-                      navigator.clipboard.writeText(submittedTicketId);
-                      toast.success('Ticket ID copied to clipboard');
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(submittedTicketId);
+                        toast.success('Ticket ID copied to clipboard');
+                      } else {
+                        toast.error('Clipboard access not available. Please copy manually.');
+                      }
                     }}
                     className="p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 shadow-sm cursor-pointer"
                     title="Copy"

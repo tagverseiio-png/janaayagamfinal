@@ -20,14 +20,20 @@ export default function CitizenDashboard() {
   const isVolunteer = localStorage.getItem('jn_is_volunteer') === 'true';
   
   const [stats, setStats] = React.useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
+  const [announcements, setAnnouncements] = React.useState([]);
 
   React.useEffect(() => {
     api.get('/dashboard/stats').then(res => {
       setStats({
         totalActive: res.data.totalOpen || 0,
         totalResolved: res.data.totalResolved || 0,
-        totalEscalated: res.data.totalEscalated || 0
+        totalEscalated: res.data.criticalPriority || 0
       });
+    }).catch(console.error);
+
+    const userDistrict = localStorage.getItem('jn_district');
+    api.get(`/announcements?district=${userDistrict}`).then(res => {
+      setAnnouncements(res.data);
     }).catch(console.error);
   }, []);
 
@@ -82,6 +88,36 @@ export default function CitizenDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ══ 1.5 ANNOUNCEMENTS SECTION ══ */}
+      {announcements.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Radio className="w-4 h-4 text-[#8B1A1A] animate-pulse" />
+            <h3 className="font-extrabold text-xs text-slate-700 uppercase tracking-widest">
+              {tLabel('Official Announcements', 'அரசு அறிவிப்புகள்')}
+            </h3>
+          </div>
+          <div className="flex flex-col gap-3">
+            {announcements.map((ann) => (
+              <div key={ann.id} className="bg-white border-l-4 border-l-[#8B1A1A] rounded-r-[16px] rounded-l-sm p-4 shadow-sm border border-slate-100">
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className="text-[13px] font-black text-slate-800">{ann.title}</h4>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">{new Date(ann.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                  {ann.text}
+                </p>
+                {ann.district !== 'All' && (
+                  <div className="mt-2 inline-block px-2 py-0.5 bg-red-50 text-[#8B1A1A] text-[9px] font-black rounded-full border border-red-100">
+                    📍 {ann.district}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ══ 2. QUICK ACTION GRID (2x2 on mobile, 4 cols on desktop) ══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
@@ -186,15 +222,10 @@ export default function CitizenDashboard() {
             height="220px" 
             center={
               (() => {
-                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_district') : null;
-                const dMap = {
-                  "Chennai": [13.0827, 80.2707],
-                  "Madurai": [9.9252, 78.1198],
-                  "Coimbatore": [11.0168, 76.9558],
-                  "Salem": [11.6643, 78.1460],
-                  "Trichy": [10.7905, 78.7047]
-                };
-                return dMap[ud] || [13.0827, 80.2707];
+                const lat = localStorage.getItem('jn_living_lat');
+                const lng = localStorage.getItem('jn_living_lng');
+                if (lat && lng) return [parseFloat(lat), parseFloat(lng)];
+                return [13.0827, 80.2707];
               })()
             }
           />

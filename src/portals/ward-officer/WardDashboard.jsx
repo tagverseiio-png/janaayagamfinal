@@ -43,11 +43,7 @@ export default function WardDashboard() {
   const citizensHelped = resolvedThisMonth * 3 + 12;
   const pendingOverdue = tickets.filter(t => t.status !== 'Resolved' && new Date() > new Date(t.slaDeadline)).length;
 
-  const citizenMessages = [
-    { id: 1, name: 'Srinivasan M.', text: 'Sir, our street drain is overflowing. I am an elderly person, please help.', time: '10 mins ago', isUrgent: true },
-    { id: 2, name: 'Kavya T.', text: 'Thanks for resolving the street light issue in 2nd cross street!', time: '2 hours ago', isUrgent: false },
-    { id: 3, name: 'Mohamed R.', text: 'We need fogging done today. Lots of mosquitoes.', time: '5 hours ago', isUrgent: false },
-  ];
+  const citizenMessages = [];
 
   return (
     <motion.div 
@@ -135,31 +131,35 @@ export default function WardDashboard() {
             </div>
             
             <div className="space-y-3">
-              {citizenMessages.map(msg => (
-                <div key={msg.id} className={`p-4 border rounded-2xl transition-all hover:shadow-md ${msg.isUrgent ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-100'}`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-white text-xs ${msg.isUrgent ? 'bg-rose-500' : 'bg-slate-400'}`}>
-                        {msg.name.charAt(0)}
+              {citizenMessages.length === 0 ? (
+                <p className="text-xs font-bold text-slate-400 py-6 text-center">No new messages from citizens.</p>
+              ) : (
+                citizenMessages.map(msg => (
+                  <div key={msg.id} className={`p-4 border rounded-2xl transition-all hover:shadow-md ${msg.isUrgent ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-100'}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-white text-xs ${msg.isUrgent ? 'bg-rose-500' : 'bg-slate-400'}`}>
+                          {msg.name.charAt(0)}
+                        </div>
+                        <div>
+                          <span className="text-xs font-black text-slate-800 block leading-none">{msg.name}</span>
+                          <span className="text-[10px] text-slate-400 font-bold">{msg.time}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-xs font-black text-slate-800 block leading-none">{msg.name}</span>
-                        <span className="text-[10px] text-slate-400 font-bold">{msg.time}</span>
-                      </div>
+                      {msg.isUrgent && (
+                        <span className="text-[9px] font-black text-rose-600 bg-rose-100 px-2 py-0.5 rounded uppercase flex items-center gap-1">
+                          <Flame className="w-3 h-3" /> Urgent
+                        </span>
+                      )}
                     </div>
-                    {msg.isUrgent && (
-                      <span className="text-[9px] font-black text-rose-600 bg-rose-100 px-2 py-0.5 rounded uppercase flex items-center gap-1">
-                        <Flame className="w-3 h-3" /> Urgent
-                      </span>
-                    )}
+                    <p className="text-xs text-slate-700 font-medium pl-10">"{msg.text}"</p>
+                    <div className="pl-10 mt-3 flex gap-2">
+                      <button className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">Reply</button>
+                      <button className="text-[10px] font-black uppercase text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">Convert to Ticket</button>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-700 font-medium pl-10">"{msg.text}"</p>
-                  <div className="pl-10 mt-3 flex gap-2">
-                    <button className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">Reply</button>
-                    <button className="text-[10px] font-black uppercase text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">Convert to Ticket</button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

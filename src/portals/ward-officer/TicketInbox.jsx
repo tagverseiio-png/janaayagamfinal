@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import TicketCard from '../../shared/components/TicketCard';
 import GeoCamera from '../../shared/components/GeoCamera';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 import { DEPT_HIERARCHY, normalizeDept, getNextRole } from '../../data/hierarchyData';
 
 export default function TicketInbox() {
@@ -51,145 +51,130 @@ export default function TicketInbox() {
   const fetchTickets = async () => {
     try {
       const res = await api.get('/tickets');
-      const officerWard = localStorage.getItem('jn_ward') || 'Velachery';
       const formatted = res.data.map(t => ({
         ...t,
-        category: t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
+        category: t.categoryName || t.department?.name || 'Unknown',
+        district: t.district || 'Unknown',
         id: t.ticketNumber,
+        dbId: t.id,
         description: t.description,
-        ward: t.jurisdiction?.name || 'Unknown'
+        ward: t.ward || 'Unknown',
+        created_at: t.createdAt
       }));
-      setTickets(formatted.filter(t => t.ward === officerWard || t.ward.includes('142')));
+      setTickets(formatted);
     } catch (err) {
       console.error('Failed to fetch inbox tickets:', err);
     }
   };
 
- const handleAction = (ticketId, action) => {
- const ticket = tickets.find(t => t.id === ticketId);
- if (!ticket) return;
- setActiveTicket(ticket);
- 
- if (action === 'assign') {
- setAssignModalOpen(true);
- } else if (action === 'escalate') {
- setEscalateModalOpen(true);
- } else if (action === 'close' || action === 'resolve') {
- setResolveStep(1);
- setResolveModalOpen(true);
- } else if (action === 'view') {
- toast.info(`Grievance Description: ${ticket.description}`);
- }
- };
+  const handleAction = (ticketId, action) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    setActiveTicket(ticket);
 
- useEffect(() => {
- fetchTickets();
- }, []);
+    if (action === 'assign') {
+      setAssignModalOpen(true);
+    } else if (action === 'escalate') {
+      setEscalateModalOpen(true);
+    } else if (action === 'close' || action === 'resolve') {
+      setResolveStep(1);
+      setResolveModalOpen(true);
+    } else if (action === 'view') {
+      toast.info(`Grievance Description: ${ticket.description}`);
+    }
+  };
 
- const handleSaveTickets = (updatedList) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updatedList));
- setTickets(updatedList);
- };
+  useEffect(() => {
+    fetchTickets();
+  }, []);
 
- // Change priority directly
- const handlePriorityChange = (ticketId, priority) => {
- const updated = tickets.map(ticket => {
- if (ticket.id === ticketId) {
- return { ...ticket, priority: priority.toLowerCase() };
- }
- return ticket;
- });
- handleSaveTickets(updated);
- toast.success(`Priority updated to: ${priority}`);
- };
+  // Change priority directly
+  const handlePriorityChange = async (ticketId, priority) => {
+    try {
+      const t = tickets.find(t => t.id === ticketId);
+      await api.patch(`/tickets/${t.dbId}`, { priority: priority.toUpperCase() });
+      toast.success(`Priority updated to: ${priority}`);
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to update priority');
+    }
+  };
 
- // Status changes handler
- const handleStatusChange = (ticketId, status) => {
- const ticket = tickets.find(t => t.id === ticketId);
- if (!ticket) return;
+  // Status changes handler
+  const handleStatusChange = async (ticketId, status) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
 
- if (status === 'resolved') {
- setActiveTicket(ticket);
- setResolveStep(1);
- setResolveModalOpen(true);
- return;
- }
+    if (status === 'resolved') {
+      setActiveTicket(ticket);
+      setResolveStep(1);
+      setResolveModalOpen(true);
+      return;
+    }
 
- const updated = tickets.map(t => {
- if (t.id === ticketId) {
- return { ...t, status: status.toLowerCase() };
- }
- return t;
- });
- handleSaveTickets(updated);
- toast.success(`Status changed: ${status.replace('_', ' ')}`);
- };
+    try {
+      await api.patch(`/tickets/${ticket.dbId}`, { status: status.toUpperCase(), notes: `Status changed to ${status}` });
+      toast.success(`Status changed: ${status.replace('_', ' ')}`);
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
 
- // Geotag / Agent assignment
- const handleAssignAgentSubmit = (e) => {
- e.preventDefault();
- if (!agentName.trim()) {
- toast.error('Agent Name is required');
- return;
- }
+  // Geotag / Agent assignment
+  const handleAssignAgentSubmit = async (e) => {
+    e.preventDefault();
+    if (!agentName.trim()) {
+      toast.error('Agent Name is required');
+      return;
+    }
 
- const updated = tickets.map(t => {
- if (t.id === activeTicket.id) {
- return { 
- ...t, 
- status: 'in_progress',
- assigned_agent: agentName,
- assignment_notes: assignmentNotes
- };
- }
- return t;
- });
+    try {
+      await api.patch(`/tickets/${activeTicket.dbId}`, { 
+        status: 'IN_PROGRESS',
+        notes: `Assigned to ${agentName}. Notes: ${assignmentNotes}`
+      });
+      setAssignModalOpen(false);
+      setAgentName('');
+      setAssignmentNotes('');
+      toast.success(`Field Agent ${agentName} Dispatched`);
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to assign agent');
+    }
+  };
 
- handleSaveTickets(updated);
- setAssignModalOpen(false);
- setAgentName('');
- setAssignmentNotes('');
- toast.success(`Field Agent ${agentName} Dispatched`);
- };
+  // Resolution submit
+  const handleResolveSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!resolutionNotes.trim()) {
+      toast.error('Resolution observations are required');
+      return;
+    }
+    if (!resolutionPhoto) {
+      toast.error('Photo proof is required to resolve complaints');
+      return;
+    }
 
- // Resolution submit
- const handleResolveSubmit = (e) => {
- if (e) e.preventDefault();
- if (!resolutionNotes.trim()) {
- toast.error('Resolution observations are required');
- return;
- }
- if (!resolutionPhoto) {
- toast.error('Photo proof is required to resolve complaints');
- return;
- }
-
- const updated = tickets.map(t => {
- if (t.id === activeTicket.id) {
- return { 
- ...t, 
- status: 'resolved',
- resolution_text: resolutionNotes,
- resolution_proof: resolutionPhoto,
- resolution_lat: resolutionLat,
- resolution_lng: resolutionLng,
- resolution_address: resolutionAddress || 'Velachery, Chennai',
- resolved_by: localStorage.getItem('jn_name') || 'WARD OFFICER',
- resolved_at: new Date().toISOString()
- };
- }
- return t;
- });
-
- handleSaveTickets(updated);
- setResolveModalOpen(false);
- setResolutionNotes('');
- setResolutionPhoto('');
- setResolveStep(1);
- toast.success('Complaint marked as resolved successfully with stamped proof');
- };
-
+    try {
+      await api.patch(`/tickets/${activeTicket.dbId}`, { 
+        status: 'RESOLVED',
+        notes: resolutionNotes,
+        resolution_proof: resolutionPhoto,
+        resolution_lat: resolutionLat,
+        resolution_lng: resolutionLng,
+        resolution_address: resolutionAddress || 'Location Verified'
+      });
+      setResolveModalOpen(false);
+      setResolutionNotes('');
+      setResolutionPhoto('');
+      setResolveStep(1);
+      toast.success('Complaint marked as resolved successfully with stamped proof');
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to resolve ticket');
+    }
+  };
  const handlePhotoUpload = (e) => {
  const file = e.target.files[0];
  if (file) {
@@ -201,59 +186,51 @@ export default function TicketInbox() {
  }
  };
 
- // Escalation submit — advance the ticket to the next role in its department chain
- const handleEscalateConfirm = () => {
- const dept = activeTicket.department || activeTicket.category;
- const current = typeof activeTicket.assignedTo === 'string' ? activeTicket.assignedTo : activeTicket.assignedTo?.role;
- const nextRole = getNextRole(dept, current);
- const chain = DEPT_HIERARCHY[normalizeDept(dept)];
- const curIdx = chain.findIndex(s => s.role === current);
+  // Escalation submit — advance the ticket to the next role in its department chain
+  const handleEscalateConfirm = async () => {
+    try {
+      await api.patch(`/tickets/${activeTicket.dbId}`, { 
+        status: 'ESCALATED',
+        notes: `Escalated by ${localStorage.getItem('jn_name') || 'WARD OFFICER'}`
+      });
+      setEscalateModalOpen(false);
+      toast.success(`Complaint escalated to Next Level`);
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to escalate ticket');
+    }
+  };
 
- const updated = tickets.map(t => {
- if (t.id === activeTicket.id) {
- const timeline = [...(t.timeline || [])];
- if (curIdx > 0) timeline[curIdx] = { role: current, label: chain[curIdx].label, completedAt: new Date().toLocaleString(), status: 'done' };
- return { ...t, status: 'escalated', assignedTo: nextRole, timeline };
- }
- return t;
- });
- handleSaveTickets(updated);
- setEscalateModalOpen(false);
- toast.success(`Complaint escalated to ${nextRole}`);
- };
+  const getEscalateConfirmText = () => {
+    const dept = activeTicket?.department || activeTicket?.category;
+    const current = activeTicket ? (typeof activeTicket.assignedTo === 'string' ? activeTicket.assignedTo : activeTicket.assignedTo?.role) : null;
+    const nextRole = activeTicket ? getNextRole(dept, current) : '';
+    const isTamil = t('app_name') === 'ஜனநாயகம்';
+    return isTamil ? `நிச்சயமா? இது ${nextRole}-க்கு அனுப்பப்படும்.` : `Are you sure? This escalates to ${nextRole}.`;
+  };
 
- const getEscalateConfirmText = () => {
- const dept = activeTicket?.department || activeTicket?.category;
- const current = activeTicket ? (typeof activeTicket.assignedTo === 'string' ? activeTicket.assignedTo : activeTicket.assignedTo?.role) : null;
- const nextRole = activeTicket ? getNextRole(dept, current) : '';
- const isTamil = t('app_name') === 'ஜனநாயகம்';
- return isTamil ? `நிச்சயமா? இது ${nextRole}-க்கு அனுப்பப்படும்.` : `Are you sure? This escalates to ${nextRole}.`;
- };
+  // Notify MLA handler
+  const handleNotifyMLA = async (ticketId) => {
+    try {
+      const t = tickets.find(t => t.id === ticketId);
+      await api.patch(`/tickets/${t.dbId}`, { notes: 'MLA notified of this grievance.' });
+      toast.success('Member of Legislative Assembly (MLA) has been notified');
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to notify MLA');
+    }
+  };
 
- // Notify MLA handler
- const handleNotifyMLA = (ticketId) => {
- const updated = tickets.map(t => {
- if (t.id === ticketId) {
- return { ...t, mla_notified: true };
- }
- return t;
- });
- handleSaveTickets(updated);
- toast.success('Member of Legislative Assembly (MLA) has been notified');
- };
-
- // Filter list
- const mappedStatus = {
-   'all': 'All',
-   'open': 'Open',
-   'in_progress': 'In Progress',
-   'escalated': 'Escalated',
-   'resolved': 'Resolved'
- }[filter] || 'All';
- 
- // The user requested to use getTicketsByStatus, but doing so ignores local state mutations. 
- // We apply the filtering logic locally to preserve interactive mutations, but utilizing the mapping.
- const filtered = mappedStatus === 'All' ? tickets : tickets.filter(t => t.status === mappedStatus);
+  // Filter list
+  const mappedStatus = {
+    'all': 'All',
+    'open': 'Open',
+    'in_progress': 'In Progress',
+    'escalated': 'Escalated',
+    'resolved': 'Resolved'
+  }[filter] || 'All';
+  
+  const filtered = mappedStatus === 'All' ? tickets : tickets.filter(t => t.status === mappedStatus.toUpperCase().replace(' ', '_'));
 
  return (
  <motion.div 

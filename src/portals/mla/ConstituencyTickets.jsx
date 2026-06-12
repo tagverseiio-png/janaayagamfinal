@@ -8,7 +8,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 
 export default function ConstituencyTickets() {
  const { t } = useTranslation();
@@ -32,10 +32,12 @@ export default function ConstituencyTickets() {
       const formatted = res.data.map(t => ({
         ...t,
         category: t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
-        ward: t.jurisdiction?.name || 'Unknown',
+        district: t.district || 'Unknown',
         id: t.ticketNumber,
-        created_at: t.createdAt || new Date().toISOString()
+        dbId: t.id,
+        description: t.description,
+        ward: t.ward || 'Unknown',
+        created_at: t.createdAt
       }));
       setTickets(formatted);
     } catch (err) {
@@ -47,69 +49,63 @@ export default function ConstituencyTickets() {
  fetchTickets();
  }, []);
 
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- };
-
  // Flag directly to Collector
- const handleFlagSubmit = (e) => {
+ const handleFlagSubmit = async (e) => {
  e.preventDefault();
  if (!flagReason.trim()) {
  toast.error('Flag reason is required');
  return;
  }
 
- const updated = tickets.map(t => {
- if (t.id === activeTicket.id) {
- return { 
- ...t, 
- status: 'escalated',
- flagged_collector: true,
- collector_flag_reason: flagReason
- };
+ try {
+   await api.patch(`/tickets/${activeTicket.dbId}`, { 
+     status: 'ESCALATED',
+     notes: `MLA FLAG: ${flagReason}`,
+     action: 'flag'
+   });
+   setFlagModalOpen(false);
+   setFlagReason('');
+   toast.success('Complaint flagged to District Collector');
+   fetchTickets();
+ } catch (err) {
+   toast.error('Failed to flag ticket');
  }
- return t;
- });
-
- handleSaveTickets(updated);
- setFlagModalOpen(false);
- setFlagReason('');
- toast.success('Complaint flagged to District Collector');
  };
 
  // Save MLA Note
- const handleNoteSubmit = (e) => {
+ const handleNoteSubmit = async (e) => {
  e.preventDefault();
  if (!noteText.trim()) {
  toast.error('Observation text cannot be empty');
  return;
  }
 
- const updated = tickets.map(t => {
- if (t.id === activeTicket.id) {
- return { ...t, mla_note: noteText };
+ try {
+   await api.patch(`/tickets/${activeTicket.dbId}`, { 
+     notes: `MLA NOTE: ${noteText}` 
+   });
+   setNoteModalOpen(false);
+   setNoteText('');
+   toast.success('Observation note attached successfully');
+   fetchTickets();
+ } catch (err) {
+   toast.error('Failed to attach note');
  }
- return t;
- });
-
- handleSaveTickets(updated);
- setNoteModalOpen(false);
- setNoteText('');
- toast.success('Observation note attached successfully');
  };
 
  // Request Urgent Action (Adds Star Badge)
- const handleRequestUrgent = (ticketId) => {
- const updated = tickets.map(t => {
- if (t.id === ticketId) {
- const currentlyUrgent = !!t.mla_flagged;
- return { ...t, mla_flagged: !currentlyUrgent, priority: 'critical' };
+ const handleRequestUrgent = async (ticketId) => {
+ try {
+   const tNode = tickets.find(t => t.id === ticketId);
+   await api.patch(`/tickets/${tNode.dbId}`, { 
+     priority: 'CRITICAL',
+     notes: 'MLA URGENT ACTION: Requested immediate intervention.'
+   });
+   toast.success('Marked as MLA Urgent Action (Critical Priority)');
+   fetchTickets();
+ } catch (err) {
+   toast.error('Failed to mark urgent');
  }
- return t;
- });
- handleSaveTickets(updated);
- toast.success('Marked as MLA Urgent Action (Critical Priority)');
  };
 
  // Restricted buttons check

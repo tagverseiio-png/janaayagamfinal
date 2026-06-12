@@ -6,14 +6,27 @@ import {
 } from 'lucide-react';
 import StatCard from '../../shared/components/StatCard';
 
+import api from '../../services/api';
+
 export default function CollectorPerformance() {
  const { t } = useTranslation();
  const [tickets, setTickets] = useState([]);
  const [chartMode, setChartMode] = useState('top'); // top or bottom wards
+ const [loading, setLoading] = useState(true);
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
+   api.get('/tickets')
+     .then(res => {
+       setTickets(res.data.map(t => ({
+         ...t,
+         category: t.department?.name || 'Unknown'
+       })));
+       setLoading(false);
+     })
+     .catch(err => {
+       console.error("Failed to fetch collector performance data", err);
+       setLoading(false);
+     });
  }, []);
 
  // Compute dynamic category distribution district-wide

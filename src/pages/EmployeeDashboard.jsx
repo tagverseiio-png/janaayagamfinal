@@ -18,13 +18,28 @@ export default function EmployeeDashboard() {
   const [jurisdiction, setJurisdiction] = useState({});
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [statsData, setStatsData] = useState(null);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalState, setModalState] = useState(null);
   const [activeTicketId, setActiveTicketId] = useState(null);
+  const [fieldWorkers, setFieldWorkers] = useState([]);
 
   const isTa = lang === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
+
+  const fetchFieldWorkers = async () => {
+    try {
+      const res = await api.get('/metadata/employees?role=Field Worker');
+      setFieldWorkers(res.data.map(w => ({
+        ...w,
+        status: w.status || 'Active',
+        tasks: 0 // We could count these from tickets if needed
+      })));
+    } catch (err) {
+      console.error('Failed to fetch field workers:', err);
+    }
+  };
 
   // 1. Fetch tickets and user details on mount
   const fetchTickets = () => {
@@ -44,17 +59,31 @@ export default function EmployeeDashboard() {
         }));
         setTickets(mapped);
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error('Failed to fetch tickets:', err);
+        toast.error(tLabel('Failed to load tickets. Please check your connection.', 'புகார்களை ஏற்ற முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்க்கவும்.'));
+      })
       .finally(() => setLoading(false));
   };
 
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/dashboard/stats');
+      setStatsData(res.data);
+    } catch (err) {
+      console.error('Failed to fetch dashboard stats:', err);
+    }
+  };
+
   useEffect(() => {
-    const storedRole = routeRole || localStorage.getItem('jn_emp_role');
-    if (!storedRole) {
+    const storedRole = localStorage.getItem('jn_role');
+    if (storedRole !== 'employee') {
       navigate('/employee-login');
       return;
     }
-    setRole(storedRole);
+    
+    const empRole = routeRole || localStorage.getItem('jn_emp_role');
+    setRole(empRole);
     setDepartment(routeDept || localStorage.getItem('jn_emp_dept') || '');
     
     try {
@@ -64,6 +93,8 @@ export default function EmployeeDashboard() {
     }
 
     fetchTickets();
+    fetchStats();
+    fetchFieldWorkers();
   }, [navigate, routeDept, routeRole]);
 
   const handleLogout = () => {
@@ -124,10 +155,10 @@ export default function EmployeeDashboard() {
 
   const stats = {
     total: tickets.length,
-    open: tickets.filter(t => ['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'OPEN'].includes(t.status)).length,
-    resolved: tickets.filter(t => ['RESOLVED', 'CLOSED'].includes(t.status)).length,
-    escalated: tickets.filter(t => t.status === 'ESCALATED').length,
-    breached: tickets.filter(t => !['RESOLVED', 'CLOSED'].includes(t.status) && new Date() > new Date(t.sla_deadline)).length
+    open: tickets.filter(t => ['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'OPEN'].includes((t.status || '').toUpperCase())).length,
+    resolved: tickets.filter(t => ['RESOLVED', 'CLOSED'].includes((t.status || '').toUpperCase())).length,
+    escalated: tickets.filter(t => (t.status || '').toUpperCase() === 'ESCALATED').length,
+    breached: tickets.filter(t => !['RESOLVED', 'CLOSED'].includes((t.status || '').toUpperCase()) && new Date() > new Date(t.sla_deadline)).length
   };
 
   // Filtered tickets in Inbox tab
@@ -137,21 +168,13 @@ export default function EmployeeDashboard() {
     (t.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Field Workers roster mock
-  const fieldWorkers = [
-    { name: 'M. Murugan', phone: '+919840123456', status: 'Active', tasks: 3 },
-    { name: 'K. Kandan', phone: '+919840123457', status: 'Active', tasks: 2 },
-    { name: 'V. Velan', phone: '+919840123458', status: 'Break', tasks: 0 },
-    { name: 'P. Palani', phone: '+919840123459', status: 'Active', tasks: 4 },
-    { name: 'S. Selvam', phone: '+919840123460', status: 'Active', tasks: 1 },
-  ];
 
   // ==========================================
   // AAE DASHBOARD
   // ==========================================
   const renderAAEDashboard = () => {
-    const unassigned = tickets.filter(t => ['SUBMITTED', 'OPEN'].includes(t.status));
-    const activeTasks = tickets.filter(t => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status));
+    const unassigned = tickets.filter(t => ['SUBMITTED', 'OPEN'].includes((t.status || '').toUpperCase()));
+    const activeTasks = tickets.filter(t => ['ASSIGNED', 'IN_PROGRESS', 'ESCALATED'].includes((t.status || '').toUpperCase()));
 
     // Recurring Fault detector (More than 2 complaints in same category/street)
     const faultGroups = {};
@@ -177,12 +200,12 @@ export default function EmployeeDashboard() {
             <div className="mt-2 text-3xl font-black text-slate-800">{activeTasks.length}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('SLA Breached', 'காலக்கெடு மீறியவை')}</span>
-            <div className="mt-2 text-3xl font-black text-red-650 text-red-650">{stats.breached}</div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Escalated', 'மேல்முறையீடு')}</span>
+            <div className="mt-2 text-3xl font-black text-rose-500">{stats.escalated}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Field Crew Status', 'பணிக்குழு')}</span>
-            <div className="mt-2 text-3xl font-black text-emerald-600">4 / 5 Active</div>
+            <div className="mt-2 text-3xl font-black text-emerald-600">{fieldWorkers.filter(w => w.status === 'Active').length} / {fieldWorkers.length} Active</div>
           </div>
         </div>
 
@@ -211,6 +234,45 @@ export default function EmployeeDashboard() {
                   >
                     {tLabel('Assign Worker', 'பணியாளரை நியமி')}
                   </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Action Queue (Assigned to Me) */}
+        <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider pl-1">
+            {tLabel('📋 My Action Queue (Assigned Tasks)', '📋 என் நடவடிக்கை வரிசை (ஒதுக்கப்பட்ட பணிகள்)')}
+          </h3>
+          <div className="divide-y divide-slate-100 overflow-y-auto max-h-64 pr-2">
+            {activeTasks.length === 0 ? (
+              <p className="text-xs font-bold text-slate-400 py-6 text-center">{tLabel('No active tasks assigned to you.', 'உங்களுக்கு ஒதுக்கப்பட்ட பணிகள் எதுவுமில்லை.')}</p>
+            ) : (
+              activeTasks.map(t => (
+                <div key={t.id} className="py-3 flex justify-between items-center gap-4 text-xs font-bold">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">{t.id}</span>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{t.category}</span>
+                      <span className={`text-[8px] font-black px-1 py-0.5 rounded ${t.status === 'ESCALATED' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>{t.status}</span>
+                    </div>
+                    <p className="text-slate-700 line-clamp-1">{t.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAction(t.id, 'Resolve')}
+                      className="bg-emerald-600 text-white text-[10px] font-black px-3 py-2 rounded-lg cursor-pointer"
+                    >
+                      {tLabel('Resolve', 'தீர்வு செய்')}
+                    </button>
+                    <button
+                      onClick={() => handleAction(t.id, 'escalate')}
+                      className="bg-slate-900 text-white text-[10px] font-black px-3 py-2 rounded-lg cursor-pointer"
+                    >
+                      {tLabel('Escalate', 'மேல்முறையீடு')}
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -312,11 +374,11 @@ export default function EmployeeDashboard() {
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Sub-Jurisdictions', 'துணை வார்டுகள்')}</span>
-            <div className="mt-2 text-3xl font-black text-slate-800">15 Wards</div>
+            <div className="mt-2 text-3xl font-black text-slate-800">{statsData?.subJurisdictionCount || 0} Wards</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('SLA compliance', 'காலக்கெடு இணக்கம்')}</span>
-            <div className="mt-2 text-3xl font-black text-emerald-600">92%</div>
+            <div className="mt-2 text-3xl font-black text-emerald-600">{statsData?.resolutionRate || 92}%</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Department', 'துறை')}</span>
@@ -428,7 +490,7 @@ export default function EmployeeDashboard() {
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('SLA Compliance', 'காலக்கெடு இணக்கம்')}</span>
-            <div className="mt-2 text-3xl font-black text-emerald-600">89%</div>
+            <div className="mt-2 text-3xl font-black text-emerald-600">{statsData?.resolutionRate || 89}%</div>
           </div>
         </div>
 
@@ -481,9 +543,9 @@ export default function EmployeeDashboard() {
     // Construct zone/div/ward tree dynamically from tickets
     const tree = {};
     tickets.forEach(t => {
-      const zoneName = t.jurisdiction?.parent?.name || "Zone 13 (Adyar)";
-      const divName = t.jurisdiction?.parent?.parent?.name || "Division 170";
-      const wardName = t.ward || "Ward 170";
+      const zoneName = t.jurisdiction?.parent?.name || "Statewide";
+      const divName = t.jurisdiction?.parent?.parent?.name || "General Division";
+      const wardName = t.ward || "General Ward";
 
       if (!tree[zoneName]) tree[zoneName] = {};
       if (!tree[zoneName][divName]) tree[zoneName][divName] = {};
@@ -523,12 +585,8 @@ export default function EmployeeDashboard() {
   // COMMISSIONER & DEPT COMMISSIONER DASHBOARD
   // ==========================================
   const renderCommissionerDashboard = () => {
-    // District / Zone leader board based on tickets
-    const leaderboard = [
-      { name: 'Chennai North', open: 42, resolved: 180, rate: '81%' },
-      { name: 'Chennai Central', open: 35, resolved: 210, rate: '85%' },
-      { name: 'Chennai South', open: 58, resolved: 145, rate: '71%' },
-    ];
+    // District / Zone leader board based on real stats
+    const leaderboard = statsData?.districtPerformance || [];
 
     return (
       <div className="space-y-6">
@@ -578,7 +636,7 @@ export default function EmployeeDashboard() {
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black border ${
                           parseFloat(z.rate) > 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
                         }`}>
-                          {z.rate}
+                          {z.rate}%
                         </span>
                       </td>
                     </tr>
@@ -614,15 +672,16 @@ export default function EmployeeDashboard() {
   };
 
   const renderDashboard = () => {
-    if (role === 'AAE') return renderAAEDashboard();
-    if (role === 'AE') return renderAEDashboard();
-    if (['DSI', 'SI', 'HI'].includes(role)) return renderFieldInspectorDashboard();
-    if (role === 'CHI') return renderCHIDashboard();
-    if (['DEPT_COMMISSIONER', 'Dept Comm', 'COMMISSIONER', 'Commissioner'].includes(role)) return renderCommissionerDashboard();
+    const normalizedRole = (role || '').toUpperCase().replace(/\s+/g, '_');
+    if (['AAE', 'ASSISTANT_AREA_ENGINEER', 'WARD_AEO', 'ASST_AREA_ENGINEER', 'JE', 'JUNIOR_ENGINEER'].includes(normalizedRole)) return renderAAEDashboard();
+    if (['AE', 'AREA_ENGINEER', 'AEE', 'ASSISTANT_EXECUTIVE_ENGINEER', 'EE', 'EXECUTIVE_ENGINEER', 'SE', 'SUPERINTENDING_ENGINEER', 'CE', 'CHIEF_ENGINEER'].includes(normalizedRole)) return renderAEDashboard();
+    if (['DSI', 'SI', 'HI', 'DIVISION_SANITARY_INSPECTOR', 'SANITARY_INSPECTOR', 'HEALTH_INSPECTOR'].includes(normalizedRole)) return renderFieldInspectorDashboard();
+    if (normalizedRole === 'CHI' || normalizedRole === 'CITY_HEALTH_OFFICER') return renderCHIDashboard();
+    if (['DEPT_COMMISSIONER', 'COMMISSIONER'].includes(normalizedRole)) return renderCommissionerDashboard();
     
     // Fallback elected/admin view
-    if (['MLA', 'Ward Member'].includes(role)) return renderElectedDashboard();
-    if (['District Collector', 'DRO', 'BDO', 'VAO', 'Revenue Inspector', 'Ward Officer'].includes(role)) return renderAdminDashboard();
+    if (['MLA', 'WARD_MEMBER'].includes(normalizedRole)) return renderElectedDashboard();
+    if (['DISTRICT_COLLECTOR', 'DRO', 'BDO', 'VAO', 'REVENUE_INSPECTOR', 'WARD_OFFICER'].includes(normalizedRole)) return renderAdminDashboard();
     return renderDepartmentDashboard();
   };
 
@@ -673,11 +732,11 @@ export default function EmployeeDashboard() {
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Escalated Tickets', 'மேல்முறையீடுகள்')}</span>
-            <div className="mt-2 text-3xl font-black text-rose-500">{stats.escalated}</div>
+            <div className="mt-2 text-3xl font-black text-rose-500">{statsData?.totalEscalated || 0}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Avg Resolution Time', 'சராசரி தீர்வு காலம்')}</span>
-            <div className="mt-2 text-3xl font-black text-slate-800">2.4 Days</div>
+            <div className="mt-2 text-3xl font-black text-slate-800">{statsData?.avgResolutionTime || 2.4} Days</div>
           </div>
         </div>
       </div>
@@ -708,6 +767,10 @@ export default function EmployeeDashboard() {
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tLabel('Resolution Rate', 'தீர்வு விகிதம்')}</span>
             <div className="mt-2 text-3xl font-black text-emerald-600">{stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}%</div>
           </div>
+        </div>
+
+        <div className="mt-8">
+           {renderTickets()}
         </div>
       </div>
     );

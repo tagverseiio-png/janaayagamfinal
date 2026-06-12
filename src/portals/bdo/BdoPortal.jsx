@@ -41,13 +41,13 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
  <div className="space-y-6">
  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm select-none">
  <span className="text-[10px] font-black bg-red-50 text-[#8B1A1A] px-2.5 py-1 rounded-full uppercase tracking-wider">
- Block Development Officer
+ {localStorage.getItem('jn_emp_role') || 'Block Development Officer'}
  </span>
  <h2 className="text-xl font-black text-slate-850 mt-3">
- {tLabel("Welcome, BDO", "வரவேற்கிறோம், பி.டி.ஓ")}
+ {tLabel(`Welcome, ${localStorage.getItem('jn_name') || 'BDO'}`, `வரவேற்கிறோம், ${localStorage.getItem('jn_name') || 'பி.டி.ஓ'}`)}
  </h2>
  <p className="text-xs text-slate-500 mt-1">
- Velachery Taluk Division · Rural Development
+ {localStorage.getItem('jn_emp_district') || 'District'} · {localStorage.getItem('jn_emp_dept') || 'Rural Development'}
  </p>
  </div>
 
@@ -203,7 +203,7 @@ function BdoDashboard({ bdoNotes, handleSaveNote, handleDeleteNote, setShowGeoCa
             height="220px" 
             center={
               (() => {
-                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_district') : null;
+                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_emp_district') : null;
                 const dMap = {
                   "Chennai": [13.0827, 80.2707],
                   "Madurai": [9.9252, 78.1198],
@@ -464,23 +464,7 @@ export default function BdoPortal() {
 
  const loadBdoNotes = () => {
  const list = JSON.parse(localStorage.getItem('jn_bdo_notes') || '[]');
- if (list.length === 0) {
- const mockNotes = [
- {
- id: 'note-1',
- title: "Velachery Canal Bund Desilting",
- text: "Inspected the local storm water canal bund desilting work in Sector 3. Desilting completed for 450 meters. Flow capacity is upgraded to handle heavy monsoons.",
- photo: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=400",
- lat: "12.9792",
- lng: "80.2223",
- created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
- }
- ];
- localStorage.setItem('jn_bdo_notes', JSON.stringify(mockNotes));
- setBdoNotes(mockNotes);
- } else {
  setBdoNotes(list);
- }
  };
 
  useEffect(() => {

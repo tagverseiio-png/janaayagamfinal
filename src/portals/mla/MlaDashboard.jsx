@@ -22,9 +22,9 @@ export default function MlaDashboard() {
   const tLabel = (en, ta) => isTa ? ta : en;
 
   // Retrieve logged in user and constituency details
-  const userName = localStorage.getItem('jn_name') || 'Thiru P. Venkataramanan';
-  const constituency = 'Mylapore';
-  const district = 'Chennai';
+  const userName = localStorage.getItem('jn_name') || 'Official';
+  const constituency = localStorage.getItem('jn_emp_constituency') || 'Constituency';
+  const district = localStorage.getItem('jn_emp_district') || 'District';
 
   // State
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -37,9 +37,8 @@ export default function MlaDashboard() {
   // MLACDS Works
   const [mlacdsWorks, setMlacdsWorks] = useState(() => {
     const defaultWorks = [
-      { id: '1', title: 'Construction of Rainwater Harvesting Pit near Luz', category: 'Water Sanitation', allotted: 850000, utilized: 800000, status: 'Completed', ward: 'Ward 171' },
-      { id: '2', title: 'Renovation of Municipal Park at CIT Colony', category: 'Infrastructure', allotted: 1500000, utilized: 1200000, status: 'In Progress', ward: 'Ward 172' },
-      { id: '3', title: 'Installation of high-mast LED lights in Kutchery Road', category: 'Electricity', allotted: 600000, utilized: 0, status: 'Proposed', ward: 'Ward 170' }
+      { id: '1', title: 'Rainwater Harvesting Pit', category: 'Water Sanitation', allotted: 850000, utilized: 800000, status: 'Completed', ward: 'Ward 1' },
+      { id: '2', title: 'Renovation of Municipal Park', category: 'Infrastructure', allotted: 1500000, utilized: 1200000, status: 'In Progress', ward: 'Ward 2' }
     ];
     const stored = localStorage.getItem('jn_mlacds_works');
     return stored ? JSON.parse(stored) : defaultWorks;
@@ -48,35 +47,27 @@ export default function MlaDashboard() {
   const [newWorkTitle, setNewWorkTitle] = useState('');
   const [newWorkCategory, setNewWorkCategory] = useState('');
   const [newWorkAllotted, setNewWorkAllotted] = useState('');
-  const [newWorkWard, setNewWorkWard] = useState('Ward 170');
+  const [newWorkWard, setNewWorkWard] = useState('');
+
+  const fetchTickets = async () => {
+    try {
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.categoryName || t.department?.name || 'Unknown',
+        district: t.district || district,
+        displayId: t.ticketNumber,
+        id: t.id,
+        description: t.description,
+        ward: t.ward || t.jurisdiction?.name || 'Unknown'
+      }));
+      setMlaTickets(formatted);
+    } catch (err) {
+      console.error('Failed to fetch MLA tickets:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const res = await api.get('/tickets');
-        const formatted = res.data.map(t => ({
-          ...t,
-          category: t.categoryName || t.department?.name || 'Unknown',
-          district: t.jurisdiction?.name || 'Unknown',
-          displayId: t.ticketNumber,
-          id: t.id,
-          description: t.description,
-          ward: t.jurisdiction?.name || 'Ward 171'
-        }));
-        
-        // Filter tickets to Mylapore constituency (Ward 170, 171, 172, 173, Mylapore Section)
-        const mylaporeWards = ['Ward 170', 'Ward 171', 'Ward 172', 'Ward 173', 'Mylapore Section'];
-        const filtered = formatted.filter(t => 
-          mylaporeWards.includes(t.ward) || 
-          mylaporeWards.includes(t.district) || 
-          t.jurisdiction?.name === 'Mylapore Section' || 
-          t.jurisdiction?.parent?.name === 'Mylapore'
-        );
-        setMlaTickets(filtered);
-      } catch (err) {
-        console.error('Failed to fetch MLA tickets:', err);
-      }
-    };
     fetchTickets();
   }, []);
 
@@ -107,23 +98,7 @@ export default function MlaDashboard() {
       setSelectedTicket(null);
 
       // Refresh list
-      const res = await api.get('/tickets');
-      const formatted = res.data.map(t => ({
-        ...t,
-        category: t.categoryName || t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
-        displayId: t.ticketNumber,
-        id: t.id,
-        description: t.description,
-        ward: t.jurisdiction?.name || 'Ward 171'
-      }));
-      const mylaporeWards = ['Ward 170', 'Ward 171', 'Ward 172', 'Ward 173', 'Mylapore Section'];
-      setMlaTickets(formatted.filter(t => 
-        mylaporeWards.includes(t.ward) || 
-        mylaporeWards.includes(t.district) || 
-        t.jurisdiction?.name === 'Mylapore Section' || 
-        t.jurisdiction?.parent?.name === 'Mylapore'
-      ));
+      fetchTickets();
     } catch (err) {
       console.error('Failed to flag ticket:', err);
       alert('Failed to flag ticket. MLAs are restricted to VIEW + FLAG only.');
@@ -164,14 +139,15 @@ export default function MlaDashboard() {
   const totalResolved = mlaTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
   const resolutionRate = mlaTickets.length > 0 ? Math.round((totalResolved / mlaTickets.length) * 100) : 100;
 
-  // Ward comparison data inside Mylapore
-  const wardComparisonData = ['Ward 170', 'Ward 171', 'Ward 172', 'Ward 173'].map(w => {
+  // Ward comparison data derived from tickets
+  const uniqueWards = [...new Set(mlaTickets.map(t => t.ward))].filter(w => w && w !== 'Unknown');
+  const wardComparisonData = uniqueWards.map(w => {
     const wardTickets = mlaTickets.filter(t => t.ward === w);
     const wOpen = wardTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
     const wResolved = wardTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
     const rate = wardTickets.length > 0 ? Math.round((wResolved / wardTickets.length) * 100) : 100;
     return { name: w, open: wOpen, resolved: wResolved, rate };
-  });
+  }).sort((a, b) => a.rate - b.rate);
 
   const renderSidebar = () => {
     const menuItems = [
@@ -284,16 +260,18 @@ export default function MlaDashboard() {
           <div style={{ height: '320px', width: '100%', borderRadius: '16px', overflow: 'hidden' }} className="border border-slate-200">
             <MapContainer center={[13.0335, 80.2674]} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
               <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; CARTO' />
-              {/* Simulated Ward Centroids */}
-              <CircleMarker center={[13.035, 80.269]} radius={12} fillColor="#FF6600" color="#fff" weight={1.5} fillOpacity={0.8}>
-                <Popup>Ward 170<br/>Open Issues: 3</Popup>
-              </CircleMarker>
-              <CircleMarker center={[13.032, 80.265]} radius={15} fillColor="#FF6600" color="#fff" weight={1.5} fillOpacity={0.8}>
-                <Popup>Ward 171<br/>Open Issues: 5</Popup>
-              </CircleMarker>
-              <CircleMarker center={[13.029, 80.271]} radius={8} fillColor="#FF6600" color="#fff" weight={1.5} fillOpacity={0.8}>
-                <Popup>Ward 172<br/>Open Issues: 1</Popup>
-              </CircleMarker>
+              {uniqueWards.map((w, idx) => {
+                const count = mlaTickets.filter(t => t.ward === w && t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
+                if (count === 0) return null;
+                // Simple jitter for multiple wards if we don't have exact coordinates
+                const lat = 13.0335 + (idx * 0.002);
+                const lng = 80.2674 + (idx * 0.002);
+                return (
+                  <CircleMarker key={w} center={[lat, lng]} radius={10 + count} fillColor="#FF6600" color="#fff" weight={1.5} fillOpacity={0.8}>
+                    <Popup>{w}<br/>Open Issues: {count}</Popup>
+                  </CircleMarker>
+                );
+              })}
             </MapContainer>
           </div>
         </div>
@@ -495,10 +473,8 @@ export default function MlaDashboard() {
               value={newWorkWard} onChange={e => setNewWorkWard(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl outline-none p-2.5"
             >
-              <option value="Ward 170">Ward 170</option>
-              <option value="Ward 171">Ward 171</option>
-              <option value="Ward 172">Ward 172</option>
-              <option value="Ward 173">Ward 173</option>
+              <option value="">Select Ward</option>
+              {uniqueWards.map(w => <option key={w} value={w}>{w}</option>)}
             </select>
           </div>
 

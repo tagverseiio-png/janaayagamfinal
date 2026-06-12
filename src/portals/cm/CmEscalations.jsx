@@ -8,7 +8,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 
 export default function CmEscalations() {
  const { t } = useTranslation();
@@ -27,12 +27,13 @@ export default function CmEscalations() {
       const res = await api.get('/tickets');
       const formatted = res.data.map(t => ({
         ...t,
-        category: t.department?.name?.toLowerCase() || 'unknown',
-        district: t.jurisdiction?.name || 'Unknown',
-        ward: t.jurisdiction?.name || 'Unknown',
-        status: t.status || 'open',
+        category: t.department?.name || 'Unknown',
+        district: t.district || 'Unknown',
         id: t.ticketNumber,
-        created_at: t.createdAt || new Date().toISOString()
+        dbId: t.id,
+        description: t.description,
+        ward: t.ward || 'Unknown',
+        created_at: t.createdAt
       }));
       setTickets(formatted);
     } catch (err) {
@@ -44,98 +45,79 @@ export default function CmEscalations() {
  fetchTickets();
  }, []);
 
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- };
-
  // 1. Issue Executive Directive Pinned Note
- const handleDirectiveSubmit = (e) => {
+ const handleDirectiveSubmit = async (e) => {
  e.preventDefault();
  if (!directiveText.trim()) {
  toast.error('Directive instructions are required');
  return;
  }
 
- const updated = tickets.map(ticket => {
- if (ticket.id === activeTicket.id) {
- return { 
- ...ticket, 
- cm_directive: directiveText,
- cm_directive_at: new Date().toISOString()
- };
+ try {
+   await api.patch(`/tickets/${activeTicket.dbId}`, { 
+     notes: `CM DIRECTIVE: ${directiveText}`,
+     isCmWatching: true
+   });
+   setDirectiveModalOpen(false);
+   setDirectiveText('');
+   toast.success(t('app_name') === 'ஜனநாயகம்' 
+     ? 'முதலமைச்சர் உத்தரவு வெற்றிகரமாக இணைக்கப்பட்டது' 
+     : 'Hon’ble CM executive directive note attached'
+   );
+   fetchTickets();
+ } catch (err) {
+   toast.error('Failed to attach directive');
  }
- return ticket;
- });
-
- handleSaveTickets(updated);
- setDirectiveModalOpen(false);
- setDirectiveText('');
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'முதலமைச்சர் உத்தரவு வெற்றிகரமாக இணைக்கப்பட்டது' 
- : 'Hon’ble CM executive directive note attached'
- );
  };
 
  // 2. Reassign directly to Ministerial portfolio
- const handleReassignToMinister = (ticketId, targetPortfolio) => {
- const updated = tickets.map(ticket => {
- if (ticket.id === ticketId) {
- return { 
- ...ticket, 
- category: targetPortfolio.toLowerCase(),
- status: 'in_progress', // Reset status to active in the new sector
- notes: `Reassigned directly to the ${targetPortfolio} Ministerial Portfolio by CM office.`
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- toast.success(`Complaint reassigned to the ${targetPortfolio} Ministerial Portfolio`);
+ const handleReassignToMinister = async (ticketId, targetPortfolio) => {
+   try {
+     const t = tickets.find(ticket => ticket.id === ticketId);
+     await api.patch(`/tickets/${t.dbId}`, { 
+       notes: `Reassigned directly to the ${targetPortfolio} Ministerial Portfolio by CM office.`
+     });
+     toast.success(`Complaint reassigned to the ${targetPortfolio} Ministerial Portfolio`);
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to reassign ticket');
+   }
  };
 
  // 3. CM Override & Close Complaint
- const handleOverrideClose = () => {
- const updated = tickets.map(ticket => {
- if (ticket.id === activeTicket.id) {
- return { 
- ...ticket, 
- status: 'closed',
- cm_override: true,
- resolution_text: 'Closed directly by Hon’ble Chief Minister Executive Override Decree.'
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- setOverrideModalOpen(false);
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'முதலமைச்சர் அதிகாரத்தால் புகார் வெற்றிகரமாக மூடப்பட்டது' 
- : 'Grievance closed successfully by Chief Minister Override'
- );
+ const handleOverrideClose = async () => {
+   try {
+     await api.patch(`/tickets/${activeTicket.dbId}`, { 
+       status: 'CLOSED',
+       notes: 'CLOSED BY CM OVERRIDE: Priority intervention completed.'
+     });
+     setOverrideModalOpen(false);
+     toast.success(t('app_name') === 'ஜனநாயகம்' 
+       ? 'முதலமைச்சர் அதிகாரத்தால் புகார் வெற்றிகரமாக மூடப்பட்டது' 
+       : 'Grievance closed successfully by Chief Minister Override'
+     );
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to override ticket');
+   }
  };
 
  // 4. Escalate to PMO/Central Government or Cabinet
- const handleCentralEscalation = () => {
- const updated = tickets.map(ticket => {
- if (ticket.id === activeTicket.id) {
- return { 
- ...ticket, 
- status: 'escalated_pmo',
- notes: 'Escalated to Central Government / PMO by Chief Minister.'
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- setEscalateModalOpen(false);
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'மத்திய அரசுக்கு புகார் வெற்றிகரமாக அனுப்பப்பட்டது' 
- : 'Grievance escalated to PMO/Central Authorities successfully'
- );
+ const handleCentralEscalation = async () => {
+   try {
+     await api.patch(`/tickets/${activeTicket.dbId}`, { 
+       status: 'ESCALATED',
+       notes: 'Escalated to Central Government / PMO by Chief Minister.'
+     });
+     setEscalateModalOpen(false);
+     toast.success(t('app_name') === 'ஜனநாயகம்' 
+       ? 'மத்திய அரசுக்கு புகார் வெற்றிகரமாக அனுப்பப்பட்டது' 
+       : 'Grievance escalated to PMO/Central Authorities successfully'
+     );
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to escalate ticket');
+   }
  };
 
  // Catch generic actions from TicketCard

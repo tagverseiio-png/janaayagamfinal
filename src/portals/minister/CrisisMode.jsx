@@ -6,6 +6,8 @@ import {
  Zap, AlertTriangle, Send, X, ShieldAlert, CheckCircle, Info
 } from 'lucide-react';
 
+import api from '../../services/api';
+
 export default function CrisisMode() {
  const { t } = useTranslation();
  const [crisisActive, setCrisisActive] = useState(false);
@@ -13,13 +15,13 @@ export default function CrisisMode() {
  const [directiveText, setDirectiveText] = useState('');
  const [targetDistrict, setTargetDistrict] = useState('all');
 
- const districtsList = [
- 'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
- 'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 
- 'Nagapattinam', 'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 
- 'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 
- 'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
- ];
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
 
  useEffect(() => {
  const active = localStorage.getItem('jn_crisis_mode') === 'true';
@@ -41,44 +43,28 @@ export default function CrisisMode() {
  localStorage.setItem('jn_crisis_mode', 'true');
  setCrisisActive(true);
  setConfirmModalOpen(false);
-
- // Apply reduced 24 hour SLA to all active tickets to make it highly functional!
- const tickets = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- const updated = tickets.map(t => {
- if (t.status !== 'resolved' && t.status !== 'closed') {
- const deadline = new Date();
- deadline.setHours(deadline.getHours() + 24); // 24 Hours SLA
- return { ...t, sla_deadline: deadline.toISOString() };
- }
- return t;
- });
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
-
  toast.success('CRISIS EMERGENCY PROTOCOL INITIATED');
  };
 
- const handleSendDirective = (e) => {
+ const handleSendDirective = async (e) => {
  e.preventDefault();
  if (!directiveText.trim()) {
  toast.error('Directive instructions cannot be empty');
  return;
  }
 
- const directiveId = 'DIR-' + Math.floor(1000 + Math.random() * 9000).toString();
- const newDirective = {
- id: directiveId,
- instructions: directiveText,
- target: targetDistrict,
- created_at: new Date().toISOString()
- };
-
- const list = JSON.parse(localStorage.getItem('jn_minister_directives') || '[]');
- list.push(newDirective);
- localStorage.setItem('jn_minister_directives', JSON.stringify(list));
-
- const targetName = targetDistrict === 'all' ? 'All Wards & Districts' : `${targetDistrict} District`;
- toast.success(`Ministerial decree dispatched to ${targetName}. ID: #${directiveId}`);
- setDirectiveText('');
+ try {
+   await api.post('/announcements', {
+     title: 'MINISTERIAL CRISIS DIRECTIVE',
+     text: directiveText,
+     district: targetDistrict === 'all' ? 'All' : targetDistrict
+   });
+   const targetName = targetDistrict === 'all' ? 'All Wards & Districts' : `${targetDistrict} District`;
+   toast.success(`Ministerial decree dispatched to ${targetName}.`);
+   setDirectiveText('');
+ } catch (err) {
+   toast.error('Failed to dispatch directive');
+ }
  };
 
  const englishBanner = "Crisis mode activated. All collectors notified. SLA reduced to 24 hours.";

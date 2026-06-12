@@ -138,18 +138,11 @@ async function main() {
   // 5. SEED COMPLAINT CATEGORIES AND ESCALATIONS (Sheet 06 & 08)
   console.log('Seeding complaint categories and escalation levels...');
   const complaintCategories = [
-    { code: 'CAT-WTR', name: 'Water', departmentSlug: 'municipal-admin-water-supply', defaultAssigneeRole: 'WARD_AEO', defaultPriority: 'HIGH' },
-    { code: 'CAT-RDC', name: 'Pot Holes (Road)', departmentSlug: 'municipal-admin-water-supply', defaultAssigneeRole: 'WARD_AEO', defaultPriority: 'MEDIUM' },
-    { code: 'CAT-ELE', name: 'Electricity', departmentSlug: 'electricity', defaultAssigneeRole: 'LINE_MAN', defaultPriority: 'HIGH' },
-    { code: 'CAT-SAN', name: 'Sanitation', departmentSlug: 'sanitation', defaultAssigneeRole: 'DSI', defaultPriority: 'HIGH' }
+    { code: 'CAT-ELE', name: 'Electricity', departmentSlug: 'electricity', defaultAssigneeRole: 'Assistant Area Engineer', defaultPriority: 'HIGH' },
+    { code: 'CAT-RDC', name: 'Pot Holes (Road)', departmentSlug: 'highways-minor-ports', defaultAssigneeRole: 'Ward (AEO)', defaultPriority: 'MEDIUM' }
   ];
 
   const categoryEscalations = [
-    { categoryCode: 'CAT-WTR', escalations: [
-      { level: 'L1', assigneeTitle: 'Ward (AEO)', slaDays: 3 },
-      { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
-      { level: 'L3', assigneeTitle: 'Commissioner', slaDays: 20 }
-    ]},
     { categoryCode: 'CAT-RDC', escalations: [
       { level: 'L1', assigneeTitle: 'Ward (AEO)', slaDays: 3 },
       { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
@@ -158,16 +151,7 @@ async function main() {
     { categoryCode: 'CAT-ELE', escalations: [
       { level: 'L1', assigneeTitle: 'Assistant Area Engineer', slaDays: 5 },
       { level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 10 },
-      { level: 'L3', assigneeTitle: 'Minister (Electricity & Energy Resources)', slaDays: 15 }
-    ]},
-    { categoryCode: 'CAT-SAN', escalations: [
-      { level: 'L1', assigneeTitle: 'Division Sanitary Inspector', slaDays: 2 },
-      { level: 'L2', assigneeTitle: 'Sanitary Inspector', slaDays: 5 },
-      { level: 'L3', assigneeTitle: 'Health Inspector', slaDays: 10 },
-      { level: 'L4', assigneeTitle: 'City Health Inspector', slaDays: 15 },
-      { level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 20 },
-      { level: 'L6', assigneeTitle: 'Commissioner', slaDays: 25 },
-      { level: 'L7', assigneeTitle: 'Minister (Health)', slaDays: 30 }
+      { level: 'L3', assigneeTitle: 'Minister', slaDays: 15 }
     ]}
   ];
 
@@ -307,11 +291,17 @@ async function main() {
   console.log('Creating Blocks and Rural Wards...');
   let blockCount = 0;
   let ruralWardCount = 0;
+  // ONLY seed blocks for the first 3 districts to save space/IO
+  const limitedDistricts = geoData.districts.slice(0, 3).map(d => d.name);
+  
   for (const [district, blocks] of Object.entries(geoData.blocks)) {
-    const parentId = districtMap.get(district) || districtMap.get(district.replace(' (former district)', ''));
+    if (!limitedDistricts.includes(district)) continue;
+    
+    const parentId = districtMap.get(district);
     if (!parentId) continue;
     
-    for (const block of blocks as string[]) {
+    // Only first 2 blocks per district
+    for (const block of (blocks as string[]).slice(0, 2)) {
       const blockNode = await prisma.jurisdiction.create({
         data: {
           level: 'BLOCK',
@@ -322,8 +312,8 @@ async function main() {
       });
       blockCount++;
 
-      // Generate 15 generic wards for each block
-      for (let i = 1; i <= 15; i++) {
+      // Only 1 generic ward for each block
+      for (let i = 1; i <= 1; i++) {
         await prisma.jurisdiction.create({
           data: {
             level: 'WARD',
@@ -339,7 +329,8 @@ async function main() {
 
   console.log('Creating Assembly Constituencies...');
   let acCount = 0;
-  for (const ac of geoData.assemblyConstituencies) {
+  // Only seed first 10 ACs
+  for (const ac of geoData.assemblyConstituencies.slice(0, 10)) {
     let parentId = districtMap.get(ac.district);
     if (!parentId) parentId = stateNode.id;
 
@@ -359,7 +350,8 @@ async function main() {
   let urbanWardCount = 0;
 
   if (geoData.corporations) {
-    for (const corp of geoData.corporations) {
+    // Only seed Chennai and maybe 1 other
+    for (const corp of geoData.corporations.slice(0, 2)) {
       let parentId = districtMap.get(corp.district);
       if (!parentId && corp.district === 'Chennai') parentId = districtMap.get('Chennai');
       if (!parentId) parentId = stateNode.id;
@@ -375,8 +367,8 @@ async function main() {
       corpCount++;
 
       if (corp.name === 'Greater Chennai Corporation') {
-        // Seed exact Zones according to Sheet 03
-        for (const zone of zonesData) {
+        // Seed first 3 Zones only
+        for (const zone of zonesData.slice(0, 3)) {
           const zoneNode = await prisma.jurisdiction.create({
             data: {
               level: 'ZONE',
@@ -386,8 +378,8 @@ async function main() {
             }
           });
 
-          // Generate wards in this range
-          for (let i = zone.wardFrom; i <= zone.wardTo; i++) {
+          // Generate first 5 wards in this range
+          for (let i = zone.wardFrom; i <= Math.min(zone.wardFrom + 4, zone.wardTo); i++) {
             const wardName = namedWardsMap[i] ? `Ward ${i}: ${namedWardsMap[i]}` : `Ward ${i}`;
             await prisma.jurisdiction.create({
               data: {
@@ -401,8 +393,8 @@ async function main() {
           }
         }
       } else {
-        // Other corporations
-        for (let i = 1; i <= corp.wardCount; i++) {
+        // Other corporations - only 2 wards
+        for (let i = 1; i <= Math.min(2, corp.wardCount); i++) {
           await prisma.jurisdiction.create({
             data: {
               level: 'WARD',
@@ -420,7 +412,8 @@ async function main() {
   console.log('Creating Municipalities...');
   let muniCount = 0;
   if (geoData.municipalities) {
-    for (const muni of geoData.municipalities) {
+    // Only first 3 municipalities
+    for (const muni of geoData.municipalities.slice(0, 3)) {
       let parentId = districtMap.get(muni.district) || stateNode.id;
 
       const muniNode = await prisma.jurisdiction.create({
@@ -433,7 +426,8 @@ async function main() {
       });
       muniCount++;
 
-      for (let i = 1; i <= muni.wardCount; i++) {
+      // Only 2 wards
+      for (let i = 1; i <= Math.min(2, muni.wardCount); i++) {
         await prisma.jurisdiction.create({
           data: {
             level: 'WARD',

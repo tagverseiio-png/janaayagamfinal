@@ -18,7 +18,7 @@ export default function RaiseIssue() {
  const [photo, setPhoto] = useState('');
  const [recipient, setRecipient] = useState('bdo');
 
- const constituencyWards = ['140', '141', '142', '143', '144', '145', '146', '147'];
+ const constituencyWards = ['Mylapore Section'];
  const categoryKeys = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
  const handlePhotoUpload = (e) => {

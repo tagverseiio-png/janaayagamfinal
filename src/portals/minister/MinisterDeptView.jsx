@@ -4,76 +4,40 @@ import { motion } from 'framer-motion';
 import { ShieldAlert, Search, Filter, AlertTriangle, MapPin, CheckCircle, Clock } from 'lucide-react';
 import TicketCard from '../../shared/components/TicketCard';
 
+import api from '../../services/api';
+
 export default function MinisterDeptView() {
   const { t } = useTranslation();
   const [tickets, setTickets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('roads');
+  const [loading, setLoading] = useState(true);
 
   const departments = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
   useEffect(() => {
-    // Generate some highly specific dummy data for the department view
-    // so it looks robust and full
-    const baseTickets = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
-    
-    // Inject some guaranteed state-level tickets for the minister view
-    const extraTickets = [
-      {
-        id: 'MIN-901',
-        category: 'roads',
-        title: 'State Highway 44 - Major expansion project delayed due to land acquisition',
-        description: 'Multi-district highway project stalled. Requires high-level intervention.',
-        status: 'escalated',
-        priority: 'critical',
-        district: 'Madurai',
-        ward: 'All',
-        created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        sla_deadline: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        citizen_name: 'Highway Authority'
-      },
-      {
-        id: 'MIN-902',
-        category: 'water',
-        title: 'Cauvery delta irrigation canal modernization pending',
-        description: 'Farmers requesting immediate release of funds for modernization.',
-        status: 'open',
-        priority: 'high',
-        district: 'Thanjavur',
-        ward: 'All',
-        created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-        sla_deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        citizen_name: 'Delta Farmers Assoc.'
-      },
-      {
-        id: 'MIN-903',
-        category: 'electricity',
-        title: 'Substation upgrade for industrial corridor',
-        description: 'Power fluctuations affecting manufacturing units in SIPCOT.',
-        status: 'in_progress',
-        priority: 'high',
-        district: 'Kancheepuram',
-        ward: 'SIPCOT',
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        sla_deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-        citizen_name: 'Industrial Board'
-      },
-      {
-        id: 'MIN-904',
-        category: 'health',
-        title: 'Medical College Hospital infrastructure fund allocation',
-        description: 'New block construction halted pending minister approval.',
-        status: 'escalated',
-        priority: 'critical',
-        district: 'Coimbatore',
-        ward: 'Central',
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        sla_deadline: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        citizen_name: 'Dean, Medical College'
+    const fetchTickets = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/tickets');
+        const formatted = res.data.map(t => ({
+          ...t,
+          category: t.department?.name || 'Unknown',
+          district: t.district || 'Unknown',
+          id: t.ticketNumber,
+          dbId: t.id,
+          description: t.description,
+          ward: t.ward || 'Unknown',
+          created_at: t.createdAt
+        }));
+        setTickets(formatted);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch minister portfolio tickets:', err);
+        setLoading(false);
       }
-    ];
-
-    setTickets([...extraTickets, ...baseTickets]);
+    };
+    fetchTickets();
   }, []);
 
   const filteredTickets = tickets.filter(t => {

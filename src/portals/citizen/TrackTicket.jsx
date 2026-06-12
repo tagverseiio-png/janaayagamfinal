@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
 import api from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -36,8 +35,8 @@ export default function TrackTicket() {
         setTicket({
           ...found,
           id: found.ticketNumber,
-          category: found.department?.name || 'Unknown',
-          district: found.jurisdiction?.name || 'Unknown'
+          category: found.categoryName || found.departmentName || 'Unknown',
+          district: found.district || 'Unknown'
         });
         setError('');
       } else {
@@ -49,11 +48,59 @@ export default function TrackTicket() {
     }
   };
 
-  const deptKey = ticket ? (ticket.categoryName || (typeof ticket.category === 'string' ? ticket.category : ticket.category?.name) || 'Water') : null;
-  const hierarchy = ticket ? DEPT_HIERARCHY[normalizeDept(deptKey)] : [];
+  const hierarchy = ticket?.hierarchySteps ? [
+    { role: 'Citizen', label: 'Issue Filed' },
+    ...ticket.hierarchySteps,
+    { role: 'Resolved', label: 'Issue Resolved' }
+  ] : [];
+
   const assignedToRole = ticket?.assignedTo ? (typeof ticket.assignedTo === 'string' ? ticket.assignedTo : ticket.assignedTo.role) : null;
-  const currentStep = ticket ? getCurrentStep(deptKey, assignedToRole) : 0;
-  const progress = ticket ? getProgressPercent(deptKey, assignedToRole) : 0;
+  
+  const getCurrentStep = () => {
+    if (!ticket) return 0;
+    if (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED') return hierarchy.length - 1;
+    
+    const normalize = (r) => (r || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
+    const aRole = normalize(assignedToRole);
+
+    const aliases = {
+      'AAE': ['ASSISTANT_AREA_ENGINEER', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+      'ASSISTANT_AREA_ENGINEER': ['AAE', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+      'AE': ['AREA_ENGINEER'],
+      'AREA_ENGINEER': ['AE'],
+      'DSI': ['DIVISION_SANITARY_INSPECTOR'],
+      'DIVISION_SANITARY_INSPECTOR': ['DSI'],
+      'SI': ['SANITARY_INSPECTOR'],
+      'SANITARY_INSPECTOR': ['SI'],
+      'HI': ['HEALTH_INSPECTOR'],
+      'HEALTH_INSPECTOR': ['HI'],
+      'CHI': ['CITY_HEALTH_OFFICER'],
+      'CITY_HEALTH_OFFICER': ['CHI'],
+      'MINISTER': ['MINISTER_ELECTRICITY', 'MINISTER_ENERGY', 'MINISTER_HEALTH', 'CABINET_MINISTER', 'HONORABLE_MINISTER', 'HONORABLE_MINISTER_ENERGY', 'MINISTER_HIGHWAYS'],
+      'JE': ['JUNIOR_ENGINEER'],
+      'JUNIOR_ENGINEER': ['JE'],
+      'AEE': ['ASSISTANT_EXECUTIVE_ENGINEER'],
+      'ASSISTANT_EXECUTIVE_ENGINEER': ['AEE'],
+      'EE': ['EXECUTIVE_ENGINEER'],
+      'EXECUTIVE_ENGINEER': ['EE'],
+      'SE': ['SUPERINTENDING_ENGINEER'],
+      'SUPERINTENDING_ENGINEER': ['SE'],
+      'CE': ['CHIEF_ENGINEER'],
+      'CHIEF_ENGINEER': ['CE']
+    };
+
+    const idx = hierarchy.findIndex(h => {
+      const hRole = normalize(h.role);
+      if (hRole === aRole) return true;
+      if (aliases[hRole] && aliases[hRole].includes(aRole)) return true;
+      if (aliases[aRole] && aliases[aRole].includes(hRole)) return true;
+      return false;
+    });
+    return idx === -1 ? 1 : idx;
+  };
+
+  const currentStep = getCurrentStep();
+  const progress = hierarchy.length > 0 ? Math.round((currentStep / (hierarchy.length - 1)) * 100) : 0;
 
   const statusColor = { Open: 'bg-yellow-100 text-yellow-700', 'In Progress': 'bg-blue-100 text-blue-700', Escalated: 'bg-red-100 text-red-700', Resolved: 'bg-green-100 text-green-700' };
   const priorityColor = { Critical: 'text-red-600', High: 'text-orange-500', Medium: 'text-yellow-600', Low: 'text-green-600' };
@@ -164,7 +211,7 @@ export default function TrackTicket() {
             {/* Hierarchy Timeline */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4">
               <p className="text-[10px] text-slate-400 font-black tracking-widest mb-6 border-b pb-2 uppercase">
-                OFFICIAL {normalizeDept(deptKey)} DEPARTMENT PIPELINE
+                OFFICIAL {ticket.departmentName} DEPARTMENT PIPELINE
               </p>
 
               <div className="relative">

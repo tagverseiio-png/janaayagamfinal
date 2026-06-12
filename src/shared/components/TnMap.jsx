@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap, Marker } from '
 import L from 'leaflet';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 
 /* ─── 38 Tamil Nadu Districts Coordinate + Ticket Data ─────────────────── */
@@ -102,7 +103,9 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  const navigate = useNavigate();
 
  useEffect(() => {
-   setLiveTickets(JSON.parse(localStorage.getItem('jn_tickets') || '[]'));
+   api.get('/tickets')
+     .then(res => setLiveTickets(res.data))
+     .catch(err => console.error("Failed to fetch tickets for map", err));
  }, []);
 
  const isTa = lang === 'ta';

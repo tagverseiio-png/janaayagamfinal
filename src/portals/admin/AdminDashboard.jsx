@@ -17,23 +17,41 @@ export default function AdminDashboard() {
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const [categories, setCategories] = useState(['Elected Representative', 'Administrative Officer', 'Department Official']);
+  const [roles, setRoles] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
   const [formData, setFormData] = useState({
     phone: '',
     name: '',
     category: 'Department Official',
     role: 'Ward Officer',
-    departmentName: 'Police',
+    departmentName: '',
     jurisdictionLevel: 'Ward',
     jurisdictionName: 'Ward 1'
   });
 
-  const categories = ['Elected Representative', 'Administrative Officer', 'Department Official'];
-  const roles = ['CM', 'Superadmin', 'District Collector', 'MLA', 'Ward Member', 'Ward Officer', 'Field Agent', 'Director'];
-
   useEffect(() => {
     fetchEmployees();
+    fetchMetadata();
   }, []);
+
+  const fetchMetadata = async () => {
+    try {
+      const [rolesRes, deptsRes] = await Promise.all([
+        api.get('/metadata/roles'),
+        api.get('/metadata/departments')
+      ]);
+      setRoles(rolesRes.data.map(r => r.slug || r.code));
+      setDepartments(deptsRes.data);
+      if (deptsRes.data.length > 0) {
+        setFormData(prev => ({ ...prev, departmentName: deptsRes.data[0].name }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch metadata:', err);
+    }
+  };
 
   const fetchEmployees = async () => {
     try {
@@ -208,13 +226,15 @@ export default function AdminDashboard() {
                   
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Department Name</label>
-                    <input 
-                      type="text" 
+                    <select 
                       name="departmentName"
                       value={formData.departmentName}
                       onChange={handleInputChange}
                       className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-[#8B1A1A] outline-none"
-                    />
+                    >
+                      <option value="">-- No Department --</option>
+                      {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                    </select>
                   </div>
 
                   <div className="flex gap-2">

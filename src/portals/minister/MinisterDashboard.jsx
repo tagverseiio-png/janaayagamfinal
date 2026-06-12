@@ -81,14 +81,22 @@ export default function MinisterDashboard() {
         const res = await api.get('/tickets');
         const formatted = res.data.map(t => ({
           ...t,
-          category: t.categoryName || t.department?.name || 'Unknown',
-          district: t.jurisdiction?.name || 'Unknown',
+          category: t.categoryName || t.departmentName || 'Unknown',
+          district: t.jurisdiction?.name || t.district || 'Unknown',
           displayId: t.ticketNumber,
           id: t.id,
           description: t.description
         }));
-        // Filter by the minister's locked department
-        setDeptTickets(formatted.filter(t => t.category === selectedDept || (selectedDept === 'Health & Sanitation' && t.category === 'Sanitation')));
+        // Filter by the minister's locked department (case-insensitive and partial match)
+        setDeptTickets(formatted.filter(t => {
+          const tDept = (t.departmentName || '').toUpperCase();
+          const tCat = (t.category || '').toUpperCase();
+          const sDept = (selectedDept || '').toUpperCase();
+          
+          return tDept.includes(sDept) || sDept.includes(tDept) || 
+                 tCat.includes(sDept) || sDept.includes(tCat) ||
+                 (sDept.includes('HEALTH') && tCat.includes('SANITATION'));
+        }));
       } catch (err) {
         console.error('Failed to fetch minister tickets:', err);
       }
@@ -98,40 +106,54 @@ export default function MinisterDashboard() {
 
   const handleAction = async (id, action) => {
     try {
-      const newStatus = action === 'Intervene' ? 'In Progress' : 'In Progress';
-      await api.patch(`/tickets/${id}`, { status: newStatus, notes: `Minister Intervened: Grievance prioritized directly.` });
+      const newStatus = action === 'Resolve' ? 'Resolved' : 'In Progress';
+      const notes = action === 'Resolve' 
+        ? 'Minister Resolved: Action taken directly by Ministry.'
+        : 'Minister Intervened: Grievance prioritized directly.';
+
+      await api.patch(`/tickets/${id}`, { status: newStatus, notes });
       
       const res = await api.get('/tickets');
       const formatted = res.data.map(t => ({
         ...t,
-        category: t.categoryName || t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
+        category: t.categoryName || t.departmentName || 'Unknown',
+        district: t.jurisdiction?.name || t.district || 'Unknown',
         displayId: t.ticketNumber,
         id: t.id,
         description: t.description
       }));
-      setDeptTickets(formatted.filter(t => t.category === selectedDept || (selectedDept === 'Health & Sanitation' && t.category === 'Sanitation')));
+      setDeptTickets(formatted.filter(t => {
+        const tDept = (t.departmentName || '').toUpperCase();
+        const tCat = (t.category || '').toUpperCase();
+        const sDept = (selectedDept || '').toUpperCase();
+        
+        return tDept.includes(sDept) || sDept.includes(tDept) || 
+               tCat.includes(sDept) || sDept.includes(tCat) ||
+               (sDept.includes('HEALTH') && tCat.includes('SANITATION'));
+      }));
     } catch (err) {
       console.error('Failed to update ticket:', err);
     }
   };
 
-  // Local helper to calculate resolution rates for Districts Performance League
-  const districtsList = [
-    'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Vellore', 'Erode', 
-    'Thanjavur', 'Dindigul', 'Thoothukudi', 'Tiruppur', 'Tiruvannamalai', 'Tiruvarur', 'Villupuram', 
-    'Cuddalore', 'Kanniyakumari', 'Theni', 'Namakkal', 'Karur'
-  ];
+  const [districts, setDistricts] = useState([]);
 
-  const districtPerformanceData = districtsList.map(dist => {
-    const distTickets = deptTickets.filter(t => t.district === dist);
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
+
+  const districtPerformanceData = districts.map(dist => {
+    const dName = dist.name;
+    const distTickets = deptTickets.filter(t => t.district === dName);
     const dOpen = distTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
     const dResolved = distTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
     const dTotal = distTickets.length;
     const rate = dTotal > 0 ? Math.round((dResolved / dTotal) * 100) : 100;
 
     return {
-      name: dist,
+      name: dName,
       open: dOpen,
       resolved: dResolved,
       total: dTotal,
@@ -528,14 +550,22 @@ export default function MinisterDashboard() {
                     {t.priority}
                   </span>
                 </td>
-                <td className="p-4">
+                <td className="p-4 flex gap-2">
                   {t.status !== 'RESOLVED' && t.status !== 'CLOSED' && (
-                    <button 
-                      onClick={() => handleAction(t.id, 'Intervene')} 
-                      className="bg-red-650 hover:bg-red-700 text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg transition-colors shadow-sm"
-                    >
-                      Intervene
-                    </button>
+                    <>
+                      <button 
+                        onClick={() => handleAction(t.id, 'Intervene')} 
+                        className="bg-slate-800 hover:bg-black text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                      >
+                        Intervene
+                      </button>
+                      <button 
+                        onClick={() => handleAction(t.id, 'Resolve')} 
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                      >
+                        Resolve
+                      </button>
+                    </>
                   )}
                 </td>
               </tr>
@@ -811,8 +841,8 @@ export default function MinisterDashboard() {
               onChange={e => setCrisisConfig({ ...crisisConfig, targetDistrict: e.target.value })}
               className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl p-2.5 outline-none"
             >
-              <option value="All">All 38 Districts (Statewide)</option>
-              {districtsList.map(d => <option key={d} value={d}>{d}</option>)}
+              <option value="All">All Regions (Statewide)</option>
+              {districts.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
             </select>
           </div>
           <div className="space-y-1">

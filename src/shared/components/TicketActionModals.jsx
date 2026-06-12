@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getNextRole } from '../../data/hierarchyData';
 
+import { getMediaUrl } from '../../services/api';
+
 export default function TicketActionModals({ 
   activeTicket, 
   modalState, 
@@ -112,7 +114,7 @@ export default function TicketActionModals({
                 {activeTicket.photo_url && (
                   <div className="relative w-full h-[180px] rounded-xl overflow-hidden shadow-sm bg-slate-100 border border-slate-200 group">
                     <img 
-                      src={activeTicket.photo_url} 
+                      src={getMediaUrl(activeTicket.photo_url)} 
                       alt="Ticket Evidence" 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                     />

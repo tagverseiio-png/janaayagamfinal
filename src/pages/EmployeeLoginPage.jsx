@@ -53,6 +53,11 @@ export default function EmployeeLoginPage() {
 
       const { token, employee } = response.data;
       
+      // Clear any citizen session
+      localStorage.removeItem('jn_is_volunteer');
+      localStorage.removeItem('jn_volunteer_ward');
+      localStorage.removeItem('jn_user_id');
+
       localStorage.setItem('jn_token', token);
       localStorage.setItem('jn_emp_role', employee.role);
       localStorage.setItem('jn_role', 'employee');

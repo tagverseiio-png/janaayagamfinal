@@ -6,51 +6,81 @@ import path from 'path';
 const normalizeRoleKey = (role: string) => (role || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
 
 const ROLE_ALIASES: Record<string, string[]> = {
-  EB: ['E.B', 'EB', 'LINE_MAN', 'Line Man'],
-  'E.B': ['E.B', 'EB', 'LINE_MAN', 'Line Man'],
-  'WARD_AEO': ['WARD_AEO', 'Ward (AEO)', 'Ward AEO'],
-  'WARD_AEO_OR_EB': ['WARD_AEO_OR_EB', 'Ward (AEO) / E.B', 'Ward AEO / EB'],
-  'ASST_AREA_ENGINEER': ['ASST_AREA_ENGINEER', 'ASSISTANT_AREA_ENGINEER', 'Assistant Area Engineer', 'AAE'],
-  'Assistant Area Engineer': ['AAE', 'Assistant Area Engineer', 'ASSISTANT_AREA_ENGINEER'],
-  'AAE': ['AAE', 'Assistant Area Engineer', 'ASSISTANT_AREA_ENGINEER'],
-  'AREA_ENGINEER': ['AREA_ENGINEER', 'Area Engineer', 'AE'],
+  EB: ['EB', 'LINE_MAN', 'Line Man'],
+  'WARD_AEO': ['WARD_AEO', 'Ward (AEO)', 'Ward AEO', 'Assistant Area Engineer', 'AAE'],
+  'ASST_AREA_ENGINEER': ['AAE', 'Assistant Area Engineer', 'ASSISTANT_AREA_ENGINEER', 'ASST_AREA_ENGINEER', 'Ward (AEO)'],
+  'ASSISTANT_AREA_ENGINEER': ['AAE', 'Assistant Area Engineer', 'ASSISTANT_AREA_ENGINEER', 'ASST_AREA_ENGINEER', 'Ward (AEO)'],
+  'AAE': ['AAE', 'Assistant Area Engineer', 'ASSISTANT_AREA_ENGINEER', 'ASST_AREA_ENGINEER', 'Ward (AEO)'],
   'Area Engineer': ['AE', 'Area Engineer', 'AREA_ENGINEER'],
   'AE': ['AE', 'Area Engineer', 'AREA_ENGINEER'],
+  'JE': ['JE', 'Junior Engineer', 'JUNIOR_ENGINEER'],
+  'JUNIOR_ENGINEER': ['JE', 'Junior Engineer', 'JUNIOR_ENGINEER'],
+  'AEE': ['AEE', 'Assistant Executive Engineer', 'ASSISTANT_EXECUTIVE_ENGINEER'],
+  'ASSISTANT_EXECUTIVE_ENGINEER': ['AEE', 'Assistant Executive Engineer', 'ASSISTANT_EXECUTIVE_ENGINEER'],
+  'EE': ['EE', 'Executive Engineer', 'EXECUTIVE_ENGINEER'],
+  'EXECUTIVE_ENGINEER': ['EE', 'Executive Engineer', 'EXECUTIVE_ENGINEER'],
+  'SE': ['SE', 'Superintending Engineer', 'SUPERINTENDING_ENGINEER'],
+  'SUPERINTENDING_ENGINEER': ['SE', 'Superintending Engineer', 'SUPERINTENDING_ENGINEER'],
+  'CE': ['CE', 'Chief Engineer', 'CHIEF_ENGINEER'],
+  'CHIEF_ENGINEER': ['CE', 'Chief Engineer', 'CHIEF_ENGINEER'],
   'DSI': ['DSI', 'Division Sanitary Inspector (DSI)', 'Division Sanitary Inspector'],
-  'Division Sanitary Inspector': ['DSI', 'Division Sanitary Inspector (DSI)', 'Division Sanitary Inspector'],
-  'Division Sanitary Inspector (DSI)': ['DSI', 'Division Sanitary Inspector (DSI)', 'Division Sanitary Inspector'],
-  'SANITARY_INSPECTOR': ['SANITARY_INSPECTOR', 'Sanitary Inspector (SI)', 'Sanitary Inspector', 'SI'],
-  'Sanitary Inspector': ['SI', 'Sanitary Inspector', 'SANITARY_INSPECTOR'],
+
+  'DIVISION_SANITARY_INSPECTOR': ['DSI', 'Division Sanitary Inspector (DSI)', 'Division Sanitary Inspector'],
+  'SANITARY_INSPECTOR': ['SI', 'Sanitary Inspector', 'SANITARY_INSPECTOR'],
   'SI': ['SI', 'Sanitary Inspector', 'SANITARY_INSPECTOR'],
-  'HEALTH_INSPECTOR': ['HEALTH_INSPECTOR', 'Health Inspector', 'HI'],
-  'Health Inspector': ['HI', 'Health Inspector', 'HEALTH_INSPECTOR'],
+  'HEALTH_INSPECTOR': ['HI', 'Health Inspector', 'HEALTH_INSPECTOR'],
   'HI': ['HI', 'Health Inspector', 'HEALTH_INSPECTOR'],
-  'CITY_HEALTH_OFFICER': ['CITY_HEALTH_OFFICER', 'City Health Officer', 'City Health Inspector', 'CHI'],
-  'City Health Inspector': ['CHI', 'City Health Inspector', 'CITY_HEALTH_OFFICER'],
+  'CITY_HEALTH_OFFICER': ['CHI', 'City Health Officer', 'City Health Inspector'],
   'CHI': ['CHI', 'City Health Inspector', 'CITY_HEALTH_OFFICER'],
   'DEPT_COMMISSIONER': ['DEPT_COMMISSIONER', 'Department Commissioner'],
-  'Department Commissioner': ['DEPT_COMMISSIONER', 'Department Commissioner'],
   'COMMISSIONER': ['COMMISSIONER', 'Commissioner', 'Corporation Commissioner'],
-  'Commissioner': ['COMMISSIONER', 'Commissioner', 'Corporation Commissioner'],
-  'Corporation Commissioner': ['COMMISSIONER', 'Commissioner', 'Corporation Commissioner']
+  'MINISTER': ['MINISTER', 'Minister', 'Cabinet Minister', 'Minister (Electricity & Energy Resources)', 'Minister (Health)'],
+  'Minister': ['MINISTER', 'Minister', 'Cabinet Minister', 'Minister (Electricity & Energy Resources)', 'Minister (Health)'],
+  'Minister (Electricity & Energy Resources)': ['MINISTER', 'Minister', 'Cabinet Minister', 'Minister (Electricity & Energy Resources)'],
+  'Minister (Health)': ['MINISTER', 'Minister', 'Cabinet Minister', 'Minister (Health)']
 };
 
-const findEmployeeByEscalationRole = async (departmentId: string, escalateToRole: string) => {
+const findEmployeeByEscalationRole = async (departmentId: string, escalateToRole: string, jurisdictionId?: string) => {
   const requestedRole = (escalateToRole || '').trim();
-  const candidates = ROLE_ALIASES[requestedRole] || [requestedRole];
+  const normalizedKey = normalizeRoleKey(requestedRole);
+  const candidates = ROLE_ALIASES[normalizedKey] || ROLE_ALIASES[requestedRole] || [requestedRole];
 
-  for (const candidate of candidates) {
-    const exact = await prisma.employee.findFirst({
-      where: { departmentId, role: candidate }
-    });
-    if (exact) return exact;
+  let currentJurisId = jurisdictionId;
 
-    const normalized = await prisma.employee.findFirst({
-      where: { departmentId, role: normalizeRoleKey(candidate) }
+  // 1. Try to find an employee with the role matching jurisdiction, then parent jurisdictions
+  while (currentJurisId) {
+    for (const candidate of candidates) {
+      const match = await prisma.employee.findFirst({
+        where: { 
+          departmentId, 
+          role: { in: [candidate, normalizeRoleKey(candidate)] }, 
+          jurisdictionId: currentJurisId 
+        }
+      });
+      if (match) return match;
+    }
+
+    // Move up the hierarchy
+    const currentJuris = await prisma.jurisdiction.findUnique({
+      where: { id: currentJurisId },
+      select: { parentId: true }
     });
-    if (normalized) return normalized;
+    currentJurisId = currentJuris?.parentId || undefined;
   }
 
+  // 2. Final fallback: search department-wide regardless of jurisdiction (prioritize state/high-level if possible)
+  for (const candidate of candidates) {
+    const match = await prisma.employee.findFirst({
+      where: { 
+        departmentId, 
+        role: { in: [candidate, normalizeRoleKey(candidate)] } 
+      },
+      orderBy: { createdAt: 'asc' } // Or by jurisdiction level if we had a rank
+    });
+    if (match) return match;
+  }
+
+  // 3. Absolute fallback to any senior official in the department
   const fallback = await prisma.employee.findFirst({
     where: {
       departmentId,
@@ -118,7 +148,7 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
       });
       if (category && category.escalations.length > 0) {
         const firstRole = category.escalations[0].assigneeTitle;
-        const officer = await findEmployeeByEscalationRole(finalDeptId, firstRole);
+        const officer = await findEmployeeByEscalationRole(finalDeptId, firstRole, finalJurisId);
         if (officer) {
           assignedToId = officer.id;
           status = 'ASSIGNED';
@@ -150,7 +180,13 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
       include: {
         citizen: { select: { name: true, phone: true } },
         department: true,
-        category: true,
+        category: {
+          include: {
+            escalations: {
+              orderBy: { level: 'asc' }
+            }
+          }
+        },
         jurisdiction: {
           include: {
             parent: {
@@ -346,7 +382,7 @@ const formatTicketResponse = (ticket: any) => {
     }
   }
 
-  const host = process.env.BACKEND_URL || 'http://localhost:5001';
+  const host = process.env.BACKEND_URL || '';
   const photoPath = ticket.photo;
   const fullPhotoUrl = photoPath ? (photoPath.startsWith('http') ? photoPath : `${host}${photoPath}`) : null;
   
@@ -360,6 +396,12 @@ const formatTicketResponse = (ticket: any) => {
     proofPhoto: fullProofPhotoUrl,
     category: ticket.category?.code || 'N/A',
     categoryName: ticket.category?.name || 'Uncategorized',
+    departmentName: ticket.department?.name || ticket.category?.department?.name || 'Unknown',
+    hierarchySteps: ticket.category?.escalations?.map((e: any) => ({
+      role: e.assigneeTitle,
+      label: e.assigneeTitle,
+      slaDays: e.slaDays
+    })) || [],
     created_at: ticket.createdAt,
     sla_deadline: ticket.deadline,
     ward: ward || ticket.jurisdiction?.name || '',
@@ -384,6 +426,44 @@ async function getJurisdictionDescendants(parentId: string): Promise<string[]> {
   
   return descendantIds;
 }
+
+export const bulkUpdateTickets = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { ids, status, priority, notes } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      res.status(400).json({ error: 'IDs array is required' });
+      return;
+    }
+
+    const data: any = {};
+    if (status) data.status = status.toUpperCase();
+    if (priority) data.priority = priority.toUpperCase();
+    data.updatedAt = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      for (const id of ids) {
+        await tx.ticket.update({
+          where: { id },
+          data
+        });
+
+        await tx.ticketHistory.create({
+          data: {
+            ticketId: id,
+            action: status ? `bulk_status_to_${status.toUpperCase()}` : 'bulk_update',
+            notes: notes || 'Updated via bulk action.',
+            employeeId: req.user?.type === 'employee' ? req.user.id : null
+          }
+        });
+      }
+    });
+
+    res.json({ message: `Successfully updated ${ids.length} tickets.` });
+  } catch (error) {
+    console.error('Bulk Update Error:', error);
+    res.status(500).json({ error: 'Failed to update tickets in bulk' });
+  }
+};
 
 export const getTickets = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -417,15 +497,31 @@ export const getTickets = async (req: Request, res: Response): Promise<void> => 
         };
       }
     } else if (user?.type === 'employee') {
-      if (user.departmentId) {
-        query.departmentId = user.departmentId;
-      }
+      const scopeConditions: any[] = [];
+      
+      // Condition A: It's explicitly assigned to the user
+      scopeConditions.push({ assignedToId: user.id });
+
+      // Condition B: It's in the user's jurisdiction/department scope
+      const jurisDeptScope: any = {};
+      if (user.departmentId) jurisDeptScope.departmentId = user.departmentId;
       if (user.jurisdictionId) {
-        const descendantIds = await getJurisdictionDescendants(user.jurisdictionId);
-        query.jurisdictionId = {
-          in: [user.jurisdictionId, ...descendantIds]
-        };
+        try {
+          const descendantIds = await getJurisdictionDescendants(user.jurisdictionId);
+          jurisDeptScope.jurisdictionId = {
+            in: [user.jurisdictionId, ...descendantIds]
+          };
+        } catch (jError) {
+          console.error('[GET TICKETS] Failed to fetch jurisdiction descendants:', jError);
+          // Fallback to just the user's jurisdiction
+          jurisDeptScope.jurisdictionId = user.jurisdictionId;
+        }
       }
+      if (Object.keys(jurisDeptScope).length > 0) {
+        scopeConditions.push(jurisDeptScope);
+      }
+
+      query.OR = scopeConditions;
     }
 
     const tickets = await prisma.ticket.findMany({
@@ -433,7 +529,13 @@ export const getTickets = async (req: Request, res: Response): Promise<void> => 
       include: {
         citizen: { select: { name: true, phone: true } },
         department: true,
-        category: true,
+        category: {
+          include: {
+            escalations: {
+              orderBy: { level: 'asc' }
+            }
+          }
+        },
         jurisdiction: true,
         assignedTo: { select: { name: true, role: true } },
         history: {
@@ -473,23 +575,12 @@ const getRoleRank = (role: string): number => {
   return 1;
 };
 
-const getNextEscalationRole = (currentRole: string): string | null => {
-  const r = normalizeRoleKey(currentRole);
-  if (r === 'AAE' || r === 'ASSISTANT_AREA_ENGINEER' || r === 'ASST_AREA_ENGINEER') return 'AE';
-  if (r === 'AE' || r === 'AREA_ENGINEER') return 'Minister';
-  if (r === 'DSI' || r === 'DIVISION_SANITARY_INSPECTOR') return 'SI';
-  if (r === 'SI' || r === 'SANITARY_INSPECTOR') return 'HI';
-  if (r === 'HI' || r === 'HEALTH_INSPECTOR') return 'CHI';
-  if (r === 'CHI' || r === 'CITY_HEALTH_OFFICER' || r === 'CITY_HEALTH_INSPECTOR') return 'Department Commissioner';
-  if (r === 'DEPARTMENT_COMMISSIONER' || r === 'DEPT_COMMISSIONER') return 'Corporation Commissioner';
-  if (r === 'CORPORATION_COMMISSIONER' || r === 'COMMISSIONER') return 'Minister';
-  return null;
-};
-
 export const updateTicket = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { status, priority, assignedToId, notes } = req.body;
+    console.log(`[UPDATE TICKET] ID: ${id}, User: ${req.user?.id}, Type: ${req.user?.type}`, req.body);
+    
     let employeeId = undefined;
     let isVolunteerUser = false;
     let volunteerName = '';
@@ -500,36 +591,43 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     });
 
     if (!currentTicket) {
+      console.error(`[UPDATE TICKET ERROR] Ticket not found: ${id}`);
       res.status(404).json({ error: 'Ticket not found' });
       return;
     }
 
     if (req.user?.type === 'citizen') {
       const citizen = await prisma.citizen.findUnique({ where: { id: req.user.id } });
-      // Check if it's a volunteer escalating a ticket in their ward
-      if (citizen && citizen.isVolunteer && citizen.volunteerWard && currentTicket.jurisdiction && currentTicket.jurisdiction.name === citizen.volunteerWard) {
+      const isOwner = currentTicket.citizenId === req.user.id;
+      const isWardVolunteer = citizen && citizen.isVolunteer && citizen.volunteerWard && currentTicket.jurisdiction && currentTicket.jurisdiction.name === citizen.volunteerWard;
+
+      if (isWardVolunteer) {
         if (status?.toUpperCase() !== 'ESCALATED') {
+          console.error(`[UPDATE TICKET ERROR] Volunteer tried non-escalation action`);
           res.status(400).json({ error: 'Volunteers are only permitted to escalate tickets.' });
           return;
         }
         isVolunteerUser = true;
         volunteerName = citizen.name;
-      } else {
-        // Must be the owner of the ticket
-        if (currentTicket.citizenId !== req.user.id) {
-          res.status(403).json({ error: 'Forbidden: Only employees, verified volunteers, or the ticket owner can update this ticket.' });
-          return;
-        }
-        // Citizen can only transition to CLOSED or REOPENED
+      } else if (isOwner) {
+        // Citizen can transition to CLOSED, REOPENED or ESCALATED
         const targetStatus = status?.toUpperCase();
-        if (targetStatus !== 'CLOSED' && targetStatus !== 'REOPENED') {
-          res.status(400).json({ error: 'Citizens are only permitted to close or reopen their tickets.' });
+        const allowedStatuses = ['CLOSED', 'REOPENED', 'ESCALATED'];
+        if (!allowedStatuses.includes(targetStatus)) {
+          console.error(`[UPDATE TICKET ERROR] Citizen tried unauthorized status: ${targetStatus}`);
+          res.status(400).json({ error: 'Citizens are only permitted to close, reopen, or escalate their tickets.' });
           return;
         }
+      } else {
+        console.error(`[UPDATE TICKET ERROR] Citizen ${req.user.id} tried to update ticket owned by ${currentTicket.citizenId}`);
+        res.status(403).json({ error: 'Forbidden: Only employees, verified volunteers, or the ticket owner can update this ticket.' });
+        return;
       }
-    } else if (req.user?.type === 'employee') {
+    }
+ else if (req.user?.type === 'employee') {
       employeeId = req.user.id;
     } else {
+      console.error(`[UPDATE TICKET ERROR] Unauthorized user type`);
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
@@ -543,6 +641,7 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     );
 
     if ((status?.toUpperCase() === 'ESCALATED' || isPushBack) && (!notes || notes.trim() === '')) {
+      console.error(`[UPDATE TICKET ERROR] Mandatory notes missing for Escalation/PushBack. Notes: "${notes}"`);
       res.status(400).json({ error: 'Reason/Notes are mandatory for Escalation or Push Back actions.' });
       return;
     }
@@ -580,19 +679,45 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
       data.updatedAt = new Date();
     }
 
-    // 3. Escalation Moves Exactly One Level Up
+    // 3. Escalation Moves Exactly One Level Up using the Category Hierarchy
     if (data.status === 'ESCALATED') {
-      const defaultRole = currentTicket.departmentId && (await prisma.department.findUnique({ where: { id: currentTicket.departmentId } }))?.slug === 'electricity' ? 'AAE' : 'DSI';
-      const currentRole = currentTicket.assignedTo?.role || defaultRole;
-      const nextRole = getNextEscalationRole(currentRole);
+      // Fetch the category with its escalation steps
+      const category = await prisma.complaintCategory.findUnique({
+        where: { id: currentTicket.categoryId as string },
+        include: { escalations: { orderBy: { level: 'asc' } } }
+      });
 
-      if (nextRole && currentTicket.departmentId) {
-        const supervisor = await findEmployeeByEscalationRole(currentTicket.departmentId, nextRole);
-        if (supervisor) {
-          data.assignedToId = supervisor.id;
-          console.log(`[ESCALATION] Reassigned ticket ${id} to next role ${nextRole} (${supervisor.name}, ID: ${supervisor.id})`);
+      if (category && category.escalations.length > 0) {
+        const currentRole = currentTicket.assignedTo?.role || '';
+        const normalizedCurrent = normalizeRoleKey(currentRole);
+
+        // Find the index of the current role in the escalation chain
+        let currentLevelIdx = -1;
+        for (let i = 0; i < category.escalations.length; i++) {
+          const stepRole = normalizeRoleKey(category.escalations[i].assigneeTitle);
+          if (stepRole === normalizedCurrent || ROLE_ALIASES[stepRole]?.includes(normalizedCurrent)) {
+            currentLevelIdx = i;
+            break;
+          }
+        }
+
+        // If found, move to next index. If not found (e.g. initial state), move to level 0 or 1.
+        const nextIdx = currentLevelIdx + 1;
+        if (nextIdx < category.escalations.length) {
+          const nextRole = category.escalations[nextIdx].assigneeTitle;
+          const supervisor = await findEmployeeByEscalationRole(currentTicket.departmentId as string, nextRole, currentTicket.jurisdictionId || undefined);
+          
+          if (supervisor) {
+            data.assignedToId = supervisor.id;
+            console.log(`[DYNAMIC ESCALATION] Reassigned ticket ${id} to level ${nextIdx+1} (${nextRole}): ${supervisor.name}`);
+          }
         } else {
-          console.warn(`[ESCALATION WARNING] Could not find any employee for role ${nextRole} in department ${currentTicket.departmentId}. Leaving assignee unchanged.`);
+          // Absolute fallback: escalate to Minister if we reached the end of the chain
+          const minister = await findEmployeeByEscalationRole(currentTicket.departmentId as string, 'Minister', undefined);
+          if (minister) {
+            data.assignedToId = minister.id;
+            console.log(`[ESCALATION FALLBACK] Reached end of chain. Assigned to Minister: ${minister.name}`);
+          }
         }
       }
     }
@@ -619,7 +744,13 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
       include: {
         citizen: { select: { name: true, phone: true } },
         department: true,
-        category: true,
+        category: {
+          include: {
+            escalations: {
+              orderBy: { level: 'asc' }
+            }
+          }
+        },
         jurisdiction: {
           include: {
             parent: {
@@ -641,6 +772,8 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     let historyAction = 'updated';
     if (isVolunteerUser) {
       historyAction = 'volunteer_escalation';
+    } else if (req.user?.type === 'citizen' && status?.toUpperCase() === 'ESCALATED') {
+      historyAction = 'citizen_escalation';
     } else if (updater && updater.role === 'MLA') {
       historyAction = 'MLA_FLAG';
     } else if (updater && updater.role === 'CM' && (req.body.isCmWatching || req.body.action === 'flag' || (notes && notes.startsWith('CM FLAG')))) {
@@ -686,9 +819,31 @@ export const checkAndAutoEscalateSlaBreaches = async (): Promise<void> => {
     console.log(`[SLA BREACH ENGINE] Found ${breachedTickets.length} tickets with breached SLA deadlines. Escalating...`);
 
     for (const ticket of breachedTickets) {
-      const defaultRole = ticket.departmentId && ticket.department?.slug === 'electricity' ? 'AAE' : 'DSI';
-      const currentRole = ticket.assignedTo?.role || defaultRole;
-      const nextRole = getNextEscalationRole(currentRole);
+      // 1. Fetch category escalations
+      const category = await prisma.complaintCategory.findUnique({
+        where: { id: ticket.categoryId as string },
+        include: { escalations: { orderBy: { level: 'asc' } } }
+      });
+
+      if (!category || category.escalations.length === 0) continue;
+
+      const currentRole = ticket.assignedTo?.role || '';
+      const normalizedCurrent = normalizeRoleKey(currentRole);
+
+      // Find the index of the current role
+      let currentLevelIdx = -1;
+      for (let i = 0; i < category.escalations.length; i++) {
+        const stepRole = normalizeRoleKey(category.escalations[i].assigneeTitle);
+        if (stepRole === normalizedCurrent || ROLE_ALIASES[stepRole]?.includes(normalizedCurrent)) {
+          currentLevelIdx = i;
+          break;
+        }
+      }
+
+      const nextIdx = currentLevelIdx + 1;
+      if (nextIdx >= category.escalations.length) continue; // Already at top level
+
+      const nextRole = category.escalations[nextIdx].assigneeTitle;
 
       const updateData: any = {
         status: 'ESCALATED',
@@ -697,10 +852,12 @@ export const checkAndAutoEscalateSlaBreaches = async (): Promise<void> => {
 
       let supervisorName = '';
       if (nextRole && ticket.departmentId) {
-        const supervisor = await findEmployeeByEscalationRole(ticket.departmentId, nextRole);
+        const supervisor = await findEmployeeByEscalationRole(ticket.departmentId, nextRole, ticket.jurisdictionId || undefined);
         if (supervisor) {
           updateData.assignedToId = supervisor.id;
           supervisorName = `${supervisor.name} (${nextRole})`;
+        } else {
+          continue; // No one to escalate to
         }
       }
 

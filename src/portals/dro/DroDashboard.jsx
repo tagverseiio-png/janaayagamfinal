@@ -32,8 +32,8 @@ import api from '../../services/api';
         // Group by taluk for Revenue tickets (or all tickets if we want to show jurisdiction)
         const talukMap = {};
         districtTickets.forEach(ticket => {
-          const jName = ticket.taluk;
-          if (!talukMap[jName]) talukMap[jName] = { name: jName, open: 0, avgDays: 4 };
+          const jName = ticket.taluk || 'Local';
+          if (!talukMap[jName]) talukMap[jName] = { name: jName, open: 0, avgDays: 2.4 };
           if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
             talukMap[jName].open += 1;
           }
@@ -126,7 +126,7 @@ import api from '../../services/api';
             height="220px" 
             center={
               (() => {
-                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_district') : null;
+                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_emp_district') : null;
                 const dMap = {
                   "Chennai": [13.0827, 80.2707],
                   "Madurai": [9.9252, 78.1198],

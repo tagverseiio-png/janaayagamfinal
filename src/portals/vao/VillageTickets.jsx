@@ -6,7 +6,7 @@ import { AlertCircle, PlusCircle, CheckCircle, Search, ShieldAlert, Landmark, X 
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 
 export default function VillageTickets() {
  const { t } = useTranslation();
@@ -21,16 +21,14 @@ export default function VillageTickets() {
       const formatted = res.data.map(t => ({
         ...t,
         category: t.department?.name || 'Unknown',
+        district: t.district || 'Unknown',
         id: t.ticketNumber,
+        dbId: t.id,
         description: t.description,
         ward: t.jurisdiction?.name || 'Unknown',
-        created_at: t.createdAt || new Date().toISOString()
+        created_at: t.createdAt
       }));
       setTickets(formatted);
-
-      // Populate existing observations from local storage
-      const notesList = JSON.parse(localStorage.getItem('jn_vao_notes') || '{}');
-      setObservations(notesList);
     } catch (err) {
       console.error('Failed to fetch Village tickets:', err);
     }
@@ -40,18 +38,22 @@ export default function VillageTickets() {
  fetchTickets();
  }, []);
 
-  const handleSaveObservation = (ticketId) => {
+  const handleSaveObservation = async (ticketId) => {
     const note = observations[ticketId] || '';
-    
-    // Save to localStorage specifically for notes
-    const notesList = JSON.parse(localStorage.getItem('jn_vao_notes') || '{}');
-    notesList[ticketId] = note;
-    localStorage.setItem('jn_vao_notes', JSON.stringify(notesList));
+    const ticket = tickets.find(t => t.id === ticketId);
 
-    toast.success('Field observation saved successfully');
+    try {
+      await api.patch(`/tickets/${ticket.dbId}`, { 
+        notes: `VAO OBSERVATION: ${note}`
+      });
+      toast.success('Field observation saved successfully');
+      fetchTickets();
+    } catch (err) {
+      toast.error('Failed to save observation');
+    }
   };
 
- const handleAction = (ticketId, actionType) => {
+ const handleAction = async (ticketId, actionType) => {
  if (actionType === 'view') {
  const ticket = tickets.find(t => t.id === ticketId);
  if (ticket) setSelectedTicket(ticket);
@@ -68,15 +70,14 @@ export default function VillageTickets() {
 
  if (actionType === 'assign') {
  // Assign to local block (update status to in_progress)
- const updated = tickets.map(ticket => {
- if (ticket.id === ticketId) {
- return { ...ticket, status: 'in_progress' };
+ try {
+   const tNode = tickets.find(ticket => ticket.id === ticketId);
+   await api.patch(`/tickets/${tNode.dbId}`, { status: 'IN_PROGRESS', notes: 'Assigned to Block Field Engineer by VAO' });
+   toast.success('Ticket status changed: Assigned to Block Field Engineer');
+   fetchTickets();
+ } catch (err) {
+   toast.error('Failed to assign ticket');
  }
- return ticket;
- });
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- toast.success('Ticket status changed: Assigned to Block Field Engineer');
  }
  };
 

@@ -7,11 +7,14 @@ import {
 } from 'lucide-react';
 import TicketCard from '../../shared/components/TicketCard';
 
+import api, { getMediaUrl } from '../../services/api';
+
 export default function BulkActions() {
  const { t } = useTranslation();
  const [tickets, setTickets] = useState([]);
  const [selectedDept, setSelectedDept] = useState('roads');
  const [selectedIds, setSelectedIds] = useState([]);
+ const [loading, setLoading] = useState(true);
  
  // Confirmation Modal state
  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -20,26 +23,39 @@ export default function BulkActions() {
 
  const departments = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
  
- const districtsList = [
- 'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode', 
- 'Kancheepuram', 'Kanniyakumari', 'Karur', 'Krishnagiri', 'Madurai', 'Nagapattinam', 'Nilgiris', 
- 'Salem', 'Thanjavur', 'Tiruchirappalli', 'Tirunelveli', 'Tiruppur', 'Vellore', 'Viluppuram'
- ];
+ const [districts, setDistricts] = useState([]);
 
- const fetchTickets = () => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTickets(list);
- };
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
+
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/tickets');
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.district || 'Unknown',
+        id: t.ticketNumber,
+        dbId: t.id,
+        description: t.description,
+        ward: t.ward || 'Unknown',
+        created_at: t.createdAt
+      }));
+      setTickets(formatted);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch bulk tickets:', err);
+      setLoading(false);
+    }
+  };
 
  useEffect(() => {
  fetchTickets();
  }, []);
-
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- setSelectedIds([]); // Clear selection after save
- };
 
  const handleSelectToggle = (ticketId) => {
  if (selectedIds.includes(ticketId)) {
@@ -69,45 +85,32 @@ export default function BulkActions() {
  };
 
  // Execute bulk action
- const handleBulkExecute = () => {
- let updatedTickets = [...tickets];
+ const handleBulkExecute = async () => {
+   const selectedTicketObjects = tickets.filter(t => selectedIds.includes(t.id));
+   const dbIds = selectedTicketObjects.map(t => t.dbId);
 
- if (bulkActionType === 'resolve') {
- updatedTickets = tickets.map(ticket => {
- if (selectedIds.includes(ticket.id)) {
- return { 
- ...ticket, 
- status: 'resolved',
- resolution_text: 'Resolved in bulk by Department Secretary decision.'
- };
- }
- return ticket;
- });
- toast.success(`Successfully resolved ${selectedIds.length} complaints in bulk`);
- } 
- 
- else if (bulkActionType === 'priority') {
- updatedTickets = tickets.map(ticket => {
- if (selectedIds.includes(ticket.id)) {
- return { ...ticket, priority: bulkActionValue };
- }
- return ticket;
- });
- toast.success(`Successfully set priority to ${bulkActionValue.toUpperCase()} for ${selectedIds.length} complaints`);
- } 
- 
- else if (bulkActionType === 'assign') {
- updatedTickets = tickets.map(ticket => {
- if (selectedIds.includes(ticket.id)) {
- return { ...ticket, district: bulkActionValue };
- }
- return ticket;
- });
- toast.success(`Successfully reassigned ${selectedIds.length} complaints to ${bulkActionValue} District`);
- }
+   try {
+     const payload: any = { ids: dbIds };
+     if (bulkActionType === 'resolve') {
+       payload.status = 'RESOLVED';
+       payload.notes = 'Resolved in bulk by Department Secretary decision.';
+     } else if (bulkActionType === 'priority') {
+       payload.priority = bulkActionValue;
+       payload.notes = `Priority set to ${bulkActionValue.toUpperCase()} in bulk.`;
+     } else if (bulkActionType === 'assign') {
+       // Note: reassignment via bulk-update is handled as notes for now 
+       // but we could extend the backend to support it properly
+       payload.notes = `Reassigned to ${bulkActionValue} District in bulk.`;
+     }
 
- handleSaveTickets(updatedTickets);
- setConfirmModalOpen(false);
+     await api.patch('/tickets/bulk-update', payload);
+     toast.success(`Successfully applied bulk action to ${selectedIds.length} complaints`);
+     setConfirmModalOpen(false);
+     setSelectedIds([]);
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to execute bulk action');
+   }
  };
 
  // 1. Filter by category

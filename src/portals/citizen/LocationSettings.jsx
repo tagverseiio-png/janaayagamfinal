@@ -3,48 +3,49 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Shield, Lock, Unlock, MapPin, AlertTriangle, CheckCircle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import api from '../../services/api';
 import JurisdictionSelector from '../../shared/components/JurisdictionSelector';
 
-const districtsList = [
-  { name: "Chennai", tamil: "சென்னை" },
-  { name: "Coimbatore", tamil: "கோயம்புத்தூர்" },
-  { name: "Madurai", tamil: "மதுரை" },
-  { name: "Salem", tamil: "சேலம்" },
-  { name: "Trichy", tamil: "திருச்சி" },
-  { name: "Vellore", tamil: "வேலூர்" },
-  { name: "Tirunelveli", tamil: "திருநெல்வேலி" },
-  { name: "Erode", tamil: "ஈரோடு" },
-  { name: "Thanjavur", tamil: "தஞ்சாவூர்" },
-  { name: "Dindigul", tamil: "திண்டுக்கல்" },
-  { name: "Kancheepuram", tamil: "காஞ்சிபுரம்" },
-  { name: "Tiruppur", tamil: "திருப்பூர்" },
-  { name: "Thoothukudi", tamil: "தூத்துக்குடி" },
-  { name: "Nagercoil", tamil: "நாகர்கோவில்" },
-  { name: "Cuddalore", tamil: "கடலூர்" },
-  { name: "Villupuram", tamil: "விழுப்புரம்" },
-  { name: "Nagapattinam", tamil: "நாகப்பட்டினம்" },
-  { name: "Dharmapuri", tamil: "தர்மபுரி" },
-  { name: "Krishnagiri", tamil: "கிருஷ்ணகிரி" },
-  { name: "Namakkal", tamil: "நாமக்கல்" },
-  { name: "Karur", tamil: "கரூர்" },
-  { name: "Pudukkottai", tamil: "புதுக்கோட்டை" },
-  { name: "Sivaganga", tamil: "சிவகங்கை" },
-  { name: "Virudhunagar", tamil: "விருதுநகர்" },
-  { name: "Ramanathapuram", tamil: "ராமநாதபுரம்" },
-  { name: "Theni", tamil: "தேனி" },
-  { name: "Nilgiris", tamil: "நீலகிரி" },
-  { name: "Perambalur", tamil: "பெரம்பலூர்" },
-  { name: "Ariyalur", tamil: "அரியலூர்" },
-  { name: "Tiruvarur", tamil: "திருவாரூர்" },
-  { name: "Tiruvannamalai", tamil: "திருவண்ணாமலை" },
-  { name: "Kallakurichi", tamil: "கள்ளக்குறிச்சி" },
-  { name: "Ranipet", tamil: "ராணிப்பேட்டை" },
-  { name: "Tenkasi", tamil: "தென்காசி" },
-  { name: "Chengalpattu", tamil: "செங்கல்பட்டு" },
-  { name: "Mayiladuthurai", tamil: "மயிலாடுதுறை" },
-  { name: "Tirupattur", tamil: "திருப்பூர்" },
-  { name: "Harur", tamil: "ஹாரூர்" }
-];
+const TAMIL_DISTRICT_MAP = {
+  "Chennai": "சென்னை",
+  "Coimbatore": "கோயம்புத்தூர்",
+  "Madurai": "மதுரை",
+  "Salem": "சேலம்",
+  "Trichy": "திருச்சி",
+  "Vellore": "வேலூர்",
+  "Tirunelveli": "திருநெல்வேலி",
+  "Erode": "ஈரோடு",
+  "Thanjavur": "தஞ்சாவூர்",
+  "Dindigul": "திண்டுக்கல்",
+  "Kancheepuram": "காஞ்சிபுரம்",
+  "Tiruppur": "திருப்பூர்",
+  "Thoothukudi": "தூத்துக்குடி",
+  "Nagercoil": "நாகர்கோவில்",
+  "Cuddalore": "கடலூர்",
+  "Villupuram": "விழுப்புரம்",
+  "Nagapattinam": "நாகப்பட்டினம்",
+  "Dharmapuri": "தர்மபுரி",
+  "Krishnagiri": "கிருஷ்ணகிரி",
+  "Namakkal": "நாமக்கல்",
+  "Karur": "கரூர்",
+  "Pudukkottai": "புதுக்கோட்டை",
+  "Sivaganga": "சிவகங்கை",
+  "Virudhunagar": "விருதுநகர்",
+  "Ramanathapuram": "ராமநாதபுரம்",
+  "Theni": "தேனி",
+  "Nilgiris": "நீலகிரி",
+  "Perambalur": "பெரம்பலூர்",
+  "Ariyalur": "அரியலூர்",
+  "Tiruvarur": "திருவாரூர்",
+  "Tiruvannamalai": "திருவண்ணாமலை",
+  "Kallakurichi": "கள்ளக்குறிச்சி",
+  "Ranipet": "ராணிப்பேட்டை",
+  "Tenkasi": "தென்காசி",
+  "Chengalpattu": "செங்கல்பட்டு",
+  "Mayiladuthurai": "மயிலாடுதுறை",
+  "Tirupattur": "திருப்பூர்",
+  "Harur": "ஹாரூர்"
+};
 
 export default function LocationSettings() {
   const { i18n } = useTranslation();
@@ -52,6 +53,14 @@ export default function LocationSettings() {
 
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
+
+  const [districts, setDistricts] = useState([]);
+
+  useEffect(() => {
+    api.get('/metadata/jurisdictions?level=DISTRICT')
+      .then(res => setDistricts(res.data))
+      .catch(err => console.error("Failed to fetch districts", err));
+  }, []);
 
   // Aadhaar registered values
   const [aadhaarAddress, setAadhaarAddress] = useState('');
@@ -169,14 +178,13 @@ export default function LocationSettings() {
 
             // Attempt to resolve district from response
             const city = data.address?.city || data.address?.town || data.address?.county || "";
-            const foundDistrict = districtsList.find(d => 
-              city.toLowerCase().includes(d.name.toLowerCase()) || 
-              displayName.toLowerCase().includes(d.name.toLowerCase())
+            const foundDistrict = districts.find(d => 
+            city.toLowerCase().includes(d.name.toLowerCase()) || 
+            displayName.toLowerCase().includes(d.name.toLowerCase())
             );
             if (foundDistrict) {
-              setLivingDistrict(foundDistrict.name);
+            setLivingDistrict(foundDistrict.name);
             }
-
             toast.success(tLabel("GPS coordinates and address loaded successfully!", "ஜிபிஎஸ் ஒருங்கிணைப்புகள் மற்றும் முகவரி வெற்றிகரமாகப் பெறப்பட்டது!"));
           } else {
             // Fallback if API fails

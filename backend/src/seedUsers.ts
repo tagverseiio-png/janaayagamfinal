@@ -18,7 +18,14 @@ async function main() {
 
   const deptMap: Record<string, string> = {}; // name -> id
   for (const d of depts) {
-    let record = await prisma.department.findUnique({ where: { name: d.name } });
+    let record = await prisma.department.findFirst({ 
+      where: { 
+        OR: [
+          { name: d.name },
+          { slug: d.slug }
+        ]
+      } 
+    });
     if (!record) {
       record = await prisma.department.create({
         data: { name: d.name, slug: d.slug, isCivicFacing: true }
@@ -148,6 +155,28 @@ async function main() {
         { categoryId: categoryMap['CAT-SAN'], level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 5 },
         { categoryId: categoryMap['CAT-SAN'], level: 'L6', assigneeTitle: 'Commissioner', slaDays: 7 },
         { categoryId: categoryMap['CAT-SAN'], level: 'L7', assigneeTitle: 'Minister', slaDays: 10 }
+      ]
+    });
+  }
+
+  // Water Escalations
+  if (categoryMap['CAT-WTR']) {
+    await prisma.categoryEscalation.createMany({
+      data: [
+        { categoryId: categoryMap['CAT-WTR'], level: 'L1', assigneeTitle: 'Ward Officer', slaDays: 2 },
+        { categoryId: categoryMap['CAT-WTR'], level: 'L2', assigneeTitle: 'Assistant Engineer', slaDays: 5 },
+        { categoryId: categoryMap['CAT-WTR'], level: 'L3', assigneeTitle: 'Commissioner', slaDays: 10 }
+      ]
+    });
+  }
+
+  // Roads Escalations
+  if (categoryMap['CAT-RDC']) {
+    await prisma.categoryEscalation.createMany({
+      data: [
+        { categoryId: categoryMap['CAT-RDC'], level: 'L1', assigneeTitle: 'Ward Officer', slaDays: 2 },
+        { categoryId: categoryMap['CAT-RDC'], level: 'L2', assigneeTitle: 'Assistant Engineer', slaDays: 5 },
+        { categoryId: categoryMap['CAT-RDC'], level: 'L3', assigneeTitle: 'District Collector', slaDays: 10 }
       ]
     });
   }
@@ -304,210 +333,7 @@ async function main() {
     console.log(`Seeded AAE field worker: ${w.username}`);
   }
 
-  // 6. Seed Citizens and Tickets
-  let citizen = await prisma.citizen.findUnique({ where: { phone: '9876543210' } });
-  if (!citizen) {
-    citizen = await prisma.citizen.create({
-      data: {
-        phone: '9876543210',
-        name: 'Demo Citizen',
-        district: 'Chennai',
-        isVolunteer: true,
-        volunteerWard: 'Mylapore Section'
-      }
-    });
-  }
-
-  // Clear demo tickets to keep clean
-  await prisma.ticketClaim.deleteMany({});
-  await prisma.ticketHistory.deleteMany({});
-  await prisma.ticket.deleteMany({});
-
-  const ticketTemplates = [
-    {
-      title: 'Transformer Sparking on Luz Church Road',
-      description: 'The local transformer is sparking heavily since afternoon, causing frequent power cuts in Mylapore.',
-      categoryCode: 'CAT-ELE',
-      deptName: 'Electricity & Energy Resources',
-      status: 'ASSIGNED',
-      priority: 'CRITICAL',
-      assignedToUser: 'aae_electricity',
-      daysAgo: 2,
-      claimCount: 8,
-      jurisId: mylaporeSection.id
-    },
-    {
-      title: 'Sewage Overflow outside Mylapore Club',
-      description: 'Grave sewage leak on the main road, making it impossible for pedestrians to walk. Strong foul smell.',
-      categoryCode: 'CAT-SAN',
-      deptName: 'Health & Sanitation',
-      status: 'SUBMITTED',
-      priority: 'HIGH',
-      assignedToUser: 'dsi_admin',
-      daysAgo: 5,
-      claimCount: 12,
-      jurisId: ward1.id
-    },
-    {
-      title: 'Power Line snapped on Kutchery Road',
-      description: 'High voltage overhead wire snapped and is lying on the wet pavement. High hazard risk!',
-      categoryCode: 'CAT-ELE',
-      deptName: 'Electricity & Energy Resources',
-      status: 'IN_PROGRESS',
-      priority: 'CRITICAL',
-      assignedToUser: 'aae_electricity',
-      daysAgo: 0,
-      claimCount: 16,
-      jurisId: mylaporeSection.id
-    },
-    {
-      title: 'Garbage piling up near Kapaleeshwarar Tank',
-      description: 'Solid waste and plastic bins overflowing, attracting dogs and mosquitoes. Needs immediate clearance.',
-      categoryCode: 'CAT-SAN',
-      deptName: 'Health & Sanitation',
-      status: 'ASSIGNED',
-      priority: 'MEDIUM',
-      assignedToUser: 'dsi_admin',
-      daysAgo: 9,
-      claimCount: 4,
-      jurisId: ward1.id
-    },
-    {
-      title: 'Street Light out of order near CIT Colony',
-      description: 'Multiple streetlights in the 2nd cross street are dark for over a week, causing safety concerns.',
-      categoryCode: 'CAT-ELE',
-      deptName: 'Electricity & Energy Resources',
-      status: 'RESOLVED',
-      priority: 'LOW',
-      assignedToUser: 'aae_electricity',
-      daysAgo: 12,
-      claimCount: 2,
-      jurisId: mylaporeSection.id
-    },
-    {
-      title: 'Taluk Road Pot Holes',
-      description: 'Deep potholes on the main highway corridor causing traffic blockages and minor bike slips.',
-      categoryCode: 'CAT-RDC',
-      deptName: 'PWD / Roads',
-      status: 'SUBMITTED',
-      priority: 'HIGH',
-      assignedToUser: null,
-      daysAgo: 22,
-      claimCount: 32,
-      jurisId: chennaiSouthArea.id
-    },
-    {
-      title: 'Sanitation Leakage in Kodungaiyur division',
-      description: 'Overflowing open drains flooding the residential street. Blockage in the primary sewer pipeline.',
-      categoryCode: 'CAT-SAN',
-      deptName: 'Health & Sanitation',
-      status: 'ESCALATED',
-      priority: 'CRITICAL',
-      assignedToUser: 'si_admin',
-      daysAgo: 16,
-      claimCount: 22,
-      jurisId: division14.id
-    },
-    {
-      title: 'Drainage blockage at Zone 4 health complex',
-      description: 'Blockage in commercial drainage lines near the local medical center. Threat of waterborne diseases.',
-      categoryCode: 'CAT-SAN',
-      deptName: 'Health & Sanitation',
-      status: 'ESCALATED',
-      priority: 'CRITICAL',
-      assignedToUser: 'hi_admin',
-      daysAgo: 35,
-      claimCount: 41,
-      jurisId: zone4.id
-    }
-  ];
-
-  // Generate 10 more generic tickets to total 18 tickets
-  for (let i = 1; i <= 10; i++) {
-    const isEle = i % 2 === 0;
-    ticketTemplates.push({
-      title: isEle ? `Loose Electrical Cables - Scenario ${i}` : `Debris Accumulation - Spot ${i}`,
-      description: isEle 
-        ? `Overhead wires hanging low posing danger to heavy vehicles near spot number ${i}.`
-        : `Debris from construction piled on roadside blocking the corner lane near spot ${i}.`,
-      categoryCode: isEle ? 'CAT-ELE' : 'CAT-SAN',
-      deptName: isEle ? 'Electricity & Energy Resources' : 'Health & Sanitation',
-      status: i < 4 ? 'SUBMITTED' : i < 7 ? 'ASSIGNED' : 'RESOLVED',
-      priority: i < 3 ? 'CRITICAL' : i < 6 ? 'HIGH' : 'MEDIUM',
-      assignedToUser: isEle ? 'aae_electricity' : 'dsi_admin',
-      daysAgo: i * 3,
-      claimCount: i + 1,
-      jurisId: isEle ? mylaporeSection.id : ward1.id
-    });
-  }
-
-  for (let idx = 0; idx < ticketTemplates.length; idx++) {
-    const tNode = ticketTemplates[idx];
-    const ticketNumber = `TN-${new Date().getFullYear()}-${(idx + 1).toString().padStart(6, '0')}`;
-    const creationDate = new Date(Date.now() - tNode.daysAgo * 24 * 60 * 60 * 1000);
-    const deadlineDate = new Date(creationDate.getTime() + 2 * 24 * 60 * 60 * 1000); // 48h SLA
-
-    const ticket = await prisma.ticket.create({
-      data: {
-        ticketNumber,
-        title: tNode.title,
-        description: tNode.description,
-        status: tNode.status,
-        priority: tNode.priority,
-        channel: 'WEB',
-        lat: 13.0827 + (Math.random() - 0.5) * 0.05,
-        lng: 80.2707 + (Math.random() - 0.5) * 0.05,
-        citizenId: citizen.id,
-        departmentId: deptMap[tNode.deptName] || null,
-        categoryId: categoryMap[tNode.categoryCode] || null,
-        jurisdictionId: tNode.jurisId,
-        assignedToId: tNode.assignedToUser ? seededEmployees[tNode.assignedToUser] : null,
-        createdAt: creationDate,
-        updatedAt: creationDate,
-        deadline: deadlineDate,
-        claimCount: tNode.claimCount
-      }
-    });
-
-    // Seed history
-    await prisma.ticketHistory.create({
-      data: {
-        ticketId: ticket.id,
-        action: 'created',
-        notes: 'Ticket registered by citizen',
-        createdAt: creationDate
-      }
-    });
-
-    if (tNode.status !== 'SUBMITTED') {
-      await prisma.ticketHistory.create({
-        data: {
-          ticketId: ticket.id,
-          action: tNode.status === 'RESOLVED' ? 'status_changed_to_RESOLVED' : 'status_changed_to_' + tNode.status,
-          notes: `Updated status to ${tNode.status}`,
-          createdAt: new Date(creationDate.getTime() + 1 * 60 * 60 * 1000)
-        }
-      });
-    }
-
-    // Seed mock claims
-    for (let c = 0; c < tNode.claimCount; c++) {
-      const mockPhone = `98766${idx.toString().padStart(2, '0')}${c.toString().padStart(3, '0')}`;
-      let mockCit = await prisma.citizen.findUnique({ where: { phone: mockPhone } });
-      if (!mockCit) {
-        mockCit = await prisma.citizen.create({
-          data: { phone: mockPhone, name: `Mock Citizen ${idx}-${c}` }
-        });
-      }
-      try {
-        await prisma.ticketClaim.create({
-          data: { ticketId: ticket.id, citizenId: mockCit.id, createdAt: creationDate }
-        });
-      } catch (err) {}
-    }
-  }
-
-  console.log(`Successfully seeded ${ticketTemplates.length} demo tickets.`);
+  console.log('Seeded employees and field workers.');
   console.log('Master Seeding Complete!');
 }
 
