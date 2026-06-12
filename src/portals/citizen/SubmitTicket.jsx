@@ -182,7 +182,7 @@ export default function SubmitTicket() {
 
   const proceedWithSubmission = async () => {
     // Determine target ward and district for routing
-    let targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || '142'));
+    let targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || 'Ward 170'));
     if (targetWard === 'Ward 1') {
       targetWard = 'Ward 1: Kodungaiyur (West)';
     }

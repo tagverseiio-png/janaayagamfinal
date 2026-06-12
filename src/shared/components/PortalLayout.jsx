@@ -138,10 +138,10 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  ];
  case 'cm':
  return [
- { label: tLabel('Home', 'முகப்பு'), path: '/cm', icon: <Home className="w-5.5 h-5.5" /> },
- { label: tLabel('State', 'மாநிலம்'), path: '/cm/state', icon: <Globe className="w-5.5 h-5.5" /> },
- { label: tLabel('Emergency', 'அவசரம்'), path: '/cm/emergency', icon: <AlertTriangle className="w-5.5 h-5.5" /> },
- { label: tLabel('Escalations', 'மேல்முறை'), path: '/cm/escalations', icon: <ArrowUpRight className="w-5.5 h-5.5" /> },
+ { label: tLabel('State Command', 'மாநில கட்டளை'), path: '/cm', icon: <BarChart2 className="w-5.5 h-5.5" /> },
+ { label: tLabel('Grievances Matrix', 'புகார் தொகுதி'), path: '/cm/constituencies', icon: <Map className="w-5.5 h-5.5" /> },
+ { label: tLabel('Cabinet Rankings', 'அமைச்சரவை தரவரிசை'), path: '/cm/cabinet', icon: <Award className="w-5.5 h-5.5" /> },
+ { label: tLabel('CM Announcements', 'அரசு அறிவிப்புகள்'), path: '/cm/announcements', icon: <Megaphone className="w-5.5 h-5.5" /> },
  { label: tLabel('Profile', 'சுயவிவரம்'), path: '/cm/profile', icon: <User className="w-5.5 h-5.5" /> }
  ];
  default:

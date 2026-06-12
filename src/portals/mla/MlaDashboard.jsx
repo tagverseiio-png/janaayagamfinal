@@ -29,25 +29,13 @@ export default function MlaDashboard() {
   // State
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [wardPerformanceFilter, setWardPerformanceFilter] = useState('all');
   const [mlaTickets, setMlaTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [flagReason, setFlagReason] = useState('');
   const [showFlagModal, setShowFlagModal] = useState(false);
 
-  // MLACDS Works
-  const [mlacdsWorks, setMlacdsWorks] = useState(() => {
-    const defaultWorks = [
-      { id: '1', title: 'Rainwater Harvesting Pit', category: 'Water Sanitation', allotted: 850000, utilized: 800000, status: 'Completed', ward: 'Ward 1' },
-      { id: '2', title: 'Renovation of Municipal Park', category: 'Infrastructure', allotted: 1500000, utilized: 1200000, status: 'In Progress', ward: 'Ward 2' }
-    ];
-    const stored = localStorage.getItem('jn_mlacds_works');
-    return stored ? JSON.parse(stored) : defaultWorks;
-  });
 
-  const [newWorkTitle, setNewWorkTitle] = useState('');
-  const [newWorkCategory, setNewWorkCategory] = useState('');
-  const [newWorkAllotted, setNewWorkAllotted] = useState('');
-  const [newWorkWard, setNewWorkWard] = useState('');
 
   const fetchTickets = async () => {
     try {
@@ -105,47 +93,21 @@ export default function MlaDashboard() {
     }
   };
 
-  // Propose MLACDS Work
-  const handleProposeWork = (e) => {
-    e.preventDefault();
-    if (!newWorkTitle.trim() || !newWorkCategory || !newWorkAllotted) return;
-    
-    const newWork = {
-      id: Date.now().toString(),
-      title: newWorkTitle,
-      category: newWorkCategory,
-      allotted: parseFloat(newWorkAllotted),
-      utilized: 0,
-      status: 'Proposed',
-      ward: newWorkWard
-    };
 
-    const updated = [newWork, ...mlacdsWorks];
-    setMlacdsWorks(updated);
-    localStorage.setItem('jn_mlacds_works', JSON.stringify(updated));
-    setNewWorkTitle('');
-    setNewWorkAllotted('');
-    setNewWorkCategory('');
-    alert('MLACDS constituency work proposed successfully!');
-  };
-
-  // MLACDS Budget summaries
-  const TOTAL_MLACDS_BUDGET = 30000000; // 3 Crores INR
-  const allottedBudget = mlacdsWorks.reduce((sum, w) => sum + w.allotted, 0);
-  const utilizedBudget = mlacdsWorks.reduce((sum, w) => sum + w.utilized, 0);
-  const remainingBudget = TOTAL_MLACDS_BUDGET - allottedBudget;
 
   const totalOpen = mlaTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
   const totalResolved = mlaTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
   const resolutionRate = mlaTickets.length > 0 ? Math.round((totalResolved / mlaTickets.length) * 100) : 100;
 
   // Ward comparison data derived from tickets
-  const uniqueWards = [...new Set(mlaTickets.map(t => t.ward))].filter(w => w && w !== 'Unknown');
+  const defaultWards = ['Ward 170', 'Ward 171', 'Ward 172', 'Ward 173'];
+  const uniqueWards = [...new Set([...defaultWards, ...mlaTickets.map(t => t.ward)])].filter(w => w && w !== 'Unknown');
   const wardComparisonData = uniqueWards.map(w => {
     const wardTickets = mlaTickets.filter(t => t.ward === w);
     const wOpen = wardTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
     const wResolved = wardTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
     const rate = wardTickets.length > 0 ? Math.round((wResolved / wardTickets.length) * 100) : 100;
+    
     return { name: w, open: wOpen, resolved: wResolved, rate };
   }).sort((a, b) => a.rate - b.rate);
 
@@ -153,7 +115,6 @@ export default function MlaDashboard() {
     const menuItems = [
       { id: 'dashboard', label: tLabel('Overview', 'டாஷ்போர்டு'), icon: <BarChart2 /> },
       { id: 'tickets', label: tLabel('Constituency Grid', 'தொகுதி புகார்கள்'), icon: <FileText /> },
-      { id: 'mlacds', label: tLabel('MLACDS Works', 'சட்டமன்ற நிதி பணிகள்'), icon: <Landmark /> },
       { id: 'aging', label: tLabel('Delay Queue', 'தாமத புகார்கள்'), icon: <Clock /> },
       { id: 'pulse', label: tLabel('Public Pulse', 'பொதுமக்கள் கருத்து'), icon: <Activity /> },
     ];
@@ -224,28 +185,49 @@ export default function MlaDashboard() {
       </div>
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
         <StatCard label={tLabel('Constituency Open', 'தொகுதி நிலுவைகள்')} value={totalOpen} icon={<Activity className="text-blue-500 w-5 h-5" />} color="blue" />
         <StatCard label={tLabel('Resolution Rate', 'தீர்வு விகிதம்')} value={`${resolutionRate}%`} icon={<CheckCircle className="text-emerald-500 w-5 h-5" />} color="green" />
-        <StatCard label={tLabel('allottedMLACDS', 'ஒதுக்கப்பட்ட தொகுதி நிதி')} value={`Rs. ${(allottedBudget/100000).toFixed(1)} L`} icon={<Landmark className="text-purple-500 w-5 h-5" />} color="indigo" />
-        <StatCard label={tLabel('utilizedMLACDS', 'பயன்படுத்திய நிதி')} value={`Rs. ${(utilizedBudget/100000).toFixed(1)} L`} icon={<CheckCircle className="text-amber-500 w-5 h-5" />} color="orange" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Ward Breakdown Table */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80">
-          <h3 className="font-black text-slate-800 text-sm uppercase tracking-wide border-b border-slate-100 pb-3 mb-4">
-            Ward Performance Comparison
-          </h3>
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+            <h3 className="font-black text-slate-800 text-sm uppercase tracking-wide">
+              Ward Performance Comparison
+            </h3>
+            <select
+              value={wardPerformanceFilter}
+              onChange={e => setWardPerformanceFilter(e.target.value)}
+              className="text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg outline-none px-2 py-1"
+            >
+              <option value="all">All</option>
+              <option value="high">High</option>
+              <option value="moderate">Moderate</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
           <div className="space-y-4">
-            {wardComparisonData.map(w => (
+            {wardComparisonData.filter(w => {
+                if (wardPerformanceFilter === 'all') return true;
+                if (wardPerformanceFilter === 'high') return w.rate >= 75;
+                if (wardPerformanceFilter === 'moderate') return w.rate >= 50 && w.rate < 75;
+                if (wardPerformanceFilter === 'low') return w.rate < 50;
+                return true;
+              }).map(w => (
               <div key={w.name} className="space-y-1 text-xs">
                 <div className="flex justify-between font-bold text-slate-700 uppercase text-[10px]">
-                  <span className="font-black">{w.name}</span>
+                  <span className="font-black">{isNaN(w.name) ? w.name : `Ward ${w.name}`}</span>
                   <span>{w.rate}% resolved ({w.open} pending)</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FF6600] rounded-full" style={{ width: `${w.rate}%` }}></div>
+                  <div 
+                    className={`h-full rounded-full ${
+                      w.rate < 50 ? 'bg-red-500' : w.rate < 75 ? 'bg-orange-500' : 'bg-emerald-500'
+                    }`} 
+                    style={{ width: `${w.rate}%` }}
+                  ></div>
                 </div>
               </div>
             ))}
@@ -268,7 +250,7 @@ export default function MlaDashboard() {
                 const lng = 80.2674 + (idx * 0.002);
                 return (
                   <CircleMarker key={w} center={[lat, lng]} radius={10 + count} fillColor="#FF6600" color="#fff" weight={1.5} fillOpacity={0.8}>
-                    <Popup>{w}<br/>Open Issues: {count}</Popup>
+                    <Popup>{isNaN(w) ? w : `Ward ${w}`}<br/>Open Issues: {count}</Popup>
                   </CircleMarker>
                 );
               })}
@@ -371,124 +353,6 @@ export default function MlaDashboard() {
     </div>
   );
 
-  const renderMlacdsWorks = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-start">
-      {/* Works Tracker */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4 lg:col-span-2">
-        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3">
-          MLACDS Constituency Works Tracker
-        </h3>
-        
-        {/* Allotted vs Utilized Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-slate-50 border border-slate-150 p-3 rounded-xl text-center">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Total Allocation</span>
-            <span className="text-base font-black font-mono text-slate-800">Rs. 3.0 Crores</span>
-          </div>
-          <div className="bg-slate-50 border border-slate-150 p-3 rounded-xl text-center">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Fund Allotted</span>
-            <span className="text-base font-black font-mono text-blue-700">Rs. {(allottedBudget/100000).toFixed(1)} L</span>
-          </div>
-          <div className="bg-slate-50 border border-slate-150 p-3 rounded-xl text-center">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Fund Remaining</span>
-            <span className="text-base font-black font-mono text-emerald-700">Rs. {(remainingBudget/100000).toFixed(1)} L</span>
-          </div>
-        </div>
-
-        <div className="border border-slate-200 rounded-xl overflow-hidden mt-4">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 text-[9px] font-black text-slate-500 uppercase border-b border-slate-200">
-              <tr>
-                <th className="p-3">Work Project</th>
-                <th className="p-3">Ward</th>
-                <th className="p-3">Allotted Fund</th>
-                <th className="p-3">Utilized Fund</th>
-                <th className="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="text-xs font-bold text-slate-700">
-              {mlacdsWorks.map((work, idx) => (
-                <tr key={work.id || idx} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="p-3 font-black">{work.title}</td>
-                  <td className="p-3 text-slate-500">{work.ward}</td>
-                  <td className="p-3 font-mono text-blue-700">Rs. {(work.allotted/100000).toFixed(1)} L</td>
-                  <td className="p-3 font-mono text-emerald-700">Rs. {(work.utilized/100000).toFixed(1)} L</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                      work.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                      work.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-slate-100 text-slate-655'
-                    }`}>
-                      {work.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Propose Work Form */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
-        <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-4 flex items-center gap-1.5">
-          <Plus className="w-4 h-4 text-[#FF6600]" /> Propose MLACDS Work
-        </h4>
-        <form onSubmit={handleProposeWork} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-0.5 block">Constituency Work Description</label>
-            <input
-              type="text" required placeholder="E.g., Laying of storm water drain..."
-              value={newWorkTitle} onChange={e => setNewWorkTitle(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl outline-none p-2.5 focus:border-[#FF6600]"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-0.5 block">Category / Domain</label>
-            <select
-              required value={newWorkCategory} onChange={e => setNewWorkCategory(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl outline-none p-2.5"
-            >
-              <option value="">Select Category</option>
-              <option value="Water Sanitation">Water Sanitation</option>
-              <option value="Electricity">Electricity</option>
-              <option value="Infrastructure">Infrastructure</option>
-              <option value="Health Sector">Health Sector</option>
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-0.5 block">Allotted Fund Budget (INR)</label>
-            <input
-              type="number" required placeholder="E.g. 500000 for 5 Lakhs"
-              value={newWorkAllotted} onChange={e => setNewWorkAllotted(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl outline-none p-2.5 focus:border-[#FF6600]"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-0.5 block">Target Ward Location</label>
-            <select
-              value={newWorkWard} onChange={e => setNewWorkWard(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 text-xs font-bold rounded-xl outline-none p-2.5"
-            >
-              <option value="">Select Ward</option>
-              {uniqueWards.map(w => <option key={w} value={w}>{w}</option>)}
-            </select>
-          </div>
-
-          <button 
-            type="submit"
-            className="w-full bg-[#FF6600] hover:bg-[#E05500] text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors shadow-md"
-          >
-            Propose Work project
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-
   const renderAgingQueue = () => (
     <div className="h-full">
       <AgingQueue tickets={mlaTickets} jurisdiction={{ name: 'Mylapore' }} role="MLA" />
@@ -568,7 +432,6 @@ export default function MlaDashboard() {
             >
               {activeMenu === 'dashboard' && renderDashboard()}
               {activeMenu === 'tickets' && renderTicketsRegistry()}
-              {activeMenu === 'mlacds' && renderMlacdsWorks()}
               {activeMenu === 'aging' && renderAgingQueue()}
               {activeMenu === 'pulse' && renderPublicPulse()}
             </motion.div>

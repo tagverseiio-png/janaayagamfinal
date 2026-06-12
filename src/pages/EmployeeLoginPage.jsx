@@ -7,7 +7,7 @@ import api from '../services/api';
 
 const getDashboardRoute = (role, departmentName) => {
   const r = role ? role.toUpperCase() : '';
-  if (r === 'CM') return '/cm-dashboard';
+  if (r === 'CM') return '/cm';
   if (r === 'SUPERADMIN' || r === 'SUPER_ADMIN') return '/admin';
   if (r === 'MLA') return '/mla-dashboard';
   if (r === 'MINISTER') return '/minister-dashboard';

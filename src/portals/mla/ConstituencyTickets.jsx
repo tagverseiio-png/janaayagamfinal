@@ -36,7 +36,7 @@ export default function ConstituencyTickets() {
         id: t.ticketNumber,
         dbId: t.id,
         description: t.description,
-        ward: t.ward || 'Unknown',
+        ward: t.ward || t.jurisdiction?.name || 'Unknown',
         created_at: t.createdAt
       }));
       setTickets(formatted);
@@ -178,7 +178,7 @@ export default function ConstituencyTickets() {
  Constituency Grievance Queue
  </h2>
  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">
- Velachery Legislative Assembly Constituency
+ Mylapore Legislative Assembly Constituency
  </p>
  </div>
 

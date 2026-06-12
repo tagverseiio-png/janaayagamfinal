@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
-import { Landmark, AlertTriangle, Activity, Handshake, BookOpen, PhoneCall, Share2, Radio } from 'lucide-react';
+import { Landmark, AlertTriangle, Activity, Handshake, BookOpen, PhoneCall, Share2, Radio, X } from 'lucide-react';
 import TnMap from '../../shared/components/TnMap';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,6 +21,7 @@ export default function CitizenDashboard() {
   
   const [stats, setStats] = React.useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
   const [announcements, setAnnouncements] = React.useState([]);
+  const [showBanner, setShowBanner] = React.useState(true);
 
   React.useEffect(() => {
     api.get('/dashboard/stats').then(res => {
@@ -37,6 +38,8 @@ export default function CitizenDashboard() {
     }).catch(console.error);
   }, []);
 
+  const latestAnnouncement = announcements.length > 0 ? announcements[0] : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -44,6 +47,36 @@ export default function CitizenDashboard() {
       transition={{ duration: 0.4 }}
       className="space-y-4 pb-24 px-4 pt-4 max-w-5xl mx-auto"
     >
+      
+      {/* ── CM BROADCAST HIGH-PRIORITY BANNER ── */}
+      {latestAnnouncement && showBanner && (
+        <div className="w-full bg-[#0055aa] text-white rounded-[20px] p-4 shadow-lg border border-blue-400/30 flex items-start gap-3 relative overflow-hidden animate-in slide-in-from-top duration-500">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-24 bg-white/10 rounded-full blur-xl"></div>
+          <div className="p-2 bg-white/20 rounded-full shrink-0">
+            <Radio className="w-5 h-5 text-white animate-pulse" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded border border-white/10">
+                CM Office Broadcast
+              </span>
+              <span className="text-[9px] font-bold opacity-60">
+                {new Date(latestAnnouncement.createdAt).toLocaleString()}
+              </span>
+            </div>
+            <h3 className="text-sm font-black leading-tight">{latestAnnouncement.title}</h3>
+            <p className="text-[11px] font-bold leading-normal opacity-90 line-clamp-2">
+              {latestAnnouncement.text}
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowBanner(false)}
+            className="p-1 hover:bg-white/10 rounded-lg transition-colors shrink-0"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
       
       {/* ══ 0. LIVING LOCATION EMPTY WARNING BANNER ══ */}
       {!livingAddr && (
@@ -88,36 +121,6 @@ export default function CitizenDashboard() {
           </div>
         </div>
       </div>
-
-      {/* ══ 1.5 ANNOUNCEMENTS SECTION ══ */}
-      {announcements.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 px-1">
-            <Radio className="w-4 h-4 text-[#8B1A1A] animate-pulse" />
-            <h3 className="font-extrabold text-xs text-slate-700 uppercase tracking-widest">
-              {tLabel('Official Announcements', 'அரசு அறிவிப்புகள்')}
-            </h3>
-          </div>
-          <div className="flex flex-col gap-3">
-            {announcements.map((ann) => (
-              <div key={ann.id} className="bg-white border-l-4 border-l-[#8B1A1A] rounded-r-[16px] rounded-l-sm p-4 shadow-sm border border-slate-100">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-[13px] font-black text-slate-800">{ann.title}</h4>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase">{new Date(ann.createdAt).toLocaleDateString()}</span>
-                </div>
-                <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
-                  {ann.text}
-                </p>
-                {ann.district !== 'All' && (
-                  <div className="mt-2 inline-block px-2 py-0.5 bg-red-50 text-[#8B1A1A] text-[9px] font-black rounded-full border border-red-100">
-                    📍 {ann.district}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ══ 2. QUICK ACTION GRID (2x2 on mobile, 4 cols on desktop) ══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
