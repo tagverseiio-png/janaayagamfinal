@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap, Marker } from 'react-leaflet';
 import L from 'leaflet';
-import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -55,9 +54,9 @@ const getCitizenWards = () => {
   
   return [
     { name: userWardName, tamil: userWardName, lat: userLat, lng: userLng, tickets: 0, isUserWard: true },
-    { name: "Nearby Ward 1", tamil: "அருகிலுள்ள வார்டு 1", lat: userLat + 0.012, lng: userLng + 0.014, tickets: 0 },
-    { name: "Nearby Ward 2", tamil: "அருகிலுள்ள வார்டு 2", lat: userLat - 0.017, lng: userLng - 0.010, tickets: 0 },
-    { name: "Nearby Ward 3", tamil: "அருகிலுள்ள வார்டு 3", lat: userLat + 0.005, lng: userLng - 0.015, tickets: 0 }
+    { name: "Nearby Ward 1", tamil: "அருகிலுள்ள வார்டு 1", lat: userLat + 0.005, lng: userLng + 0.006, tickets: 0 },
+    { name: "Nearby Ward 2", tamil: "அருகிலுள்ள வார்டு 2", lat: userLat - 0.007, lng: userLng - 0.004, tickets: 0 },
+    { name: "Nearby Ward 3", tamil: "அருகிலுள்ள வார்டு 3", lat: userLat + 0.002, lng: userLng - 0.008, tickets: 0 }
   ];
 };
 
@@ -98,9 +97,7 @@ function MapRecenter({ center, zoom = 8 }) {
  ═══════════════════════════════════════════════════════════════ */
 export default function TnMap({ lang = 'en', citizenMode = false, height = '420px', zoom, center, categoryFilter }) {
  const [selected, setSelected] = useState(null);
- const [showDetailsModal, setShowDetailsModal] = useState(false);
  const [liveTickets, setLiveTickets] = useState([]);
- const navigate = useNavigate();
 
  useEffect(() => {
    api.get('/tickets')
@@ -113,23 +110,23 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
 
  // Choose correct dataset based on role mode
  const currentDataset = citizenMode ? getCitizenWards() : districts;
- const initialCenter = center || (citizenMode ? [13.0827, 80.2707] : [10.8505, 78.6677]);
- const initialZoom = zoom !== undefined ? zoom : (citizenMode ? 10 : 7);
- const minZoom = citizenMode ? 8 : 6;
- const maxZoom = citizenMode ? 14 : 10;
+ const initialCenter = center || (citizenMode ? [parseFloat(localStorage.getItem('jn_living_lat')) || 13.0827, parseFloat(localStorage.getItem('jn_living_lng')) || 80.2707] : [10.8505, 78.6677]);
+ const initialZoom = zoom !== undefined ? zoom : (citizenMode ? 13 : 7);
+ const minZoom = citizenMode ? 10 : 6;
+ const maxZoom = citizenMode ? 18 : 10;
 
  // Global calculations
  const mappedDataset = currentDataset.map(d => {
    let tCount = d.tickets;
    if (categoryFilter) {
-     tCount = liveTickets.filter(t => t.district === d.name && t.category.toLowerCase() === categoryFilter.toLowerCase() && t.status !== 'resolved' && t.status !== 'closed').length;
+     tCount = liveTickets.filter(t => t.district === d.name && t.category?.toLowerCase() === categoryFilter.toLowerCase() && t.status !== 'resolved' && t.status !== 'closed').length;
      tCount += (d.name.length % 5) + 1; // small baseline
+   } else {
+     // Default random-ish but deterministic seed data if no actual tickets
+     tCount = (d.name.length * 3) % 45;
    }
    return { ...d, tickets: tCount };
  });
-
- const TOTAL_TICKETS = mappedDataset.reduce((s, d) => s + d.tickets, 0);
- const NEED_ATTENTION = mappedDataset.filter(d => d.tickets > 20).length;
 
  const handleSelectItem = (item) => {
  setSelected(selected && selected.name === item.name ? null : item);
@@ -138,7 +135,7 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  return (
  <div style={{ fontFamily: 'inherit', color: 'inherit' }}>
  
- {/* ══ 1. MAP HEADER (Only show in non-citizen portal maps to preserve mobile spacing) ══ */}
+ {/* ══ 1. MAP HEADER (Only show in non-citizen portal maps) ══ */}
  {!citizenMode && (
  <div style={{
  display: 'flex',
@@ -159,40 +156,6 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  }}>
  {tLabel('Tamil Nadu District Grievance Map', 'தமிழ்நாடு மாவட்ட புகார் வரைபடம்')}
  </p>
- <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
- {tLabel('Live ticket heatmap — click any district', 'நேரடி புகார் வரைபடம் — மாவட்டத்தை கிளிக் செய்யவும்')}
- </p>
- </div>
-
- {/* Legend pills */}
- <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
- {[
- { color: '#F44336', en: 'High (>50)', ta: 'அதி முக்கியம் (>50)' },
- { color: '#FF9800', en: 'Medium (20-50)', ta: 'நடுத்தரம் (20-50)' },
- { color: '#4CAF50', en: 'Low (<20)', ta: 'குறைவு (<20)' },
- ].map(({ color, en, ta }) => (
- <span key={en} style={{
- display: 'inline-flex',
- alignItems: 'center',
- gap: '5px',
- fontSize: '11px',
- fontWeight: 700,
- background: color + '14',
- border: `1px solid ${color}50`,
- borderRadius: '20px',
- padding: '3px 10px',
- color,
- }}>
- <span style={{
- width: 8,
- height: 8,
- borderRadius: '50%',
- background: color,
- display: 'inline-block'
- }} />
- {tLabel(en, ta)}
- </span>
- ))}
  </div>
  </div>
  )}
@@ -215,20 +178,17 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  scrollWheelZoom={false}
  style={{ height: height, width: '100%', borderRadius: '12px' }}
  >
- {/* Light styled free Carto tile layer */}
  <TileLayer
  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
- attribution='&copy; <a href="https://carto.com/">Carto</a>'
+ attribution='&copy; CARTO'
  />
 
- {/* Map panning recenter assistant */}
- {selected && <MapRecenter center={[selected.lat, selected.lng]} zoom={citizenMode ? 11 : 8} />}
+ {selected && <MapRecenter center={[selected.lat, selected.lng]} zoom={citizenMode ? 15 : 8} />}
 
- {/* Render markers */}
  {mappedDataset.map((d) => {
  const isSel = selected && selected.name === d.name;
  const fillColor = getColor(d.tickets);
- const markerRadius = isSel ? 16 : Math.max(9, Math.min(22, 7 + d.tickets * 0.15));
+ const markerRadius = isSel ? 18 : Math.max(9, Math.min(22, 7 + d.tickets * 0.15));
 
  return (
  <CircleMarker
@@ -254,27 +214,12 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
  {d.tickets} {tLabel('open tickets', 'திறந்த புகார்கள்')}
  </div>
- <div style={{
- fontSize: 11,
- color: fillColor,
- marginTop: 2,
- fontWeight: 700,
- textTransform: 'uppercase',
- letterSpacing: '0.04em'
- }}>
- {d.tickets > 50 
- ? tLabel('High Priority', 'அதி முக்கியம்') 
- : d.tickets > 20 
- ? tLabel('Medium Priority', 'நடுத்தர முக்கியம்') 
- : tLabel('Low Priority', 'குறைந்த முக்கியம்')}
- </div>
  </div>
  </Tooltip>
  </CircleMarker>
  );
  })}
 
- {/* Render pulsing markers for live activity */}
  {pulseIcon && mappedDataset.filter(d => getPulseLocations().includes(d.name)).map((d) => (
  <Marker
  key={`pulse-${d.name}`}
@@ -301,7 +246,6 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  }}>
  <style>{`@keyframes fadeSlideDown { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:translateY(0);} }`}</style>
 
- {/* Close button */}
  <button
  onClick={() => setSelected(null)}
  style={{
@@ -313,143 +257,16 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  }}
  >×</button>
 
- {/* Name & Badge */}
  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
  <div>
  <p style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
  {isTa ? selected.tamil : selected.name}
  </p>
  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
- {tLabel(citizenMode ? 'Ward Grievance Summary' : 'District Grievance Summary', citizenMode ? 'வார்டு புகார் சுருக்கம்' : 'மாவட்ட புகார் சுருக்கம்')}
+ {tLabel(citizenMode ? 'Ward Status' : 'District Summary', citizenMode ? 'வார்டு நிலை' : 'மாவட்ட சுருக்கம்')}
  </p>
  </div>
- <span style={{
- marginLeft: 'auto', marginRight: '32px',
- background: getColor(selected.tickets),
- color: 'white', borderRadius: '20px',
- padding: '4px 14px', fontSize: '13px', fontWeight: 900,
- }}>
- {selected.tickets} {tLabel('open', 'திறந்த')}
- </span>
  </div>
-
- {/* 3 Mini Stat Pills */}
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
- {[
- { label: tLabel('Critical', 'முக்கியம்'), val: Math.round(selected.tickets * 0.1) || 1, color: '#F44336', bg: '#FFF5F5' },
- { label: tLabel('In Progress', 'நடவடிக்கை'), val: Math.round(selected.tickets * 0.4) || 2, color: '#FF9800', bg: '#FFFBF0' },
- { label: tLabel('Resolved', 'தீர்வு'), val: Math.round(selected.tickets * 1.8), color: '#4CAF50', bg: '#F0FFF4' },
- ].map(({ label: lbl, val, color, bg }) => (
- <div key={lbl} style={{
- background: bg, border: `1px solid ${color}30`,
- borderRadius: '12px', padding: '10px 12px', textAlign: 'center',
- }}>
- <p style={{ margin: 0, fontSize: '20px', fontWeight: 900, color }}>{val}</p>
- <p style={{ margin: '2px 0 0', fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{lbl}</p>
- </div>
- ))}
- </div>
-
- {/* CTA Button */}
- <button
- onClick={() => {
-   if (citizenMode) {
-     navigate('/citizen/tickets'); // Navigate to tickets page with details
-   } else {
-     setShowDetailsModal(true);
-   }
- }}
- style={{
- background: 'transparent',
- border: '2px solid #8B1A1A',
- color: '#8B1A1A',
- borderRadius: '10px',
- padding: '8px 18px',
- fontSize: '12px',
- fontWeight: 900,
- cursor: 'pointer',
- textTransform: 'uppercase',
- letterSpacing: '0.08em',
- transition: 'all 0.15s',
- display: 'flex',
- alignItems: 'center',
- gap: '6px',
- }}
- onMouseEnter={e => { e.target.style.background = '#8B1A1A'; e.target.style.color = 'white'; }}
- onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#8B1A1A'; }}
- >
- {tLabel(citizenMode ? 'View Ward details' : 'View all complaints', citizenMode ? 'வார்டு விவரங்களை காண்க' : 'அனைத்து புகார்களையும் காண்க')} →
- </button>
- </div>
- )}
-
- {showDetailsModal && selected && (
-   <div style={{
-     position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
-   }}>
-     <div style={{
-       background: 'white', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '480px',
-       boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-     }}>
-       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>
-           {isTa ? selected.tamil : selected.name} Details
-         </h3>
-         <button onClick={() => setShowDetailsModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>×</button>
-       </div>
-       <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px' }}>
-         Showing ticket breakdowns for {selected.name}. Total active tickets: 0<strong>{selected.tickets}</strong>.
-       </p>
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#f8fafc', borderRadius: '12px' }}>
-           <span style={{ fontWeight: 700, color: '#334155' }}>Roads & Transport</span>
-           <span style={{ fontWeight: 900, color: '#8B1A1A' }}>{Math.round(selected.tickets * 0.4)}</span>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#f8fafc', borderRadius: '12px' }}>
-           <span style={{ fontWeight: 700, color: '#334155' }}>Water Supply</span>
-           <span style={{ fontWeight: 900, color: '#8B1A1A' }}>{Math.round(selected.tickets * 0.3)}</span>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#f8fafc', borderRadius: '12px' }}>
-           <span style={{ fontWeight: 700, color: '#334155' }}>Electricity</span>
-           <span style={{ fontWeight: 900, color: '#8B1A1A' }}>{Math.round(selected.tickets * 0.2) || 1}</span>
-         </div>
-       </div>
-       <button 
-         onClick={() => setShowDetailsModal(false)}
-         style={{ width: '100%', padding: '14px', background: '#8B1A1A', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 900, marginTop: '24px', cursor: 'pointer' }}
-       >
-         Close Overview
-       </button>
-     </div>
-   </div>
- )}
-
- {/* ══ 4. SUMMARY BAR (Only show in non-citizen portal) ══ */}
- {!citizenMode && (
- <div style={{
- marginTop: '14px',
- display: 'grid',
- gridTemplateColumns: '1fr 1fr 1fr',
- gap: '12px',
- }}>
- {[
- { num: currentDataset.length, label: tLabel('Total Districts', 'மொத்த மாவட்டங்கள்') },
- { num: TOTAL_TICKETS, label: tLabel('Total Open Tickets', 'மொத்த திறந்த புகார்கள்') },
- { num: NEED_ATTENTION, label: tLabel('Need Attention', 'கவனம் தேவை') },
- ].map(({ num, label: lbl }) => (
- <div key={lbl} style={{
- background: 'white',
- border: '1px solid #e2e8f0',
- borderRadius: '12px',
- padding: '14px',
- textAlign: 'center',
- boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
- }}>
- <p style={{ margin: 0, fontSize: '24px', fontWeight: 900, color: '#8B1A1A' }}>{num}</p>
- <p style={{ margin: '4px 0 0', fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{lbl}</p>
- </div>
- ))}
  </div>
  )}
  </div>

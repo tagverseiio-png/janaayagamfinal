@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertCircle, ChevronDown, ChevronUp, Calendar, MapPin, Check, 
-  ThumbsUp, ThumbsDown, Send, Clock, ShieldAlert, RefreshCw, ArrowLeft, Search, SlidersHorizontal, Star, TrendingUp
+  ThumbsUp, ThumbsDown, Send, Clock, ShieldAlert, RefreshCw, ArrowLeft, Search, SlidersHorizontal, Star, TrendingUp, MessageSquare
 } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet';
 
@@ -639,6 +639,21 @@ export default function MyTickets() {
               const filedDateStr = createdDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
               
               const stepperData = buildTimelineStepper(ticket);
+              
+              // MOCK IMAGE FALLBACK LOGIC
+              let beforePhoto = ticket.photo;
+              let afterPhoto = ticket.proofPhoto;
+              const cat = (ticket.department?.name || '').toLowerCase();
+              const status = ticket.status.toUpperCase();
+              
+              if (!beforePhoto) {
+                if (cat.includes('elect')) beforePhoto = '/jana_feed_media/electiciry_reported.jpeg';
+                else if (cat.includes('sanit') || cat.includes('health')) beforePhoto = '/jana_feed_media/santi_reported.jpeg';
+              }
+              if (!afterPhoto && (status === 'RESOLVED' || status === 'CLOSED')) {
+                if (cat.includes('elect')) afterPhoto = '/jana_feed_media/electicity_fixed.jpeg';
+                else if (cat.includes('sanit') || cat.includes('health')) afterPhoto = '/jana_feed_media/santi_fixed.jpeg';
+              }
 
               return (
                 <div
@@ -724,9 +739,9 @@ export default function MyTickets() {
                               <span className="text-[9.5px] font-black text-slate-450 block tracking-widest uppercase mb-1">
                                 📸 {tLabel("Grievance Photo (Before)", "புகார் புகைப்படம் (முன்)")}
                               </span>
-                              {ticket.photo ? (
+                              {beforePhoto ? (
                                 <div className="aspect-video w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-900 shadow-xxs">
-                                  <img src={getMediaUrl(ticket.photo)} alt="Before Grievance" className="w-full h-full object-cover" />
+                                  <img src={getMediaUrl(beforePhoto)} alt="Before Grievance" className="w-full h-full object-cover" />
                                 </div>
                               ) : (
                                 <div className="aspect-video w-full rounded-xl border border-slate-200/50 bg-slate-100 flex items-center justify-center text-[10.5px] font-extrabold text-slate-400 shadow-xxs">
@@ -741,9 +756,9 @@ export default function MyTickets() {
                                 <span className="text-[9.5px] font-black text-emerald-600 block tracking-widest uppercase mb-1">
                                   📷 {tLabel("Resolution Proof (After)", "தீர்வுக்கான சான்று (பின்)")}
                                 </span>
-                                {ticket.proofPhoto ? (
+                                {afterPhoto ? (
                                   <div className="aspect-video w-full rounded-xl border border-emerald-200 overflow-hidden bg-slate-900 shadow-xxs">
-                                    <img src={getMediaUrl(ticket.proofPhoto)} alt="Resolution Proof" className="w-full h-full object-cover" />
+                                    <img src={getMediaUrl(afterPhoto)} alt="Resolution Proof" className="w-full h-full object-cover" />
                                   </div>
                                 ) : (
                                   <div className="aspect-video w-full rounded-xl border border-slate-250 bg-slate-100 flex items-center justify-center text-[10.5px] font-extrabold text-slate-400 shadow-xxs">

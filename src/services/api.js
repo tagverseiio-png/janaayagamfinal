@@ -6,7 +6,7 @@ const api = axios.create({
 
 export const getMediaUrl = (path) => {
   if (!path) return null;
-  if (path.startsWith('http')) return path;
+  if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/jana_feed_media')) return path;
   const baseUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5001/api`;
   const host = baseUrl.replace('/api', '');
   return `${host}${path}`;

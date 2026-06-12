@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Camera, X, RefreshCw, Check, AlertTriangle } from 'lucide-react';
+import { Shield, Camera, X, RefreshCw, Check, AlertTriangle, Image } from 'lucide-react';
 
 export default function GeoCamera({ onCapture, onCancel, title = "Field Verification" }) {
  const videoRef = useRef(null);
@@ -265,6 +265,19 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  setIsCaptured(true);
  };
 
+ // 5. Gallery Upload Attachment Option
+ const handleFileUpload = (e) => {
+   const file = e.target.files[0];
+   if (file) {
+     const reader = new FileReader();
+     reader.onloadend = () => {
+       setCapturedPhoto(reader.result);
+       setIsCaptured(true);
+     };
+     reader.readAsDataURL(file);
+   }
+ };
+
  const handleUsePhoto = () => {
  // Return geotag metadata
  onCapture({
@@ -395,15 +408,31 @@ export default function GeoCamera({ onCapture, onCancel, title = "Field Verifica
  {/* ══ BOTTOM CONTROL BAR ══ */}
  <div className="p-6 bg-black/60 border-t border-white/10 flex justify-center items-center shrink-0">
  {!isCaptured ? (
- // Large white Capture button
- <button
- onClick={handleCapture}
- className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-slate-700 active:scale-90 transition-transform cursor-pointer"
- >
- <div className="w-12 h-12 bg-white rounded-full border border-slate-900 flex items-center justify-center">
- <Camera className="w-6 h-6 text-slate-800" />
+ <div className="flex items-center gap-8">
+   {/* Gallery Upload Option */}
+   <label className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all cursor-pointer">
+     <input 
+       type="file" 
+       accept="image/*" 
+       onChange={handleFileUpload}
+       className="hidden" 
+     />
+     <Image className="w-5 h-5 text-white" />
+   </label>
+
+   {/* Large white Capture button */}
+   <button
+    onClick={handleCapture}
+    className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-slate-700 active:scale-90 transition-transform cursor-pointer"
+   >
+    <div className="w-12 h-12 bg-white rounded-full border border-slate-900 flex items-center justify-center">
+     <Camera className="w-6 h-6 text-slate-800" />
+    </div>
+   </button>
+
+   {/* Spacer to keep capture button centered */}
+   <div className="w-[52px]"></div>
  </div>
- </button>
  ) : (
  // Use / Retake buttons
  <div className="flex gap-4 w-full max-w-xs">

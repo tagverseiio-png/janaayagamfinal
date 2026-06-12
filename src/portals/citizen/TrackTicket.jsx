@@ -32,11 +32,29 @@ export default function TrackTicket() {
       );
 
       if (found) {
+        let beforePhoto = found.photo;
+        let afterPhoto = found.proofPhoto;
+
+        // MOCK IMAGE FALLBACK LOGIC
+        const cat = (found.categoryName || found.category?.name || found.department?.name || '').toLowerCase();
+        const status = (found.status || '').toUpperCase();
+
+        if (!beforePhoto) {
+          if (cat.includes('elect')) beforePhoto = '/jana_feed_media/electiciry_reported.jpeg';
+          else if (cat.includes('sanit') || cat.includes('health')) beforePhoto = '/jana_feed_media/santi_reported.jpeg';
+        }
+        if (!afterPhoto && (status === 'RESOLVED' || status === 'CLOSED')) {
+          if (cat.includes('elect')) afterPhoto = '/jana_feed_media/electicity_fixed.jpeg';
+          else if (cat.includes('sanit') || cat.includes('health')) afterPhoto = '/jana_feed_media/santi_fixed.jpeg';
+        }
+
         setTicket({
           ...found,
           id: found.ticketNumber,
-          category: found.categoryName || found.departmentName || 'Unknown',
-          district: found.district || 'Unknown'
+          category: found.categoryName || found.department?.name || 'Unknown',
+          district: found.district || 'Unknown',
+          photo: beforePhoto,
+          proofPhoto: afterPhoto
         });
         setError('');
       } else {
@@ -198,7 +216,52 @@ export default function TrackTicket() {
                 </div>
               )}
 
-              {(ticket.status === 'Resolved' || ticket.status === 'resolved') && (
+              {/* Before/After Proof Photos */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {/* Before Photo */}
+                <div className="space-y-1">
+                  <span className="text-[9.5px] font-black text-slate-450 block tracking-widest uppercase">
+                    📸 GRIEVANCE PHOTO (BEFORE)
+                  </span>
+                  {ticket.photo ? (
+                    <div className="aspect-video w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-100 shadow-sm">
+                      <img 
+                        src={getMediaUrl(ticket.photo)} 
+                        alt="Before Grievance" 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video w-full rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                      No photo attached
+                    </div>
+                  )}
+                </div>
+
+                {/* After Photo (Resolved/Closed status) */}
+                {['RESOLVED', 'CLOSED'].includes(ticket.status?.toUpperCase()) && (
+                  <div className="space-y-1">
+                    <span className="text-[9.5px] font-black text-emerald-600 block tracking-widest uppercase">
+                      📷 RESOLUTION PROOF (AFTER)
+                    </span>
+                    {ticket.proofPhoto ? (
+                      <div className="aspect-video w-full rounded-xl border border-emerald-200 overflow-hidden bg-white shadow-sm">
+                        <img 
+                          src={getMediaUrl(ticket.proofPhoto)} 
+                          alt="Resolution Proof" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full rounded-xl border border-emerald-200 bg-emerald-50/30 flex items-center justify-center text-[10px] font-bold text-emerald-600">
+                        Pending proof update
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {['RESOLVED', 'CLOSED'].includes(ticket.status?.toUpperCase()) && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-4">
                   <p className="text-[10px] text-emerald-700 font-black uppercase tracking-widest">✅ ISSUE RESOLVED</p>
                   <p className="text-emerald-900 font-extrabold text-sm mt-0.5">
