@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap, Marker } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -92,6 +93,16 @@ function MapRecenter({ center, zoom = 8 }) {
  return null;
 }
 
+function MapInvalidator() {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+  }, [map]);
+  return null;
+}
+
 /* ═══════════════════════════════════════════════════════════════
  TnMap Component
  ═══════════════════════════════════════════════════════════════ */
@@ -110,7 +121,15 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
 
  // Choose correct dataset based on role mode
  const currentDataset = citizenMode ? getCitizenWards() : districts;
- const initialCenter = center || (citizenMode ? [parseFloat(localStorage.getItem('jn_living_lat')) || 13.0827, parseFloat(localStorage.getItem('jn_living_lng')) || 80.2707] : [10.8505, 78.6677]);
+ 
+ const parseCoord = (key, fallback) => {
+   const val = localStorage.getItem(key);
+   const parsed = parseFloat(val);
+   return isNaN(parsed) ? fallback : parsed;
+ };
+
+ const initialCenter = center || (citizenMode ? [parseCoord('jn_living_lat', 13.0827), parseCoord('jn_living_lng', 80.2707)] : [10.8505, 78.6677]);
+ console.log('[TnMap] Initial Center:', initialCenter);
  const initialZoom = zoom !== undefined ? zoom : (citizenMode ? 13 : 7);
  const minZoom = citizenMode ? 10 : 6;
  const maxZoom = citizenMode ? 18 : 10;
@@ -133,7 +152,7 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  };
 
  return (
- <div style={{ fontFamily: 'inherit', color: 'inherit' }}>
+ <div style={{ fontFamily: 'inherit', color: 'inherit', height: height, width: '100%' }}>
  
  {/* ══ 1. MAP HEADER (Only show in non-citizen portal maps) ══ */}
  {!citizenMode && (
@@ -167,7 +186,9 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  border: '1px solid #e2e8f0',
  overflow: 'hidden',
  boxShadow: '0 2px 12px rgba(0,51,102,0.06)',
- position: 'relative'
+ position: 'relative',
+ height: height,
+ width: '100%'
  }}>
  <MapContainer
  center={initialCenter}
@@ -176,11 +197,11 @@ export default function TnMap({ lang = 'en', citizenMode = false, height = '420p
  maxZoom={maxZoom}
  zoomControl={!citizenMode}
  scrollWheelZoom={false}
- style={{ height: height, width: '100%', borderRadius: '12px' }}
+ style={{ height: '100%', width: '100%', borderRadius: '12px', background: '#e5e7eb' }}
  >
  <TileLayer
- url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
- attribution='&copy; CARTO'
+ url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+ attribution='&copy; OpenStreetMap'
  />
 
  {selected && <MapRecenter center={[selected.lat, selected.lng]} zoom={citizenMode ? 15 : 8} />}

@@ -4,7 +4,6 @@ import { useLanguage } from '../../context/LanguageContext';
 import { motion } from 'framer-motion';
 import { Landmark, AlertTriangle, Handshake, BookOpen, PhoneCall, Share2, Radio, X } from 'lucide-react';
 import TnMap from '../../shared/components/TnMap';
-import 'leaflet/dist/leaflet.css';
 
 import api from '../../services/api';
 
@@ -119,59 +118,7 @@ export default function CitizenDashboard() {
         </div>
       </div>
 
-      {/* ══ 2. LIVE DISTRICT RADAR SECTION ══ */}
-      <div className="bg-white rounded-[24px] p-5 border border-slate-200 shadow-sm relative overflow-hidden">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4 select-none relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#8B1A1A]/5 rounded-xl">
-              <Radio className="w-5 h-5 text-[#8B1A1A] animate-pulse" />
-            </div>
-            <div>
-              <h3 className="font-black text-[14px] text-slate-800 tracking-tight uppercase">
-                {tLabel('Live District Radar', 'நேரடி மாவட்ட ரேடார்')}
-              </h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">
-                {tLabel(`Location: ${livingDistrict}`, `இடம்: ${livingDistrict}`)}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest tracking-widest">LIVE</span>
-          </div>
-        </div>
-
-        {/* Map */}
-        <div className="rounded-2xl overflow-hidden relative mb-4 border border-slate-100 shadow-inner h-[260px] bg-slate-50" style={{ zIndex: 0 }}>
-          <TnMap 
-            lang={lang} 
-            citizenMode={true} 
-            height="100%" 
-            zoom={13}
-          />
-        </div>
-
-        {/* Summary Stats Rows */}
-        <div className="grid grid-cols-3 gap-3 pt-1">
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
-             <p className="text-base font-black text-slate-800">{stats.totalActive > 10 ? Math.floor(stats.totalActive/8) + 1 : 2}</p>
-             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active</p>
-          </div>
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
-             <p className="text-base font-black text-emerald-600">{stats.totalResolved > 10 ? Math.floor(stats.totalResolved/8) + 3 : 14}</p>
-             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fixed</p>
-          </div>
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
-             <p className="text-base font-black text-rose-500">{stats.totalEscalated > 5 ? 1 : 0}</p>
-             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Critical</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ 3. QUICK ACTION GRID ══ */}
+      {/* ══ 2. QUICK ACTION GRID ══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 select-none pb-4">
         <button
           onClick={() => navigate(isVolunteer ? '/citizen/volunteer-dashboard' : '/citizen/volunteer-signup')}
@@ -241,6 +188,59 @@ export default function CitizenDashboard() {
           </div>
         </button>
       </div>
+
+      {/* ══ 3. LIVE DISTRICT RADAR SECTION ══ */}
+      <div className="bg-white rounded-[24px] p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4 select-none relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-[#8B1A1A]/5 rounded-xl">
+              <Radio className="w-5 h-5 text-[#8B1A1A] animate-pulse" />
+            </div>
+            <div>
+              <h3 className="font-black text-[14px] text-slate-800 tracking-tight uppercase">
+                {tLabel('Live District Radar', 'நேரடி மாவட்ட ரேடார்')}
+              </h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+                {tLabel(`Location: ${livingDistrict}`, `இடம்: ${livingDistrict}`)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest tracking-widest">LIVE</span>
+          </div>
+        </div>
+
+        {/* Map */}
+        <div className="rounded-2xl relative mb-4 border border-slate-100 shadow-inner h-[260px] bg-slate-100">
+          <TnMap 
+            lang={lang} 
+            citizenMode={true} 
+            height="100%" 
+            zoom={13}
+          />
+        </div>
+
+        {/* Summary Stats Rows */}
+        <div className="grid grid-cols-3 gap-3 pt-1">
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
+             <p className="text-base font-black text-slate-800">{stats.totalActive > 10 ? Math.floor(stats.totalActive/8) + 1 : 2}</p>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active</p>
+          </div>
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
+             <p className="text-base font-black text-emerald-600">{stats.totalResolved > 10 ? Math.floor(stats.totalResolved/8) + 3 : 14}</p>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fixed</p>
+          </div>
+          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center space-y-0.5">
+             <p className="text-base font-black text-rose-500">{stats.totalEscalated > 5 ? 1 : 0}</p>
+             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Critical</p>
+          </div>
+        </div>
+      </div>
+
 
     </motion.div>
   );
