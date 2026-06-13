@@ -18,8 +18,10 @@ export default function CitizenDashboard() {
 
   const livingAddr = localStorage.getItem('jn_living_address');
   const isVolunteer = localStorage.getItem('jn_is_volunteer') === 'true';
+  const citizenDistrict = localStorage.getItem('jn_district');
   
   const [stats, setStats] = React.useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
+  const [cmAnnouncements, setCmAnnouncements] = React.useState([]);
 
   React.useEffect(() => {
     api.get('/dashboard/stats').then(res => {
@@ -29,7 +31,21 @@ export default function CitizenDashboard() {
         totalEscalated: res.data.totalEscalated || 0
       });
     }).catch(console.error);
-  }, []);
+
+    try {
+      const raw = localStorage.getItem('jn_cm_announcements');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Filter for 'All' or specific citizen district
+        const relevant = parsed.filter(a => a.district === 'All' || a.district === citizenDistrict);
+        setCmAnnouncements(relevant);
+      }
+    } catch (err) {}
+  }, [citizenDistrict]);
+
+  const dismissAnnouncement = (id) => {
+    setCmAnnouncements(prev => prev.filter(a => a.id !== id));
+  };
 
   return (
     <motion.div
@@ -55,6 +71,39 @@ export default function CitizenDashboard() {
             </p>
           </div>
         </button>
+      )}
+
+      {/* ══ CM ANNOUNCEMENTS BANNER ══ */}
+      {cmAnnouncements.length > 0 && (
+        <div className="space-y-3">
+          {cmAnnouncements.map(ann => (
+            <motion.div 
+              key={ann.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full bg-blue-50 border border-blue-200 text-blue-900 rounded-[16px] p-4 shadow-sm flex items-start gap-3 text-left relative"
+            >
+              <Radio className="w-5 h-5 text-blue-600 shrink-0 mt-0.5 animate-pulse" />
+              <div className="flex-1 space-y-1">
+                <h4 className="text-[13px] font-black uppercase tracking-wider text-blue-800">
+                  {ann.title}
+                </h4>
+                <p className="text-[11px] font-bold leading-relaxed text-blue-700">
+                  {ann.text}
+                </p>
+                <div className="text-[9px] text-blue-500 font-bold mt-1 uppercase tracking-widest">
+                  {ann.date} • {tLabel('CM Office Broadcast', 'முதலமைச்சர் அலுவலகம்')}
+                </div>
+              </div>
+              <button 
+                onClick={() => dismissAnnouncement(ann.id)}
+                className="p-1 hover:bg-blue-200 rounded-full transition-colors"
+              >
+                <span className="text-blue-500 font-bold px-1.5 text-xs">✕</span>
+              </button>
+            </motion.div>
+          ))}
+        </div>
       )}
       
       {/* ══ 1. TOP SECTION — HERO BANNER CARD ══ */}
