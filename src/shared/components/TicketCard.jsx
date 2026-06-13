@@ -5,6 +5,8 @@ import CategoryIcon from './CategoryIcon';
 import StatusBadge from './StatusBadge';
 import SlaTimer from './SlaTimer';
 
+import { getMediaUrl } from '../../services/api';
+
 export default function TicketCard({ ticket, role, onAction }) {
  const { t } = useTranslation();
  const { id, category, description, status, priority, created_at, sla_deadline, ward, district, citizen_name } = ticket;

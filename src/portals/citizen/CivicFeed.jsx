@@ -18,10 +18,10 @@ const storyEmojis = {
   agriculture: '🌾',
   welfare: '🤝'
 };
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 
 export default function CivicFeed() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const isTa = i18n.language === 'ta';
@@ -53,32 +53,56 @@ export default function CivicFeed() {
   }, []);
 
   const [allItems, setAllItems] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
-    const fetchTickets = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/tickets?feed=true');
-        const formatted = res.data.map(t => ({
-          id: t.id,
-          ticketNumber: t.ticketNumber,
-          category: t.categoryName || 'Unknown',
-          title: t.title,
-          desc: t.description,
-          ward: t.ward || 'Unknown',
-          time: new Date(t.created_at).toLocaleDateString(),
-          claimCount: t.claimCount || 0,
-          status: t.status,
-          priority: t.priority,
-          location: t.ward || 'Unknown',
-          photo: t.photo_url || t.photo || null,
-          assignedTo: t.assignedTo
-        }));
+        const [ticketsRes, deptsRes] = await Promise.all([
+          api.get('/tickets?feed=true'),
+          api.get('/metadata/departments')
+        ]);
+        
+        const formatted = ticketsRes.data.map(t => {
+          let photo = t.photo_url || t.photo || null;
+          
+          // MOCK IMAGE LOGIC
+          if (!photo) {
+            const cat = (t.categoryName || t.department?.name || '').toLowerCase();
+            const status = (t.status || '').toUpperCase();
+            const isFixed = status === 'RESOLVED' || status === 'CLOSED';
+
+            if (cat.includes('elect')) {
+              photo = isFixed ? '/jana_feed_media/electicity_fixed.jpeg' : '/jana_feed_media/electiciry_reported.jpeg';
+            } else if (cat.includes('sanit') || cat.includes('health')) {
+              photo = isFixed ? '/jana_feed_media/santi_fixed.jpeg' : '/jana_feed_media/santi_reported.jpeg';
+            }
+          }
+
+          return {
+            id: t.id,
+            ticketNumber: t.ticketNumber,
+            category: t.categoryName || 'Unknown',
+            title: t.title,
+            desc: t.description,
+            ward: t.ward || 'Unknown',
+            time: new Date(t.created_at).toLocaleDateString(),
+            claimCount: t.claimCount || 0,
+            upvotes: t.claimCount || 0,
+            status: t.status,
+            priority: t.priority,
+            location: t.ward || 'Unknown',
+            photo: photo,
+            assignedTo: t.assignedTo
+          };
+        });
         setAllItems(formatted);
+        setDepartments(deptsRes.data);
       } catch (err) {
-        console.error('Failed to fetch feed tickets:', err);
+        console.error('Failed to fetch feed data:', err);
       }
     };
-    fetchTickets();
+    fetchData();
   }, []);
 
   const handleClaimToggle = async (id) => {
@@ -94,7 +118,7 @@ export default function CivicFeed() {
       localStorage.setItem(`jn_claimed_${id}`, 'true');
       
       setAllItems(prev => prev.map(item => 
-        item.id === id ? { ...item, claimCount: item.claimCount + 1 } : item
+        item.id === id ? { ...item, claimCount: item.claimCount + 1, upvotes: (item.upvotes || 0) + 1 } : item
       ));
 
       toast.success(tLabel("Claim added successfully!", "உரிமை வெற்றிகரமாக சேர்க்கப்பட்டது!"));
@@ -135,13 +159,11 @@ export default function CivicFeed() {
   // Stories mapping
   const storiesList = [
     { id: 'critical', emoji: storyEmojis.critical, label: tLabel('Critical', 'அதிமுக்கியம்') },
-    { id: 'roads', emoji: storyEmojis.roads, label: tLabel('Roads', 'சாலைகள்') },
-    { id: 'water', emoji: storyEmojis.water, label: tLabel('Water', 'குடிநீர்') },
-    { id: 'electricity', emoji: storyEmojis.electricity, label: tLabel('Electric', 'மின்சாரம்') },
-    { id: 'health', emoji: storyEmojis.health, label: tLabel('Health', 'சுகாதாரம்') },
-    { id: 'education', emoji: storyEmojis.education, label: tLabel('Education', 'கல்வி') },
-    { id: 'agriculture', emoji: storyEmojis.agriculture, label: tLabel('Agri', 'வேளாண்மை') },
-    { id: 'welfare', emoji: storyEmojis.welfare, label: tLabel('Welfare', 'நலத்திட்டம்') }
+    ...departments.slice(0, 5).map(d => ({
+      id: d.id,
+      emoji: storyEmojis[d.slug] || '📋',
+      label: d.name.split(' ')[0]
+    }))
   ];
 
   const handleStoryTap = (storyId) => {
@@ -154,37 +176,34 @@ export default function CivicFeed() {
       if (storyId === 'critical') {
         setActiveCategory('All');
       } else {
-        const catMap = {
-          roads: 'Roads',
-          water: 'Water',
-          electricity: 'Electricity',
-          health: 'Health',
-          education: 'Education',
-          agriculture: 'Agriculture',
-          welfare: 'Welfare'
-        };
-        setActiveCategory(catMap[storyId] || 'All');
+        const dept = departments.find(d => d.id === storyId);
+        setActiveCategory(dept ? dept.name : 'All');
       }
     }
   };
 
   // Filtering and Sorting Processors
-  let processedItems = allItems.slice(0, visibleCount);
+  let processedItems = allItems;
 
   if (activeCategory !== 'All') {
-    processedItems = processedItems.filter(t => t.category.toLowerCase() === activeCategory.toLowerCase());
+    processedItems = processedItems.filter(t => 
+      t.category.toLowerCase().includes(activeCategory.toLowerCase()) || 
+      t.category.toLowerCase() === activeCategory.toLowerCase()
+    );
   }
 
   if (activeStory === 'critical') {
-    processedItems = processedItems.filter(t => t.priority === 'critical');
+    processedItems = processedItems.filter(t => t.priority === 'CRITICAL');
   }
 
   // Sort logic
   if (sortOption === 'Most Upvoted') {
-    processedItems.sort((a, b) => b.claimCount - a.claimCount);
+    processedItems.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
   } else if (sortOption === 'Recent') {
     processedItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
   }
+
+  processedItems = processedItems.slice(0, visibleCount);
 
   // Smooth scroll helper for trending issues
   const scrollToTicket = (id) => {
@@ -201,18 +220,27 @@ export default function CivicFeed() {
   };
 
   // Categories lists for tabs
-  const categoriesTabs = ['All', 'Roads', 'Water', 'Electricity', 'Health', 'Education', 'Sanitation', 'Agriculture'];
-  const categoriesTabsTa = ['அனைத்தும்', 'சாலைகள்', 'குடிநீர்', 'மின்சாரம்', 'சுகாதாரம்', 'கல்வி', 'சுகாதாரம்', 'வேளாண்மை'];
+  const categoriesTabs = ['All', ...departments.map(d => d.name)];
+
+  const getCategoryLabel = (name) => {
+    if (name === 'All') return tLabel('All', 'அனைத்தும்');
+    // Try to find translation in our dictionary
+    const slug = departments.find(d => d.name === name)?.slug || name.toLowerCase().split(' ')[0];
+    return t(`categories.${slug}`, name);
+  };
+
+  const getTrendEmoji = (category) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('water')) return '💧';
+    if (cat.includes('road') || cat.includes('pot hole')) return '🛣️';
+    if (cat.includes('elect')) return '⚡';
+    if (cat.includes('sanit')) return '🧹';
+    return '📋';
+  };
 
   const categoryColorThemes = {
     Roads: 'bg-red-50 text-[#8B1A1A] border-red-100',
-    Water: 'bg-blue-50 text-blue-600 border-blue-100',
-    Electricity: 'bg-yellow-50 text-amber-600 border-yellow-100',
-    Health: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    Education: 'bg-purple-50 text-purple-650 border-purple-100',
-    Sanitation: 'bg-teal-50 text-teal-600 border-teal-100',
-    Agriculture: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    Welfare: 'bg-[#FFF0EE] text-[#8B1A1A] border-red-100'
+    Electricity: 'bg-yellow-50 text-amber-600 border-yellow-100'
   };
 
   return (
@@ -311,7 +339,7 @@ export default function CivicFeed() {
                 className="flex items-center justify-between text-xs font-bold text-slate-600 hover:text-slate-900 border-b border-amber-100/30 pb-1.5 last:border-0 last:pb-0 cursor-pointer"
               >
                 <span className="truncate max-w-[210px] flex items-center gap-1">
-                  <span>{trend.category === 'Water' ? '💧' : trend.category === 'Roads' ? '🛣️' : '⚡'}</span>
+                  <span>{getTrendEmoji(trend.category)}</span>
                   <span className="truncate">{trend.title}</span>
                 </span>
                 <span className="text-[10px] text-slate-400 shrink-0">
@@ -323,9 +351,8 @@ export default function CivicFeed() {
         </div>
       </div>
 
-      {/* ══ 2. FILTER TABS ══ */}
       <div className="overflow-x-auto hide-scrollbar flex items-center gap-2 px-4 py-1 shrink-0 select-none">
-        {categoriesTabs.map((cat, idx) => {
+        {categoriesTabs.map((cat) => {
           const isActive = activeCategory === cat;
           return (
             <button
@@ -337,7 +364,7 @@ export default function CivicFeed() {
                   : 'bg-white text-slate-500 border-[#DDE1E7] hover:border-slate-350'
               }`}
             >
-              {tLabel(cat, categoriesTabsTa[idx])}
+              {getCategoryLabel(cat)}
             </button>
           );
         })}
@@ -359,7 +386,7 @@ export default function CivicFeed() {
       </div>
 
       {/* ══ 4. FEED CARDS ══ */}
-      <div className="px-4 space-y-6 pt-1 select-none">
+      <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1 select-none">
         {processedItems.map(item => {
           const hasClaimed = !!claimsState[item.id];
           const displayClaims = item.claimCount;
@@ -368,12 +395,16 @@ export default function CivicFeed() {
             <div 
               key={item.id}
               id={`feed-card-${item.id}`}
-              className="bg-white border border-[#DDE1E7] rounded-[24px] overflow-hidden flex flex-col shadow-sm"
+              className="bg-white border border-[#DDE1E7] rounded-[24px] overflow-hidden flex flex-col shadow-sm h-full"
             >
               {/* Photo (social-media style) */}
-              <div className="relative w-full aspect-square bg-slate-100 group">
+              <div className="relative w-full aspect-video md:aspect-square bg-slate-100 group">
                 {item.photo ? (
-                  <img src={item.photo} alt="Issue proof" className="w-full h-full object-cover" />
+                  <img 
+                    src={getMediaUrl(item.photo)} 
+                    alt="Issue proof" 
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400">
                     <svg className="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -466,7 +497,7 @@ export default function CivicFeed() {
       {/* ══ 10. INFINITE SCROLL INDICATOR ══ */}
       <div className="p-4 pt-6 text-center select-none space-y-3 shrink-0">
         <span className="text-[12px] text-slate-400 font-extrabold uppercase">
-          {tLabel(`Showing ${processedItems.length} of 24 issues in your area`, `காட்டப்படுகிறது ${processedItems.length} 24 புகார்களில்`)}
+          {tLabel(`Showing ${processedItems.length} of ${allItems.length} issues in your area`, `காட்டப்படுகிறது ${processedItems.length} ${allItems.length} புகார்களில்`)}
         </span>
         
         {visibleCount < allItems.length ? (

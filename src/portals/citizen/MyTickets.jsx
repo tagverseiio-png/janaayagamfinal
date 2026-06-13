@@ -4,14 +4,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertCircle, ChevronDown, ChevronUp, Calendar, MapPin, Check, 
-  ThumbsUp, ThumbsDown, Send, Clock, ShieldAlert, RefreshCw, ArrowLeft, Search, SlidersHorizontal, Star
+  ThumbsUp, ThumbsDown, Send, Clock, ShieldAlert, RefreshCw, ArrowLeft, Search, SlidersHorizontal, Star, TrendingUp, MessageSquare
 } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet';
 
 import ErrorBoundary from '../../shared/components/ErrorBoundary';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 import { toast } from 'sonner';
-import { DEPT_HIERARCHY, normalizeDept } from '../../data/hierarchyData';
 
 /* ─── Configurable Window for Reopening Closed Tickets (in Days) ─── */
 const REOPEN_WINDOW_DAYS = 7;
@@ -19,35 +18,42 @@ const REOPEN_WINDOW_DAYS = 7;
 /* ─── Helper to normalize roles for robust comparison ─── */
 const matchRole = (stepRole, assignedRole) => {
   if (!assignedRole) return false;
-  const sRole = (stepRole || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
-  const aRole = (assignedRole || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
+  const normalize = (r) => (r || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
+  
+  const sRole = normalize(stepRole);
+  const aRole = normalize(assignedRole);
+  
   if (sRole === aRole) return true;
-  
-  if (sRole === 'ASSISTANT_AREA_ENGINEER' && (aRole === 'AAE' || aRole === 'ASST_AREA_ENGINEER')) return true;
-  if (sRole === 'AAE' && (aRole === 'ASSISTANT_AREA_ENGINEER' || aRole === 'ASST_AREA_ENGINEER')) return true;
-  if (sRole === 'AREA_ENGINEER' && aRole === 'AE') return true;
-  if (sRole === 'AE' && aRole === 'AREA_ENGINEER') return true;
-  
-  if (sRole === 'DIVISION_SANITARY_INSPECTOR' && aRole === 'DSI') return true;
-  if (sRole === 'DSI' && aRole === 'DIVISION_SANITARY_INSPECTOR') return true;
-  
-  if (sRole === 'SANITARY_INSPECTOR' && aRole === 'SI') return true;
-  if (sRole === 'SI' && aRole === 'SANITARY_INSPECTOR') return true;
-  
-  if (sRole === 'HEALTH_INSPECTOR' && aRole === 'HI') return true;
-  if (sRole === 'HI' && aRole === 'HEALTH_INSPECTOR') return true;
-  
-  if ((sRole === 'CITY_HEALTH_OFFICER' || sRole === 'CITY_HEALTH_INSPECTOR') && (aRole === 'CHI' || aRole === 'CITY_HEALTH_OFFICER' || aRole === 'CITY_HEALTH_INSPECTOR')) return true;
-  if (sRole === 'CHI' && (aRole === 'CITY_HEALTH_OFFICER' || aRole === 'CITY_HEALTH_INSPECTOR')) return true;
-  
-  if (sRole === 'DEPARTMENT_COMMISSIONER' && aRole === 'DEPT_COMMISSIONER') return true;
-  if (sRole === 'DEPT_COMMISSIONER' && aRole === 'DEPARTMENT_COMMISSIONER') return true;
-  
-  if (sRole === 'CORPORATION_COMMISSIONER' && (aRole === 'COMMISSIONER' || aRole === 'CORP_COMMISSIONER')) return true;
-  if (sRole === 'COMMISSIONER' && (aRole === 'CORPORATION_COMMISSIONER' || aRole === 'CORP_COMMISSIONER')) return true;
-  
-  if (sRole.includes('MINISTER') && aRole.includes('MINISTER')) return true;
-  
+
+  const aliases = {
+    'AAE': ['ASSISTANT_AREA_ENGINEER', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+    'ASSISTANT_AREA_ENGINEER': ['AAE', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+    'AE': ['AREA_ENGINEER'],
+    'AREA_ENGINEER': ['AE'],
+    'DSI': ['DIVISION_SANITARY_INSPECTOR'],
+    'DIVISION_SANITARY_INSPECTOR': ['DSI'],
+    'SI': ['SANITARY_INSPECTOR'],
+    'SANITARY_INSPECTOR': ['SI'],
+    'HI': ['HEALTH_INSPECTOR'],
+    'HEALTH_INSPECTOR': ['HI'],
+    'CHI': ['CITY_HEALTH_OFFICER'],
+    'CITY_HEALTH_OFFICER': ['CHI'],
+    'MINISTER': ['MINISTER_ELECTRICITY', 'MINISTER_ENERGY', 'MINISTER_HEALTH', 'CABINET_MINISTER', 'HONORABLE_MINISTER', 'HONORABLE_MINISTER_ENERGY', 'MINISTER_HIGHWAYS'],
+    'JE': ['JUNIOR_ENGINEER'],
+    'JUNIOR_ENGINEER': ['JE'],
+    'AEE': ['ASSISTANT_EXECUTIVE_ENGINEER'],
+    'ASSISTANT_EXECUTIVE_ENGINEER': ['AEE'],
+    'EE': ['EXECUTIVE_ENGINEER'],
+    'EXECUTIVE_ENGINEER': ['EE'],
+    'SE': ['SUPERINTENDING_ENGINEER'],
+    'SUPERINTENDING_ENGINEER': ['SE'],
+    'CE': ['CHIEF_ENGINEER'],
+    'CHIEF_ENGINEER': ['CE']
+  };
+
+  if (aliases[sRole] && aliases[sRole].includes(aRole)) return true;
+  if (aliases[aRole] && aliases[aRole].includes(sRole)) return true;
+
   return false;
 };
 
@@ -80,6 +86,9 @@ const getCategoryIcon = (category) => {
   const cat = (category || '').toLowerCase();
   if (cat.includes('electricity') || cat === 'electricity') return '⚡';
   if (cat.includes('sanitation') || cat.includes('health') || cat === 'sanitation') return '🧹';
+  if (cat.includes('roads') || cat === 'roads') return '🛣️';
+  if (cat.includes('water') || cat === 'water') return '💧';
+  if (cat.includes('revenue') || cat === 'revenue') return '📜';
   return '📋';
 };
 
@@ -95,12 +104,16 @@ export default function MyTickets() {
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [hierarchies, setHierarchies] = useState({});
 
   // Rating & Reopen state variables
   const [activeRating, setActiveRating] = useState(0);
   const [reopenText, setReopenText] = useState('');
   const [showReopenForm, setShowReopenForm] = useState(false);
+  
+  // Manual Escalation State
+  const [escalatingTicket, setEscalatingTicket] = useState(null);
+  const [escalationReason, setEscalationReason] = useState('');
+  const [submittingEscalation, setSubmittingEscalation] = useState(false);
 
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
@@ -128,50 +141,6 @@ export default function MyTickets() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // Pre-fetch hierarchies for all unique departments/categories in active tickets
-  useEffect(() => {
-    if (tickets.length === 0) return;
-    
-    // Build unique keys: "normalizedDeptName::categoryId"
-    const fetchKeys = [...new Set(tickets.map(t => {
-      const deptName = normalizeDept(t.department?.name || t.categoryName || 'Water');
-      const catId = t.categoryId || t.category?.id || '';
-      return `${deptName}::${catId}`;
-    }))];
-
-    fetchKeys.forEach(fetchKey => {
-      if (hierarchies[fetchKey]) return;
-      
-      const [deptName, catId] = fetchKey.split('::');
-
-      const fetchHierarchyForDept = async () => {
-        setHierarchies(prev => ({
-          ...prev,
-          [fetchKey]: { loading: true, steps: [], error: null }
-        }));
-        try {
-          let url = `/hierarchy?department=${encodeURIComponent(deptName)}`;
-          if (catId) url += `&category=${encodeURIComponent(catId)}`;
-          
-          console.log(`[Hierarchy Fetch] Requesting GET ${url}`);
-          const res = await api.get(url);
-          console.log(`[Hierarchy Fetch] Response for ${fetchKey}:`, res.data);
-          setHierarchies(prev => ({
-            ...prev,
-            [fetchKey]: { loading: false, steps: res.data.steps || [], error: null }
-          }));
-        } catch (err) {
-          console.error(`[Hierarchy Fetch] Failed to fetch hierarchy for ${fetchKey}:`, err);
-          setHierarchies(prev => ({
-            ...prev,
-            [fetchKey]: { loading: false, steps: [], error: 'Unable to load status chain' }
-          }));
-        }
-      };
-      fetchHierarchyForDept();
-    });
-  }, [tickets, hierarchies]);
 
   // Listen to incoming state to expand a specific ticket automatically
   useEffect(() => {
@@ -234,6 +203,31 @@ export default function MyTickets() {
     } catch (err) {
       console.error('Failed to reopen ticket:', err);
       toast.error(tLabel('Failed to reopen grievance', 'புகாரை மீண்டும் திறப்பதில் தோல்வி'));
+    }
+  };
+
+  const handleEscalateSubmit = async (e, ticketId) => {
+    if (e) e.preventDefault();
+    if (escalationReason.trim().length < 10) {
+      toast.error(tLabel("Please provide a reason for escalation (minimum 10 characters).", "மேல்முறையீட்டிற்கான காரணத்தை வழங்கவும் (குறைந்தது 10 எழுத்துக்கள்)."));
+      return;
+    }
+    try {
+      setSubmittingEscalation(true);
+      await api.patch(`/tickets/${ticketId}`, {
+        status: 'ESCALATED',
+        notes: escalationReason.trim()
+      });
+      toast.success(tLabel("Grievance escalated to the next level of authority.", "புகார் அடுத்த நிலை அதிகாரிக்கு மேல்முறையீடு செய்யப்பட்டது."));
+      setEscalatingTicket(null);
+      setEscalationReason('');
+      fetchTickets(true);
+    } catch (err) {
+      console.error('Failed to escalate ticket:', err);
+      const errMsg = err.response?.data?.error || 'Failed to escalate grievance';
+      toast.error(tLabel(errMsg, 'மேல்முறையீடு செய்ய முடியவில்லை'));
+    } finally {
+      setSubmittingEscalation(false);
     }
   };
 
@@ -313,23 +307,7 @@ export default function MyTickets() {
   // Stepper steps builder from SINGLE SOURCE OF TRUTH department chains
   const buildTimelineStepper = (ticket) => {
     const status = ticket.status.toUpperCase();
-    const deptName = normalizeDept(ticket.department?.name || ticket.categoryName || 'Water');
-    const catId = ticket.categoryId || ticket.category?.id || '';
-    const fetchKey = `${deptName}::${catId}`;
-    
-    const hierarchyInfo = hierarchies[fetchKey];
-    if (!hierarchyInfo || hierarchyInfo.loading) {
-      return { loading: true, steps: [], error: null };
-    }
-    if (hierarchyInfo.error) {
-      return { loading: false, steps: [], error: hierarchyInfo.error };
-    }
-    
-    const dbSteps = hierarchyInfo.steps || [];
-    console.log(`[Stepper Builder] deptName:`, deptName);
-    console.log(`[Stepper Builder] hierarchyInfo:`, hierarchyInfo);
-    console.log(`[Stepper Builder] dbSteps:`, dbSteps);
-    
+    const dbSteps = ticket.hierarchySteps || [];
 
     // 1. Submitted Step
     const steps = [
@@ -347,58 +325,55 @@ export default function MyTickets() {
       let title = s.label || role;
       let desc = tLabel('Escalated — under review', 'மேல்முறையீடு — ஆய்வில் உள்ளது');
 
-      if (role === 'Assistant Area Engineer') {
+      if (role === 'Assistant Area Engineer' || role === 'AAE') {
         title = tLabel('Assistant Area Engineer', 'உதவிப் பகுதிப் பொறியாளர்');
         desc = tLabel('Under review & field work assignment', 'மதிப்பாய்வு மற்றும் களப்பணி ஒதுக்கீடு');
-      } else if (role === 'Area Engineer') {
+      } else if (role === 'Area Engineer' || role === 'AE') {
         title = tLabel('Area Engineer', 'பகுதிப் பொறியாளர்');
         desc = tLabel('Escalated — area-level review', 'மேல்முறையீடு — பகுதி அளவிலான ஆய்வு');
+      } else if (role === 'Junior Engineer' || role === 'JE') {
+        title = tLabel('Junior Engineer (JE)', 'இளநிலைப் பொறியாளர் (JE)');
+        desc = tLabel('Inspects and assigns road crew', 'சாலைப் பணியாளர்களை ஆய்வு செய்து நியமிக்கிறார்');
+      } else if (role === 'Assistant Executive Engineer' || role === 'AEE') {
+        title = tLabel('Assistant Executive Engineer (AEE)', 'உதவிச் செயற்பொறியாளர் (AEE)');
+        desc = tLabel('Escalated — divisional review', 'மேல்முறையீடு — கோட்ட அளவிலான ஆய்வு');
+      } else if (role === 'Executive Engineer' || role === 'EE') {
+        title = tLabel('Executive Engineer (EE)', 'செயற்பொறியாளர் (EE)');
+        desc = tLabel('Escalated — district-level review', 'மேல்முறையீடு — மாவட்ட அளவிலான ஆய்வு');
+      } else if (role === 'Superintending Engineer' || role === 'SE') {
+        title = tLabel('Superintending Engineer (SE)', 'மேற்பார்வைப் பொறியாளர் (SE)');
+        desc = tLabel('Escalated — regional-level review', 'மேல்முறையீடு — மண்டல அளவிலான ஆய்வு');
+      } else if (role === 'Chief Engineer' || role === 'CE') {
+        title = tLabel('Chief Engineer (CE)', 'தலைமைப் பொறியாளர் (CE)');
+        desc = tLabel('Escalated — statewide department review', 'மேல்முறையீடு — மாநில அளவிலான ஆய்வு');
       } else if (role.includes('Minister')) {
-        if (deptName.toLowerCase().includes('electricity') || deptName.toLowerCase().includes('energy')) {
-          title = tLabel('Minister (Electricity & Energy Resources)', 'அமைச்சர் (மின்சாரம்)');
-          desc = tLabel('Escalated to Hon\'ble Minister for Electricity & Energy Resources', 'மதிப்பிற்குரிய மின்சாரத் துறை அமைச்சருக்கு அனுப்பப்பட்டது');
-        } else if (deptName.toLowerCase().includes('sanitation') || deptName.toLowerCase().includes('health')) {
-          title = tLabel('Minister (Health)', 'அமைச்சர் (சுகாதாரம்)');
-          desc = tLabel('Escalated to Hon\'ble Minister for Health', 'மதிப்பிற்குரிய சுகாதாரத் துறை அமைச்சருக்கு அனுப்பப்பட்டது');
-        } else {
-          title = tLabel(role, role);
-          desc = tLabel(`Escalated to Hon'ble ${role}`, `மதிப்பிற்குரிய ${role}க்கு அனுப்பப்பட்டது`);
-        }
-      } else if (role === 'Division Sanitary Inspector') {
+        title = tLabel(role, role);
+        desc = tLabel(`Escalated to Hon'ble ${role}`, `மதிப்பிற்குரிய ${role}க்கு அனுப்பப்பட்டது`);
+      } else if (role === 'Division Sanitary Inspector' || role === 'DSI') {
         title = tLabel('Division Sanitary Inspector', 'வட்டார சுகாதார ஆய்வாளர்');
         desc = tLabel('Under review at ward level', 'வார்டு அளவிலான மதிப்பாய்வு');
-      } else if (role === 'Sanitary Inspector') {
-        title = tLabel('Sanitary Inspector', 'சுகாதார ஆய்வாளர்');
-        desc = tLabel('Escalated — division level', 'மேல்முறையீடு — வட்டார அளவிலான ஆய்வு');
-      } else if (role === 'Health Inspector') {
-        title = tLabel('Health Inspector', 'சுகாதார மேற்பார்வையாளர்');
-        desc = tLabel('Escalated — zone level', 'மேல்முறையீடு — மண்டல அளவிலான ஆய்வு');
-      } else if (role === 'City Health Inspector') {
-        title = tLabel('City Health Inspector', 'நகர சுகாதார அலுவலர்');
-        desc = tLabel('Escalated — city level', 'மேல்முறையீடு — மாநகர அளவிலான ஆய்வு');
-      } else if (role === 'Department Commissioner') {
-        title = tLabel('Department Commissioner', 'துணை ஆணையர்');
-        desc = tLabel('Escalated — department level', 'மேல்முறையீடு — துறை அளவிலான ஆய்வு');
-      } else if (role === 'Commissioner') {
-        title = tLabel('Commissioner', 'ஆணையர்');
-        desc = tLabel('Escalated — corporation level', 'மேல்முறையீடு — மாநகராட்சி அளவிலான ஆய்வு');
       }
 
       steps.push({
-        key: role,
+        key: role.toUpperCase().replace(/\s+/g, '_'),
         role: role,
-        title: title,
-        desc: desc
+        title,
+        desc
       });
     });
 
-    // 3. Removed Resolved/Closed generic steps as per user request
-    // The steps array now exactly matches Submitted + Hierarchy Officials
+    // 3. Resolved Step
+    steps.push({
+      key: 'RESOLVED',
+      role: 'Resolved',
+      title: tLabel('Resolved', 'தீர்க்கப்பட்டது'),
+      desc: tLabel('Issue marked as resolved by department', 'சிக்கல் தீர்க்கப்பட்டதாக துறை அறிவித்துள்ளது')
+    });
 
     // Find current active step index
     let activeIdx = 0;
     if (status === 'RESOLVED' || status === 'CLOSED') {
-      activeIdx = steps.length; // Beyond the last official, so all are completed
+      activeIdx = steps.length - 1; 
     } else if (['ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'REOPENED'].includes(status)) {
       const currentRole = ticket.assignedTo?.role;
       const idx = steps.findIndex(s => matchRole(s.role, currentRole));
@@ -664,6 +639,21 @@ export default function MyTickets() {
               const filedDateStr = createdDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
               
               const stepperData = buildTimelineStepper(ticket);
+              
+              // MOCK IMAGE FALLBACK LOGIC
+              let beforePhoto = ticket.photo;
+              let afterPhoto = ticket.proofPhoto;
+              const cat = (ticket.department?.name || '').toLowerCase();
+              const status = ticket.status.toUpperCase();
+              
+              if (!beforePhoto) {
+                if (cat.includes('elect')) beforePhoto = '/jana_feed_media/electiciry_reported.jpeg';
+                else if (cat.includes('sanit') || cat.includes('health')) beforePhoto = '/jana_feed_media/santi_reported.jpeg';
+              }
+              if (!afterPhoto && (status === 'RESOLVED' || status === 'CLOSED')) {
+                if (cat.includes('elect')) afterPhoto = '/jana_feed_media/electicity_fixed.jpeg';
+                else if (cat.includes('sanit') || cat.includes('health')) afterPhoto = '/jana_feed_media/santi_fixed.jpeg';
+              }
 
               return (
                 <div
@@ -749,9 +739,9 @@ export default function MyTickets() {
                               <span className="text-[9.5px] font-black text-slate-450 block tracking-widest uppercase mb-1">
                                 📸 {tLabel("Grievance Photo (Before)", "புகார் புகைப்படம் (முன்)")}
                               </span>
-                              {ticket.photo ? (
+                              {beforePhoto ? (
                                 <div className="aspect-video w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-900 shadow-xxs">
-                                  <img src={ticket.photo} alt="Before Grievance" className="w-full h-full object-cover" />
+                                  <img src={getMediaUrl(beforePhoto)} alt="Before Grievance" className="w-full h-full object-cover" />
                                 </div>
                               ) : (
                                 <div className="aspect-video w-full rounded-xl border border-slate-200/50 bg-slate-100 flex items-center justify-center text-[10.5px] font-extrabold text-slate-400 shadow-xxs">
@@ -766,9 +756,9 @@ export default function MyTickets() {
                                 <span className="text-[9.5px] font-black text-emerald-600 block tracking-widest uppercase mb-1">
                                   📷 {tLabel("Resolution Proof (After)", "தீர்வுக்கான சான்று (பின்)")}
                                 </span>
-                                {ticket.proofPhoto ? (
+                                {afterPhoto ? (
                                   <div className="aspect-video w-full rounded-xl border border-emerald-200 overflow-hidden bg-slate-900 shadow-xxs">
-                                    <img src={ticket.proofPhoto} alt="Resolution Proof" className="w-full h-full object-cover" />
+                                    <img src={getMediaUrl(afterPhoto)} alt="Resolution Proof" className="w-full h-full object-cover" />
                                   </div>
                                 ) : (
                                   <div className="aspect-video w-full rounded-xl border border-slate-250 bg-slate-100 flex items-center justify-center text-[10.5px] font-extrabold text-slate-400 shadow-xxs">
@@ -937,6 +927,25 @@ export default function MyTickets() {
                               })}
                             </div>
                           </div>
+
+                          {/* 4.5 ACTIVE STATE ACTIONS (escalate) */}
+                          {['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'REOPENED'].includes(statusKey) && (
+                            <div className="border-t border-slate-200/50 pt-4 flex justify-between items-center">
+                              <p className="text-[10px] text-slate-400 font-bold max-w-[180px]">
+                                {tLabel("Not satisfied with progress? Escalate to a senior official.", "நடவடிக்கையில் அதிருப்தியா? உயர் அதிகாரிக்கு மேல்முறையீடு செய்யவும்.")}
+                              </p>
+                              <button
+                                onClick={() => {
+                                  setEscalatingTicket(ticket);
+                                  setEscalationReason('');
+                                }}
+                                className="h-10 px-4 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-[11px] uppercase rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+                              >
+                                <TrendingUp className="w-3.5 h-3.5" />
+                                <span>{tLabel("Escalate Grievance", "மேல்முறையீடு")}</span>
+                              </button>
+                            </div>
+                          )}
 
                           {/* 5. RESOLVED STATE ACTIONS (star rating feedback, confirm resolved, reopen issue) */}
                           {statusKey === 'RESOLVED' && (
@@ -1151,6 +1160,69 @@ export default function MyTickets() {
           </div>
         )}
       </div>
+
+      {/* ══ ESCALATION DIALOG MODAL ══ */}
+      {escalatingTicket && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 max-w-sm w-full space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center border border-orange-100 shrink-0">
+                <TrendingUp className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                  {tLabel('Escalate Grievance', 'புகாரை மேல்முறையீடு செய்')}
+                </h3>
+                <p className="text-[10px] text-slate-400 font-bold">
+                  {tLabel(`Ticket #JN-${escalatingTicket.ticketNumber}`, `புகார் #JN-${escalatingTicket.ticketNumber}`)}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => handleEscalateSubmit(e, escalatingTicket.id)} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-450 uppercase tracking-widest pl-0.5">
+                  {tLabel('Reason for Escalation (Min 10 characters)', 'மேல்முறையீட்டுக்கான காரணம் (குறைந்தது 10 எழுத்துக்கள்)')}
+                </label>
+                <div className="relative">
+                  <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                  <textarea
+                    required
+                    rows={3}
+                    value={escalationReason}
+                    onChange={(e) => setEscalationReason(e.target.value)}
+                    placeholder={tLabel('Explain why you are escalating this issue (e.g. prolonged delay, poor response)...', 'ஏன் இந்த புகாரை மேல்முறையீடு செய்கிறீர்கள் என்பதை விளக்கவும்...')}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500 outline-none rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-slate-700 placeholder-slate-400 transition-colors resize-none leading-relaxed shadow-inner"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEscalatingTicket(null)}
+                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-extrabold text-xs py-3 rounded-xl transition-all cursor-pointer text-center"
+                >
+                  {tLabel('Cancel', 'ரத்து செய்')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingEscalation}
+                  style={{ backgroundColor: '#EA580C' }}
+                  className="w-full text-white font-extrabold text-xs py-3 rounded-xl shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {submittingEscalation ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
+                  <span>{tLabel('Confirm Escalate', 'உறுதி செய்')}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

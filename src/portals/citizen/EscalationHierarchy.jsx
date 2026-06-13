@@ -1,93 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { User, ShieldAlert, UserCheck, Building2, Landmark, FileText, Award, ArrowLeft } from 'lucide-react';
+import { User, ShieldAlert, UserCheck, Building2, Landmark, FileText, Award, ArrowLeft, Zap, Hammer } from 'lucide-react';
+import api from '../../services/api';
 
-const steps = [
-  {
-    num: 1,
-    role: "You (Citizen)",
-    tamilRole: "நீங்கள் (குடிமகன்)",
-    desc: "Submit complaint",
-    tamilDesc: "புகாரைச் சமர்ப்பிக்கவும்",
-    sla: "Instant",
-    tamilSla: "உடனடி",
-    color: "#3B82F6", // Blue
-    icon: <User className="w-5 h-5 text-white" />
-  },
-  {
-    num: 2,
-    role: "VAO",
-    tamilRole: "கிராம நிர்வாக அலுவலர் (VAO)",
-    desc: "Village verification",
-    tamilDesc: "கிராம கள சரிபார்ப்பு",
-    sla: "2 hours",
-    tamilSla: "2 மணிநேரம்",
-    color: "#F59E0B", // Amber
-    icon: <ShieldAlert className="w-5 h-5 text-white" />
-  },
-  {
-    num: 3,
-    role: "Ward Officer",
-    tamilRole: "வார்டு அதிகாரி",
-    desc: "First review & assignment",
-    tamilDesc: "முதல் ஆய்வு மற்றும் நியமனம்",
-    sla: "4 hours SLA",
-    tamilSla: "4 மணிநேர கெடு (SLA)",
-    color: "#6366F1", // Indigo
-    icon: <UserCheck className="w-5 h-5 text-white" />
-  },
-  {
-    num: 4,
-    role: "BDO",
-    tamilRole: "வட்டார வளர்ச்சி அலுவலர் (BDO)",
-    desc: "Escalation tier 1",
-    tamilDesc: "முதல் கட்ட மேல்முறையீடு",
-    sla: "If unresolved 24hrs",
-    tamilSla: "24 மணிநேரத்தில் தீர்க்கப்படாவிடில்",
-    color: "#14B8A6", // Teal
-    icon: <Building2 className="w-5 h-5 text-white" />
-  },
-  {
-    num: 5,
-    role: "District Collector",
-    tamilRole: "மாவட்ட ஆட்சியர்",
-    desc: "Escalation tier 2",
-    tamilDesc: "இரண்டாம் கட்ட மேல்முறையீடு",
-    sla: "If unresolved 72hrs",
-    tamilSla: "72 மணிநேரத்தில் தீர்க்கப்படாவிடில்",
-    color: "#8B5CF6", // Purple
-    icon: <Landmark className="w-5 h-5 text-white" />
-  },
-  {
-    num: 6,
-    role: "Dept Secretary",
-    tamilRole: "துறைச் செயலாளர்",
-    desc: "Strategic coordination",
-    tamilDesc: "வியூக ஒருங்கிணைப்பு",
-    sla: "Critical issues",
-    tamilSla: "முக்கிய சிக்கல்கள்",
-    color: "#F97316", // Orange
-    icon: <FileText className="w-5 h-5 text-white" />
-  },
-  {
-    num: 7,
-    role: "Chief Minister",
-    tamilRole: "முதலமைச்சர் (CM)",
-    desc: "Supreme oversight",
-    tamilDesc: "உயர் கட்டளை கண்காணிப்பு",
-    sla: "State emergency action",
-    tamilSla: "அவசரக்கால நடவடிக்கை",
-    color: "#8B1A1A", // Dark Red
-    icon: <Award className="w-5 h-5 text-white" />
-  }
-];
+const deptIcons = {
+  Electricity: <Zap className="w-5 h-5 text-white" />,
+  Roads: <Hammer className="w-5 h-5 text-white" />,
+  'Electricity (TANGEDCO/EB)': <Zap className="w-5 h-5 text-white" />,
+  'Highways & Minor Ports': <Hammer className="w-5 h-5 text-white" />
+};
+
+const deptColors = {
+  Electricity: "#F59E0B",
+  Roads: "#F97316",
+  'Electricity (TANGEDCO/EB)': "#F59E0B",
+  'Highways & Minor Ports': "#F97316"
+};
 
 export default function EscalationHierarchy() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
+  const [selectedDept, setSelectedDept] = useState('');
+  const [hierarchies, setHierarchies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const isTa = i18n.language === 'ta';
   const tLabel = (en, ta) => isTa ? ta : en;
+
+  useEffect(() => {
+    api.get('/metadata/hierarchy')
+      .then(res => {
+        setHierarchies(res.data);
+        if (res.data.length > 0) {
+          setSelectedDept(res.data[0].department);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch hierarchies:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const getSteps = () => {
+    const activeH = hierarchies.find(h => h.department === selectedDept);
+    if (!activeH) return [];
+
+    const steps = [
+      {
+        num: 1,
+        role: "You (Citizen)",
+        tamilRole: "நீங்கள் (குடிமகன்)",
+        desc: "Submit complaint",
+        tamilDesc: "புகாரைச் சமர்ப்பிக்கவும்",
+        sla: "Instant",
+        tamilSla: "உடனடி",
+        color: "#3B82F6", 
+        icon: <User className="w-5 h-5 text-white" />
+      }
+    ];
+
+    activeH.steps.forEach((step, idx) => {
+      steps.push({
+        num: idx + 2,
+        role: step.role,
+        tamilRole: step.role,
+        desc: `Verification & Action (${step.role})`,
+        tamilDesc: `சரிபார்ப்பு மற்றும் நடவடிக்கை (${step.role})`,
+        sla: `${step.slaDays} Day${step.slaDays > 1 ? 's' : ''} SLA`,
+        color: deptColors[selectedDept] || "#8B1A1A",
+        icon: idx === activeH.steps.length - 1 ? <Award className="w-5 h-5 text-white" /> : <ShieldAlert className="w-5 h-5 text-white" />
+      });
+    });
+
+    return steps;
+  };
+
+  const steps = getSteps();
 
   return (
     <div className="pb-24 select-none">
@@ -112,10 +102,27 @@ export default function EscalationHierarchy() {
       </div>
 
       <div className="px-4 pt-4">
+        {/* Department Selector */}
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+          {hierarchies.map(h => (
+            <button
+              key={h.department}
+              onClick={() => setSelectedDept(h.department)}
+              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all whitespace-nowrap ${
+                selectedDept === h.department 
+                  ? 'bg-[#8B1A1A] border-[#8B1A1A] text-white shadow-md' 
+                  : 'bg-white border-slate-200 text-slate-500'
+              }`}
+            >
+              {h.department}
+            </button>
+          ))}
+        </div>
+
         {/* Title */}
         <div className="mb-6 select-none">
           <h2 className="text-xl font-black text-[#8B1A1A]">
-            {tLabel("How your complaint travels", "உங்கள் புகார் எப்படி செல்கிறது")}
+            {tLabel(`How your ${selectedDept} complaint travels`, `உங்கள் ${selectedDept} புகார் எப்படி செல்கிறது`)}
           </h2>
           <p className="text-xs text-slate-500 font-bold mt-1">
             {tLabel("Statewide digital escalation matrix", "மாநிலம் தழுவிய டிஜிட்டல் மேல்முறையீட்டு கட்டமைப்பு")}

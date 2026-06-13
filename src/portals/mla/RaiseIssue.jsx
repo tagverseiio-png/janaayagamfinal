@@ -18,7 +18,7 @@ export default function RaiseIssue() {
  const [photo, setPhoto] = useState('');
  const [recipient, setRecipient] = useState('bdo');
 
- const constituencyWards = ['140', '141', '142', '143', '144', '145', '146', '147'];
+ const constituencyWards = ['170', '171', '172', '173', 'Mylapore Section'];
  const categoryKeys = ['roads', 'water', 'electricity', 'health', 'education', 'agriculture', 'revenue', 'welfare'];
 
  const handlePhotoUpload = (e) => {
@@ -129,7 +129,7 @@ export default function RaiseIssue() {
  required
  value={title}
  onChange={(e) => setTitle(e.target.value)}
- placeholder="e.g. Velachery Main Canal Desilting & Widening works"
+ placeholder="e.g. Mylapore Main Canal Desilting & Widening works"
  className="w-full bg-slate-50 border border-slate-200 focus:border-[#8B1A1A] focus:ring-1 focus:ring-[#1B5E20] outline-none px-4 py-3.5 rounded-2xl text-slate-800 font-bold text-sm shadow-sm transition-colors placeholder-slate-400"
  />
  </div>
@@ -153,7 +153,7 @@ export default function RaiseIssue() {
  : 'bg-slate-50 border-slate-200 text-slate-600 '
  }`}
  >
- Ward {wardNum}
+ {isNaN(wardNum) ? wardNum : `Ward ${wardNum}`}
  </button>
  );
  })}

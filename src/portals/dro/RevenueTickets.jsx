@@ -9,7 +9,7 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-import api from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 
 export default function RevenueTickets({ flaggedOnly = false }) {
  const { t } = useTranslation();
@@ -24,10 +24,12 @@ export default function RevenueTickets({ flaggedOnly = false }) {
       const formatted = res.data.map(t => ({
         ...t,
         category: t.department?.name || 'Unknown',
-        district: t.jurisdiction?.name || 'Unknown',
+        district: t.district || 'Unknown',
         id: t.ticketNumber,
-        ward: t.jurisdiction?.name || 'Unknown',
-        createdAt: t.createdAt || new Date().toISOString()
+        dbId: t.id,
+        description: t.description,
+        ward: t.ward || 'Unknown',
+        created_at: t.createdAt
       }));
       setTickets(formatted);
     } catch (err) {
@@ -39,15 +41,10 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  loadTickets();
  }, [flaggedOnly]);
 
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- };
-
  // Helper to resolve/assign sub-type dynamically if not present
  const getSubtype = (ticket) => {
  if (ticket.subType) return ticket.subType;
- const desc = ticket.description.toLowerCase();
+ const desc = (ticket.description || '').toLowerCase();
  if (desc.includes('patta')) return 'Patta';
  if (desc.includes('encroach') || desc.includes('occupy') || desc.includes('land grab')) return 'Encroachment';
  if (desc.includes('boundary') || desc.includes('dispute') || desc.includes('fence')) return 'Boundary Dispute';
@@ -55,24 +52,21 @@ export default function RevenueTickets({ flaggedOnly = false }) {
  };
 
  // Flag to Collector handler
- const handleFlagToCollector = (ticketId) => {
- const updated = tickets.map(ticket => {
- if (ticket.id === ticketId) {
- return { 
- ...ticket, 
- status: 'escalated',
- flaggedCollector: true,
- flaggedCollectorAt: new Date().toISOString()
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'புகார் கலெக்டருக்கு வெற்றிகரமாக அனுப்பப்பட்டது' 
- : 'Revenue complaint flagged to District Collector'
- );
+ const handleFlagToCollector = async (ticketId) => {
+   try {
+     const tNode = tickets.find(ticket => ticket.id === ticketId);
+     await api.patch(`/tickets/${tNode.dbId}`, { 
+       status: 'ESCALATED',
+       notes: 'Revenue complaint flagged to District Collector by DRO.'
+     });
+     toast.success(t('app_name') === 'ஜனநாயகம்' 
+       ? 'புகார் கலெக்டருக்கு வெற்றிகரமாக அனுப்பப்பட்டது' 
+       : 'Revenue complaint flagged to District Collector'
+     );
+     loadTickets();
+   } catch (err) {
+     toast.error('Failed to flag ticket');
+   }
  };
 
  // Catch generic actions from TicketCard

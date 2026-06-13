@@ -21,13 +21,14 @@ export default function JurisdictionSelector({ selectedId, onChange, isTa }) {
   useEffect(() => {
     if (selectedDistrict) {
       api.get(`/metadata/jurisdictions?parentId=${selectedDistrict}`).then(res => {
-        setChildren(res.data);
+        const filtered = res.data.filter(j => j.level !== 'WARD' || j.name === 'Mylapore Section');
+        setChildren(filtered);
         setSelectedChild('');
         setGrandChildren([]);
         setSelectedGrandChild('');
         
         const distObj = districts.find(d => d.id === selectedDistrict);
-        onChange(selectedDistrict, res.data.length === 0, distObj);
+        onChange(selectedDistrict, filtered.length === 0, distObj);
       }).catch(err => console.error(err));
     }
   }, [selectedDistrict]);
@@ -36,11 +37,22 @@ export default function JurisdictionSelector({ selectedId, onChange, isTa }) {
   useEffect(() => {
     if (selectedChild) {
       api.get(`/metadata/jurisdictions?parentId=${selectedChild}`).then(res => {
-        setGrandChildren(res.data);
-        setSelectedGrandChild('');
+        let filtered = res.data.filter(j => j.level !== 'WARD' || j.name === 'Mylapore Section');
+        
+        // If it's empty but we expect wards, try fetching wards directly
+        if (filtered.length === 0) {
+           api.get('/metadata/jurisdictions?level=WARD').then(wRes => {
+              const mylapore = wRes.data.filter(w => w.name === 'Mylapore Section');
+              setGrandChildren(mylapore);
+              if (mylapore.length === 1) setSelectedGrandChild(mylapore[0].id);
+           });
+        } else {
+          setGrandChildren(filtered);
+          setSelectedGrandChild('');
+        }
         
         const childObj = children.find(c => c.id === selectedChild);
-        onChange(selectedChild, res.data.length === 0, childObj);
+        onChange(selectedChild, filtered.length === 0, childObj);
       }).catch(err => console.error(err));
     }
   }, [selectedChild]);

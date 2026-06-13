@@ -10,6 +10,7 @@ import {
 import LanguageToggle from './LanguageToggle';
 import ProfilePage from './ProfilePage';
 import LocationSettings from './LocationSettings';
+import api from '../../services/api';
 
 export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  const { t, lang, toggleLang } = useLanguage();
@@ -51,14 +52,22 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
   navigate('/', { replace: true });
   };
 
- // Get count of tickets from localStorage for badges
+ // Get count of tickets from backend for badges
  const [ticketCount, setTicketCount] = useState(0);
  const [escalatedCount, setEscalatedCount] = useState(0);
 
  useEffect(() => {
- const list = JSON.parse(localStorage.getItem('jn_tickets') || '[]');
- setTicketCount(list.filter(t => t.status === 'open' || t.status === 'in_progress').length);
- setEscalatedCount(list.filter(t => t.status === 'escalated').length);
+   const fetchCounts = async () => {
+     try {
+       const res = await api.get('/tickets');
+       const list = res.data;
+       setTicketCount(list.filter(t => t.status === 'OPEN' || t.status === 'ASSIGNED' || t.status === 'IN_PROGRESS').length);
+       setEscalatedCount(list.filter(t => t.status === 'ESCALATED').length);
+     } catch (err) {
+       console.error("Failed to fetch counts for layout", err);
+     }
+   };
+   fetchCounts();
  }, [location.pathname]);
 
  // Resolve bottom tabs dynamically based on the role
@@ -129,10 +138,10 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  ];
  case 'cm':
  return [
- { label: tLabel('Home', 'முகப்பு'), path: '/cm', icon: <Home className="w-5.5 h-5.5" /> },
- { label: tLabel('State', 'மாநிலம்'), path: '/cm/state', icon: <Globe className="w-5.5 h-5.5" /> },
- { label: tLabel('Emergency', 'அவசரம்'), path: '/cm/emergency', icon: <AlertTriangle className="w-5.5 h-5.5" /> },
- { label: tLabel('Escalations', 'மேல்முறை'), path: '/cm/escalations', icon: <ArrowUpRight className="w-5.5 h-5.5" /> },
+ { label: tLabel('State Command', 'மாநில கட்டளை'), path: '/cm', icon: <BarChart2 className="w-5.5 h-5.5" /> },
+ { label: tLabel('Grievances Matrix', 'புகார் தொகுதி'), path: '/cm/constituencies', icon: <Map className="w-5.5 h-5.5" /> },
+ { label: tLabel('Cabinet Rankings', 'அமைச்சரவை தரவரிசை'), path: '/cm/cabinet', icon: <Award className="w-5.5 h-5.5" /> },
+ { label: tLabel('CM Announcements', 'அரசு அறிவிப்புகள்'), path: '/cm/announcements', icon: <Megaphone className="w-5.5 h-5.5" /> },
  { label: tLabel('Profile', 'சுயவிவரம்'), path: '/cm/profile', icon: <User className="w-5.5 h-5.5" /> }
  ];
  default:

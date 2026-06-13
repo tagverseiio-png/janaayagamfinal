@@ -6,21 +6,6 @@ import { toast } from 'sonner';
 import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 
-/* ─── District Centroid Coordinates for Stamping ──────────────────────── */
-const districtCoords = {
-  "Chennai": { lat: 13.0827, lng: 80.2707 },
-  "Coimbatore": { lat: 11.0168, lng: 76.9558 },
-  "Madurai": { lat: 9.9252, lng: 78.1198 },
-  "Salem": { lat: 11.6643, lng: 78.1460 },
-  "Trichy": { lat: 10.7905, lng: 78.7047 },
-  "Vellore": { lat: 12.9165, lng: 79.1325 },
-  "Tirunelveli": { lat: 8.7139, lng: 77.7567 },
-  "Erode": { lat: 11.3410, lng: 77.7172 },
-  "Thanjavur": { lat: 10.7870, lng: 79.1378 },
-  "Tiruppur": { lat: 11.1085, lng: 77.3411 }
-};
-const defaultCoords = { lat: 10.8505, lng: 78.6677 };
-
 export default function LoginPage() {
   const { t, lang, toggleLang } = useLanguage();
   const navigate = useNavigate();
@@ -73,6 +58,13 @@ export default function LoginPage() {
 
       const { token, citizen } = response.data;
       
+      // Clear any existing employee session
+      localStorage.removeItem('jn_emp_role');
+      localStorage.removeItem('jn_emp_dept');
+      localStorage.removeItem('jn_emp_jurisdiction');
+      localStorage.removeItem('jn_emp_district');
+      localStorage.removeItem('jn_emp_constituency');
+
       // Save backend token and citizen details
       localStorage.setItem('jn_token', token);
       localStorage.setItem('jn_user_id', citizen.id);
@@ -83,7 +75,10 @@ export default function LoginPage() {
 
       // Handle location detail restoration
       const storedDistrict = localStorage.getItem('jn_district') || citizen.district || 'Chennai';
-      const coords = districtCoords[storedDistrict] || defaultCoords;
+      const coords = {
+        lat: citizen.jurisdiction?.lat || 10.8505,
+        lng: citizen.jurisdiction?.lng || 78.6677
+      };
 
       if (!localStorage.getItem('jn_district')) {
         localStorage.setItem('jn_district', storedDistrict);

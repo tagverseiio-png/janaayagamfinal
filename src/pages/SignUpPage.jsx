@@ -4,23 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'sonner';
 import { Shield, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
-import { getPlacesByPincode, getDistrictByPincode } from '../data/pincodeData';
 import api from '../services/api';
-
-/* ─── District Centroid Coordinates for Stamping ──────────────────────── */
-const districtCoords = {
-  "Chennai": { lat: 13.0827, lng: 80.2707 },
-  "Coimbatore": { lat: 11.0168, lng: 76.9558 },
-  "Madurai": { lat: 9.9252, lng: 78.1198 },
-  "Salem": { lat: 11.6643, lng: 78.1460 },
-  "Trichy": { lat: 10.7905, lng: 78.7047 },
-  "Vellore": { lat: 12.9165, lng: 79.1325 },
-  "Tirunelveli": { lat: 8.7139, lng: 77.7567 },
-  "Erode": { lat: 11.3410, lng: 77.7172 },
-  "Thanjavur": { lat: 10.7870, lng: 79.1378 },
-  "Tiruppur": { lat: 11.1085, lng: 77.3411 }
-};
-const defaultCoords = { lat: 10.8505, lng: 78.6677 };
 
 export default function SignUpPage() {
   const { t, lang, toggleLang } = useLanguage();
@@ -89,20 +73,30 @@ export default function SignUpPage() {
     // Simulate a brief loading delay to showcase premium UX spinner
     await new Promise(resolve => setTimeout(resolve, 450));
 
-    const districtName = getDistrictByPincode(pin);
-    const placeList = getPlacesByPincode(pin).map(p => p.place);
-    
-    if (districtName && placeList.length > 0) {
-      setAreas(placeList);
-      setPincodeStatus('success');
-      setDistrict(districtName);
-      setApiDistrictInfo(`${districtName}, Tamil Nadu`);
-      setIsDistrictLocked(true);
-      toast.success(tLabel("Pincode located!", "பின்கோடு கண்டறியப்பட்டது!"));
-    } else {
+    try {
+      const response = await api.get(`/metadata/pincode/${pin}`);
+      const data = response.data;
+      
+      if (data && data.length > 0) {
+        const placeList = data.map(p => p.place);
+        const districtName = data[0].district;
+        
+        setAreas(placeList);
+        setPincodeStatus('success');
+        setDistrict(districtName);
+        setApiDistrictInfo(`${districtName}, Tamil Nadu`);
+        setIsDistrictLocked(true);
+        toast.success(tLabel("Pincode located!", "பின்கோடு கண்டறியப்பட்டது!"));
+      } else {
+        setPincodeStatus('error');
+        setAreas([]);
+        toast.error(tLabel("Pincode not found. Please check and try again.", "பின்கோடு கிடைக்கவில்லை. சரிபார்க்கவும்."));
+      }
+    } catch (err) {
+      console.error('Pincode lookup failed:', err);
       setPincodeStatus('error');
       setAreas([]);
-      toast.error(tLabel("Pincode not found. Please check and try again.", "பின்கோடு கிடைக்கவில்லை. சரிபார்க்கவும்."));
+      toast.error(tLabel("Pincode service error.", "பின்கோடு சேவை பிழை."));
     }
     setPincodeLoading(false);
   };
@@ -129,14 +123,20 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (!district) return;
-    const selectedDistObj = dbDistricts.find(d => d.name === district);
-    if (!selectedDistObj) return;
-
-    // Fetch sub-jurisdictions
-    api.get(`/metadata/jurisdictions?parentId=${selectedDistObj.id}`)
-      .then(res => setDbWards(res.data))
+    
+    // Fetch all wards directly to avoid hierarchical mismatch issues
+    api.get(`/metadata/jurisdictions?level=WARD`)
+      .then(res => {
+        const filtered = res.data.filter(w => w.name === 'Mylapore Section');
+        setDbWards(filtered);
+        
+        // Auto-select if it's the only one
+        if (filtered.length === 1) {
+          setSelectedWard(filtered[0].name);
+        }
+      })
       .catch(console.error);
-  }, [district, dbDistricts]);
+  }, [district]);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -173,8 +173,12 @@ export default function SignUpPage() {
       wardNumber = match[0];
     }
 
-    // Lookup coordinates by district center
-    const coords = districtCoords[district] || defaultCoords;
+    // Lookup coordinates by dynamic district data
+    const selectedDistObj = dbDistricts.find(d => d.name === district);
+    const coords = { 
+      lat: selectedDistObj?.lat || 10.8505, 
+      lng: selectedDistObj?.lng || 78.6677 
+    };
 
     try {
       const response = await api.post('/auth/citizen/signup', {

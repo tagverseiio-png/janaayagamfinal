@@ -1,54 +1,49 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BarChart2, ShieldAlert, Zap, AlertTriangle, FileText } from 'lucide-react';
+import { BarChart2, Map, Award, Megaphone } from 'lucide-react';
 
 import PortalLayout from '../../shared/components/PortalLayout';
-import CmDashboard from './CmDashboard';
-import CmEmergency from './CmEmergency';
-import CmEscalations from './CmEscalations';
-import CabinetReport from './CabinetReport';
-import StatePage from './StatePage';
+import StateCommand from './StateCommand';
+import ConstituencyMatrix from './ConstituencyMatrix';
+import CabinetRankings from './CabinetRankings';
+import CmAnnouncements from './CmAnnouncements';
 
 export default function CmPortal() {
  const { t } = useTranslation();
 
  const sidebarLinks = [
  {
- label: t('dashboard'),
+ label: 'State Command',
  path: '/cm',
  icon: <BarChart2 />
  },
  {
- label: t('state_tickets'),
- path: '/cm/state',
- icon: <ShieldAlert />
+ label: 'Grievances Matrix',
+ path: '/cm/constituencies',
+ icon: <Map />
  },
  {
- label: t('crisis_mode'),
- path: '/cm/emergency',
- icon: <Zap />
+ label: 'Cabinet Rankings',
+ path: '/cm/cabinet',
+ icon: <Award />
  },
  {
- label: t('all_escalations'),
- path: '/cm/escalations',
- icon: <AlertTriangle />
- },
- {
- label: t('cabinet_report'),
- path: '/cm/report',
- icon: <FileText />
+ label: 'CM Announcements',
+ path: '/cm/announcements',
+ icon: <Megaphone />
  }
  ];
 
  return (
- <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Hon'ble Chief Minister (CM) Control Center">
+ <PortalLayout sidebarLinks={sidebarLinks} roleLabel="Chief Minister Command Center">
  <Routes>
- <Route path="/" element={<CmDashboard />} />
- <Route path="/state" element={<StatePage />} />
- <Route path="/emergency" element={<CmEmergency />} />
- <Route path="/escalations" element={<CmEscalations />} />
- <Route path="/report" element={<CabinetReport />} />
+ <Route path="/" element={<StateCommand />} />
+ <Route path="/constituencies" element={<ConstituencyMatrix />} />
+ <Route path="/cabinet" element={<CabinetRankings />} />
+ <Route path="/announcements" element={<CmAnnouncements />} />
+ {/* Fallback for old routes to avoid breaking */}
+ <Route path="*" element={<Navigate to="/cm" replace />} />
  </Routes>
  </PortalLayout>
  );

@@ -93,6 +93,37 @@ export default function SOSContact() {
       </div>
 
       <div className="p-4 space-y-6">
+        {/* Singa Penne Women's Safety CTA */}
+        <div className="bg-[#FFF1F2] border-2 border-[#E11D48] rounded-[24px] p-5 shadow-lg shadow-rose-100 flex flex-col items-center text-center space-y-4 relative overflow-hidden animate-in fade-in zoom-in duration-500">
+          {/* Decorative pattern */}
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-[#E11D48]/5 rounded-full blur-xl"></div>
+          
+          <div className="space-y-1 z-10">
+            <h3 className="text-[#E11D48] text-lg font-black uppercase tracking-tight flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-ping"></span>
+              Singa Penne
+            </h3>
+            <p className="text-[10px] font-black text-[#881337] uppercase tracking-widest opacity-80">
+              {tLabel("Women's Security & Emergency Support", "பெண்கள் பாதுகாப்பு மற்றும் அவசர உதவி")}
+            </p>
+          </div>
+
+          <p className="text-xs font-bold text-slate-600 leading-relaxed max-w-[280px]">
+            {tLabel(
+              "Immediate protection and support for women in distress. Your safety is our highest priority.",
+              "துன்பத்தில் உள்ள பெண்களுக்கு உடனடி பாதுகாப்பு மற்றும் ஆதரவு. உங்கள் பாதுகாப்பே எங்கள் முதன்மை முன்னுரிமை."
+            )}
+          </p>
+
+          <a
+            href="tel:1091"
+            className="w-full bg-[#E11D48] hover:bg-[#BE123C] text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2.5 shadow-md active:scale-[0.98] transition-all"
+          >
+            <Shield className="w-5 h-5 fill-white" />
+            <span>{tLabel('CONNECT TO SUPPORT', 'உதவியுடன் இணையுங்கள்')}</span>
+          </a>
+        </div>
+
         {/* Primary CTA Group */}
         <div className="space-y-3">
           <div className="bg-red-650 rounded-3xl p-5 shadow-lg shadow-red-200 text-white space-y-3 bg-red-600">

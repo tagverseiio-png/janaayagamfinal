@@ -42,12 +42,12 @@ import api from '../../services/api';
  }, []);
 
  // Compute stats
- const openCount = tickets.filter(t => t.status === 'open').length;
+ const openCount = tickets.filter(t => ['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'OPEN'].includes(t.status)).length;
  
  const todayStr = new Date().toISOString().split('T')[0];
  const raisedTodayCount = tickets.filter(t => t.createdAt && t.createdAt.startsWith(todayStr)).length;
  
- const resolvedCount = tickets.filter(t => t.status === 'resolved').length;
+ const resolvedCount = tickets.filter(t => ['RESOLVED', 'CLOSED'].includes(t.status)).length;
 
  // Filter/Sort recent tickets
  const recentTickets = [...tickets]
@@ -124,7 +124,7 @@ import api from '../../services/api';
             height="220px" 
             center={
               (() => {
-                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_district') : null;
+                const ud = typeof window !== 'undefined' ? localStorage.getItem('jn_emp_district') : null;
                 const dMap = {
                   "Chennai": [13.0827, 80.2707],
                   "Madurai": [9.9252, 78.1198],

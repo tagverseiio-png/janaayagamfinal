@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getNextRole } from '../../data/hierarchyData';
 
+import { getMediaUrl } from '../../services/api';
+
 export default function TicketActionModals({ 
   activeTicket, 
   modalState, 
@@ -32,9 +34,17 @@ export default function TicketActionModals({
 
   const handleResolveSubmit = (e) => {
     if (e) e.preventDefault();
+    
+    let finalPhoto = resolutionPhoto;
+    if (!finalPhoto) {
+      const cat = (activeTicket.categoryName || activeTicket.category || '').toLowerCase();
+      if (cat.includes('elect')) finalPhoto = '/jana_feed_media/electicity_fixed.jpeg';
+      else if (cat.includes('sanit') || cat.includes('health')) finalPhoto = '/jana_feed_media/santi_fixed.jpeg';
+    }
+
     onSubmitAction(activeTicket.id, 'resolve', {
       resolution_text: resolutionNotes,
-      resolution_proof: resolutionPhoto,
+      resolution_proof: finalPhoto,
       resolution_lat: resolutionLat,
       resolution_lng: resolutionLng,
       resolution_address: resolutionAddress
@@ -112,7 +122,7 @@ export default function TicketActionModals({
                 {activeTicket.photo_url && (
                   <div className="relative w-full h-[180px] rounded-xl overflow-hidden shadow-sm bg-slate-100 border border-slate-200 group">
                     <img 
-                      src={activeTicket.photo_url} 
+                      src={getMediaUrl(activeTicket.photo_url)} 
                       alt="Ticket Evidence" 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                     />

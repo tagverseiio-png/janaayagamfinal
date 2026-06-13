@@ -12,7 +12,7 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './portals/admin/AdminDashboard';
 import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
-import CmDashboard from './portals/cm/CmDashboard';
+import CmPortal from './portals/cm/CmPortal';
 import MlaDashboard from './portals/mla/MlaDashboard';
 import MinisterDashboard from './portals/minister/MinisterDashboard';
 
@@ -26,7 +26,8 @@ const ProtectedRoute = ({ requiredRole, children }) => {
 };
 
 const EmployeeProtectedRoute = ({ children }) => {
-  if (!localStorage.getItem('jn_emp_role')) {
+  const role = localStorage.getItem('jn_role');
+  if (role !== 'employee' || !localStorage.getItem('jn_emp_role')) {
     return <Navigate to="/employee-login" replace />;
   }
   return children;
@@ -66,7 +67,7 @@ export default function App() {
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
 
           {/* Employee Protected Routes */}
-          <Route path="/cm-dashboard" element={<EmployeeProtectedRoute><CmDashboard overviewMode={false} /></EmployeeProtectedRoute>} />
+          <Route path="/cm/*" element={<EmployeeProtectedRoute><CmPortal /></EmployeeProtectedRoute>} />
           <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><MinisterDashboard /></EmployeeProtectedRoute>} />
           <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><MlaDashboard /></EmployeeProtectedRoute>} />
           <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />

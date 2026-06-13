@@ -155,6 +155,19 @@ export const getLifecycleTransitions = async (req: Request, res: Response): Prom
   }
 };
 
+export const getPincodeDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { pincode } = req.params;
+    const mappings = await prisma.pincodeMapping.findMany({
+      where: { pincode }
+    });
+    res.json(mappings);
+  } catch (error) {
+    console.error('Error fetching pincode details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getHierarchy = async (req: Request, res: Response): Promise<void> => {
   console.log(`[getHierarchy] Called with query:`, req.query, `params:`, req.params);
   try {
@@ -243,6 +256,32 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error) {
     console.error('Error fetching hierarchy:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getEmployees = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { role, departmentId, jurisdictionId } = req.query;
+    let query: any = {};
+    if (role) query.role = role;
+    if (departmentId) query.departmentId = departmentId;
+    if (jurisdictionId) query.jurisdictionId = jurisdictionId;
+
+    const employees = await prisma.employee.findMany({
+      where: query,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        phone: true,
+        role: true,
+        category: true
+      }
+    });
+    res.json(employees);
+  } catch (error) {
+    console.error('Error fetching employees:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -8,13 +8,13 @@ import {
 import TicketCard from '../../shared/components/TicketCard';
 import StatusBadge from '../../shared/components/StatusBadge';
 import CategoryIcon from '../../shared/components/CategoryIcon';
-const collectorSeedData = [];
-
+import api, { getMediaUrl } from '../../services/api';
 
 export default function DistrictTickets({ escalatedOnly = false }) {
  const { t } = useTranslation();
  const navigate = useNavigate();
- const [tickets, setTickets] = useState(collectorSeedData.tickets);
+ const [tickets, setTickets] = useState([]);
+ const [loading, setLoading] = useState(true);
  
  // Filters state
  const [filterTaluk, setFilterTaluk] = useState('all');
@@ -38,27 +38,36 @@ export default function DistrictTickets({ escalatedOnly = false }) {
     priority: null
   });
 
-  const fetchTickets = (currentFilters = {}) => {
-    // Simulated API call with filters
-    let list = JSON.parse(localStorage.getItem('jn_tickets') || JSON.stringify(collectorSeedData.tickets));
-    
-    // Simulate server-side filtering if params exist (excluding 'all' or null)
-    if (currentFilters.taluk && currentFilters.taluk !== 'all') {
-      list = list.filter(t => t.taluk === currentFilters.taluk || 
-                             (currentFilters.taluk === 'Velachery' && t.ward >= 140 && t.ward <= 143) ||
-                             (currentFilters.taluk === 'Sholinganallur' && t.ward >= 144 && t.ward <= 147));
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/tickets');
+      const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
+      const formatted = res.data.map(t => ({
+        ...t,
+        category: t.department?.name || 'Unknown',
+        district: t.district || t.jurisdiction?.parent?.name || districtName,
+        id: t.ticketNumber,
+        dbId: t.id,
+        taluk: t.jurisdiction?.name || 'Unknown',
+        ward: t.jurisdiction?.name || 'Unknown',
+        created_at: t.createdAt
+      }));
+      
+      let list = formatted;
+      if (escalatedOnly) {
+        list = list.filter(t => t.status === 'ESCALATED');
+      }
+      setTickets(list);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch district tickets:', err);
+      setLoading(false);
     }
-    if (currentFilters.ward && currentFilters.ward !== 'all') list = list.filter(t => String(t.ward) === currentFilters.ward);
-    if (currentFilters.category && currentFilters.category !== 'all') list = list.filter(t => t.category.toLowerCase() === currentFilters.category);
-    if (currentFilters.status && currentFilters.status !== 'all') list = list.filter(t => t.status === currentFilters.status);
-    if (currentFilters.priority && currentFilters.priority !== 'all') list = list.filter(t => t.priority === currentFilters.priority);
-
-    setTickets(list);
   };
 
   useEffect(() => {
-    // On mount, load all tickets without filter params
-    fetchTickets({ taluk: null, ward: null, category: null, status: null, priority: null });
+    fetchTickets();
   }, [escalatedOnly]);
 
   // Only apply filters when user explicitly changes a dropdown:
@@ -72,81 +81,62 @@ export default function DistrictTickets({ escalatedOnly = false }) {
     if (filterKey === 'category') setFilterCategory(value);
     if (filterKey === 'status') setFilterStatus(value);
     if (filterKey === 'priority') setFilterPriority(value);
-
-    fetchTickets(updatedFilters);
   }
 
- const handleSaveTickets = (updated) => {
- localStorage.setItem('jn_tickets', JSON.stringify(updated));
- setTickets(updated);
- };
-
  // 1. Add Collector Directive Pinned Note
- const handleDirectiveSubmit = (e) => {
- e.preventDefault();
- if (!directiveText.trim()) {
- toast.error('Directive text is required');
- return;
- }
+ const handleDirectiveSubmit = async (e) => {
+   e.preventDefault();
+   if (!directiveText.trim()) {
+     toast.error('Directive text is required');
+     return;
+   }
 
- const updated = tickets.map(ticket => {
- if (ticket.id === activeTicket.id) {
- return { 
- ...ticket, 
- collector_directive: directiveText,
- collector_directive_at: new Date().toISOString()
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- setDirectiveModalOpen(false);
- setDirectiveText('');
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'கலெக்டர் உத்தரவு வெற்றிகரமாக இணைக்கப்பட்டது' 
- : 'District Collector directive note attached'
- );
+   try {
+     await api.patch(`/tickets/${activeTicket.dbId}`, { 
+       notes: `COLLECTOR DIRECTIVE: ${directiveText}` 
+     });
+     setDirectiveModalOpen(false);
+     setDirectiveText('');
+     toast.success(t('app_name') === 'ஜனநாயகம்' 
+       ? 'கலெக்டர் உத்தரவு வெற்றிகரமாக இணைக்கப்பட்டது' 
+       : 'District Collector directive note attached'
+     );
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to attach directive');
+   }
  };
 
  // 2. Reassign Taluk directly
- const handleReassignTaluk = (ticketId, targetTaluk) => {
- const updated = tickets.map(ticket => {
- if (ticket.id === ticketId) {
- return { 
- ...ticket, 
- taluk: targetTaluk,
- // Reassign to ward 0 or default to prevent collision
- ward: targetTaluk === 'Velachery' ? '140' : targetTaluk === 'Sholinganallur' ? '144' : 'General'
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- toast.success(`Ticket reassigned to ${targetTaluk} Taluk`);
+ const handleReassignTaluk = async (ticketId, targetTaluk) => {
+   try {
+     const t = tickets.find(ticket => ticket.id === ticketId);
+     await api.patch(`/tickets/${t.dbId}`, { 
+       notes: `Reassigned to ${targetTaluk} Taluk by Collector.`
+     });
+     toast.success(`Ticket reassigned to ${targetTaluk} Taluk`);
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to reassign taluk');
+   }
  };
 
  // 3. Escalate directly to State Secretariat
- const handleEscalateToState = () => {
- const updated = tickets.map(ticket => {
- if (ticket.id === activeTicket.id) {
- return { 
- ...ticket, 
- status: 'escalated',
- flagged_state: true,
- flagged_state_at: new Date().toISOString()
- };
- }
- return ticket;
- });
-
- handleSaveTickets(updated);
- setEscalateModalOpen(false);
- toast.success(t('app_name') === 'ஜனநாயகம்' 
- ? 'மாநில தலைமைச் செயலகத்திற்கு மேல்முறையீடு செய்யப்பட்டது' 
- : 'Complaint escalated to State Department Secretariat (IAS)'
- );
+ const handleEscalateToState = async () => {
+   try {
+     await api.patch(`/tickets/${activeTicket.dbId}`, { 
+       status: 'ESCALATED',
+       notes: 'Escalated to State Secretariat by District Collector.'
+     });
+     setEscalateModalOpen(false);
+     toast.success(t('app_name') === 'ஜனநாயகம்' 
+       ? 'மாநில தலைமைச் செயலகத்திற்கு மேல்முறையீடு செய்யப்பட்டது' 
+       : 'Complaint escalated to State Department Secretariat (IAS)'
+     );
+     fetchTickets();
+   } catch (err) {
+     toast.error('Failed to escalate to state');
+   }
  };
 
  // Catch generic actions from TicketCard

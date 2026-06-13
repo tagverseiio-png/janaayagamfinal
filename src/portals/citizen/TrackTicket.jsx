@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { DEPT_HIERARCHY, normalizeDept, getCurrentStep, getProgressPercent } from '../../data/hierarchyData';
 import api from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -33,11 +32,29 @@ export default function TrackTicket() {
       );
 
       if (found) {
+        let beforePhoto = found.photo;
+        let afterPhoto = found.proofPhoto;
+
+        // MOCK IMAGE FALLBACK LOGIC
+        const cat = (found.categoryName || found.category?.name || found.department?.name || '').toLowerCase();
+        const status = (found.status || '').toUpperCase();
+
+        if (!beforePhoto) {
+          if (cat.includes('elect')) beforePhoto = '/jana_feed_media/electiciry_reported.jpeg';
+          else if (cat.includes('sanit') || cat.includes('health')) beforePhoto = '/jana_feed_media/santi_reported.jpeg';
+        }
+        if (!afterPhoto && (status === 'RESOLVED' || status === 'CLOSED')) {
+          if (cat.includes('elect')) afterPhoto = '/jana_feed_media/electicity_fixed.jpeg';
+          else if (cat.includes('sanit') || cat.includes('health')) afterPhoto = '/jana_feed_media/santi_fixed.jpeg';
+        }
+
         setTicket({
           ...found,
           id: found.ticketNumber,
-          category: found.department?.name || 'Unknown',
-          district: found.jurisdiction?.name || 'Unknown'
+          category: found.categoryName || found.department?.name || 'Unknown',
+          district: found.district || 'Unknown',
+          photo: beforePhoto,
+          proofPhoto: afterPhoto
         });
         setError('');
       } else {
@@ -49,11 +66,59 @@ export default function TrackTicket() {
     }
   };
 
-  const deptKey = ticket ? (ticket.categoryName || (typeof ticket.category === 'string' ? ticket.category : ticket.category?.name) || 'Water') : null;
-  const hierarchy = ticket ? DEPT_HIERARCHY[normalizeDept(deptKey)] : [];
+  const hierarchy = ticket?.hierarchySteps ? [
+    { role: 'Citizen', label: 'Issue Filed' },
+    ...ticket.hierarchySteps,
+    { role: 'Resolved', label: 'Issue Resolved' }
+  ] : [];
+
   const assignedToRole = ticket?.assignedTo ? (typeof ticket.assignedTo === 'string' ? ticket.assignedTo : ticket.assignedTo.role) : null;
-  const currentStep = ticket ? getCurrentStep(deptKey, assignedToRole) : 0;
-  const progress = ticket ? getProgressPercent(deptKey, assignedToRole) : 0;
+  
+  const getCurrentStep = () => {
+    if (!ticket) return 0;
+    if (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED') return hierarchy.length - 1;
+    
+    const normalize = (r) => (r || '').toUpperCase().replace(/\s+/g, '_').replace(/[()]/g, '').replace(/\./g, '');
+    const aRole = normalize(assignedToRole);
+
+    const aliases = {
+      'AAE': ['ASSISTANT_AREA_ENGINEER', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+      'ASSISTANT_AREA_ENGINEER': ['AAE', 'WARD_AEO', 'ASST_AREA_ENGINEER'],
+      'AE': ['AREA_ENGINEER'],
+      'AREA_ENGINEER': ['AE'],
+      'DSI': ['DIVISION_SANITARY_INSPECTOR'],
+      'DIVISION_SANITARY_INSPECTOR': ['DSI'],
+      'SI': ['SANITARY_INSPECTOR'],
+      'SANITARY_INSPECTOR': ['SI'],
+      'HI': ['HEALTH_INSPECTOR'],
+      'HEALTH_INSPECTOR': ['HI'],
+      'CHI': ['CITY_HEALTH_OFFICER'],
+      'CITY_HEALTH_OFFICER': ['CHI'],
+      'MINISTER': ['MINISTER_ELECTRICITY', 'MINISTER_ENERGY', 'MINISTER_HEALTH', 'CABINET_MINISTER', 'HONORABLE_MINISTER', 'HONORABLE_MINISTER_ENERGY', 'MINISTER_HIGHWAYS'],
+      'JE': ['JUNIOR_ENGINEER'],
+      'JUNIOR_ENGINEER': ['JE'],
+      'AEE': ['ASSISTANT_EXECUTIVE_ENGINEER'],
+      'ASSISTANT_EXECUTIVE_ENGINEER': ['AEE'],
+      'EE': ['EXECUTIVE_ENGINEER'],
+      'EXECUTIVE_ENGINEER': ['EE'],
+      'SE': ['SUPERINTENDING_ENGINEER'],
+      'SUPERINTENDING_ENGINEER': ['SE'],
+      'CE': ['CHIEF_ENGINEER'],
+      'CHIEF_ENGINEER': ['CE']
+    };
+
+    const idx = hierarchy.findIndex(h => {
+      const hRole = normalize(h.role);
+      if (hRole === aRole) return true;
+      if (aliases[hRole] && aliases[hRole].includes(aRole)) return true;
+      if (aliases[aRole] && aliases[aRole].includes(hRole)) return true;
+      return false;
+    });
+    return idx === -1 ? 1 : idx;
+  };
+
+  const currentStep = getCurrentStep();
+  const progress = hierarchy.length > 0 ? Math.round((currentStep / (hierarchy.length - 1)) * 100) : 0;
 
   const statusColor = { Open: 'bg-yellow-100 text-yellow-700', 'In Progress': 'bg-blue-100 text-blue-700', Escalated: 'bg-red-100 text-red-700', Resolved: 'bg-green-100 text-green-700' };
   const priorityColor = { Critical: 'text-red-600', High: 'text-orange-500', Medium: 'text-yellow-600', Low: 'text-green-600' };
@@ -151,7 +216,52 @@ export default function TrackTicket() {
                 </div>
               )}
 
-              {(ticket.status === 'Resolved' || ticket.status === 'resolved') && (
+              {/* Before/After Proof Photos */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {/* Before Photo */}
+                <div className="space-y-1">
+                  <span className="text-[9.5px] font-black text-slate-450 block tracking-widest uppercase">
+                    📸 GRIEVANCE PHOTO (BEFORE)
+                  </span>
+                  {ticket.photo ? (
+                    <div className="aspect-video w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-100 shadow-sm">
+                      <img 
+                        src={getMediaUrl(ticket.photo)} 
+                        alt="Before Grievance" 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video w-full rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                      No photo attached
+                    </div>
+                  )}
+                </div>
+
+                {/* After Photo (Resolved/Closed status) */}
+                {['RESOLVED', 'CLOSED'].includes(ticket.status?.toUpperCase()) && (
+                  <div className="space-y-1">
+                    <span className="text-[9.5px] font-black text-emerald-600 block tracking-widest uppercase">
+                      📷 RESOLUTION PROOF (AFTER)
+                    </span>
+                    {ticket.proofPhoto ? (
+                      <div className="aspect-video w-full rounded-xl border border-emerald-200 overflow-hidden bg-white shadow-sm">
+                        <img 
+                          src={getMediaUrl(ticket.proofPhoto)} 
+                          alt="Resolution Proof" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full rounded-xl border border-emerald-200 bg-emerald-50/30 flex items-center justify-center text-[10px] font-bold text-emerald-600">
+                        Pending proof update
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {['RESOLVED', 'CLOSED'].includes(ticket.status?.toUpperCase()) && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-4">
                   <p className="text-[10px] text-emerald-700 font-black uppercase tracking-widest">✅ ISSUE RESOLVED</p>
                   <p className="text-emerald-900 font-extrabold text-sm mt-0.5">
@@ -164,7 +274,7 @@ export default function TrackTicket() {
             {/* Hierarchy Timeline */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-4">
               <p className="text-[10px] text-slate-400 font-black tracking-widest mb-6 border-b pb-2 uppercase">
-                OFFICIAL {normalizeDept(deptKey)} DEPARTMENT PIPELINE
+                OFFICIAL {ticket.departmentName} DEPARTMENT PIPELINE
               </p>
 
               <div className="relative">

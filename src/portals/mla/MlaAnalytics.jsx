@@ -76,7 +76,7 @@ export default function MlaAnalytics() {
  Constituency Analytics Dashboard
  </h2>
  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">
- Velachery Regional Performance Reports
+ Mylapore Regional Performance Reports
  </p>
  </div>
 
@@ -246,7 +246,7 @@ export default function MlaAnalytics() {
 
  <div className="space-y-3">
  {[
- { rank: '1', title: 'Velachery Canal Water Leakages & Blocks', count: 18, emoji: '💧', desc: 'Silt blockages in storm drains leading to minor road overflows.' },
+ { rank: '1', title: 'Mylapore Canal Water Leakages & Blocks', count: 18, emoji: '💧', desc: 'Silt blockages in storm drains leading to minor road overflows.' },
  { rank: '2', title: 'Main Junction Road Potholes', count: 12, emoji: '🛣️', desc: 'Heavy vehicle transit wearing down bitumen on roads.' },
  { rank: '3', title: ' temple street voltage drops', count: 8, emoji: '⚡', desc: 'Transformers requiring load realignment across ward grids.' }
  ].map((item, index) => (

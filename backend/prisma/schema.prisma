@@ -42,6 +42,8 @@ model Jurisdiction {
   parent    Jurisdiction?  @relation("Hierarchy", fields: [parentId], references: [id])
   children  Jurisdiction[] @relation("Hierarchy")
   track     String?    // URBAN, RURAL, REVENUE
+  lat       Float?
+  lng       Float?
   
   employees Employee[]
   tickets   Ticket[]
@@ -179,5 +181,31 @@ model TicketHistory {
   employee     Employee? @relation(fields: [employeeId], references: [id])
   
   createdAt    DateTime  @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  text        String
+  district    String   @default("All")
+  authorId    String
+  createdAt   DateTime @default(now())
+}
+
+model CabinetReport {
+  id          String   @id @default(uuid())
+  title       String
+  summaryText String
+  rankings    String   // Store as JSON string
+  createdAt   DateTime @default(now())
+}
+
+model PincodeMapping {
+  id       String @id @default(uuid())
+  pincode  String
+  place    String
+  district String
+
+  @@index([pincode])
 }
 

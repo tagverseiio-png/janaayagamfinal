@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 const prisma = new PrismaClient();
 
 import authRoutes from './routes/authRoutes';
@@ -15,6 +15,8 @@ import metadataRoutes from './routes/metadataRoutes';
 import ticketRoutes from './routes/ticketRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import adminRoutes from './routes/adminRoutes';
+import announcementRoutes from './routes/announcementRoutes';
+import cabinetRoutes from './routes/cabinetRoutes';
 import { checkAndAutoEscalateSlaBreaches } from './controllers/ticketController';
 
 // Middleware
@@ -37,6 +39,8 @@ app.use('/api/metadata', metadataRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/cabinet', cabinetRoutes);
 
 app.get('/api/hierarchy/:department_slug', getHierarchy);
 app.get('/api/hierarchy', getHierarchy);

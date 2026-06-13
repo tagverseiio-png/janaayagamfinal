@@ -26,16 +26,16 @@ import api from '../../services/api';
    const fetchTickets = async () => {
      try {
        const res = await api.get('/tickets');
+       const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
        const formatted = res.data.map(t => ({
          ...t,
          category: t.department?.name || 'Unknown',
-         district: 'Chennai',
+         district: t.district || t.jurisdiction?.parent?.name || districtName,
          id: t.ticketNumber,
          taluk: t.jurisdiction?.name || 'Unknown',
          ward: t.jurisdiction?.name || 'Unknown'
        }));
-       const districtName = localStorage.getItem('jn_emp_district') || 'Chennai';
-       setTickets(formatted.filter(t => t.district === districtName));
+       setTickets(formatted);
        setLoadingTable(false);
      } catch (err) {
        console.error('Failed to fetch collector tickets:', err);
@@ -144,10 +144,10 @@ import api from '../../services/api';
  <div style={{ background: '#8B1A1A' }} className="rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
  <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
  <span className="text-[9px] font-black uppercase tracking-widest bg-white/15 px-2.5 py-1 rounded border border-white/20">
- Chennai District Grievance Monitoring Control
+ {localStorage.getItem('jn_emp_district') || 'District'} Grievance Monitoring Control
  </span>
  <h2 className="text-2xl font-black mt-3">
- {t('app_name') === 'ஜனநாயகம்' ? 'மாவட்ட ஆட்சியர் டாஷ்போர்டு' : 'District Collector Command Dashboard'}
+ {t('app_name') === 'ஜனநாயகம்' ? `${localStorage.getItem('jn_emp_district') || 'மாவட்ட'} ஆட்சியர் டாஷ்போர்டு` : `${localStorage.getItem('jn_emp_district') || 'District'} Collector Command Dashboard`}
  </h2>
  <p className="text-xs text-sky-100 font-bold uppercase tracking-wider mt-1 opacity-90">
  Supervise regional municipal administration, budget approvals, and civic systems
