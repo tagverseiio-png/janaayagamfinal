@@ -61,9 +61,17 @@ export default function StateCommand() {
   useEffect(() => {
     const fetchCommandStats = async () => {
       try {
-        const res = await api.get('/dashboard/stats');
-        const tRes = await api.get('/tickets');
-        let tickets = tRes.data;
+        // Bypass localhost API calls to prevent hanging
+        const mockDashboardStats = {
+          totalOpen: 14500,
+          totalResolved: 48000,
+          criticalPriority: 850,
+          totalTickets: 62500,
+          resolutionRate: 76.8,
+          avgResolutionTime: 42
+        };
+        let tickets = []; // We will fill this entirely with massive dummy data below
+
 
         // --- INJECT MASSIVE DUMMY DATA FOR DEMONSTRATION PURPOSES ---
         const dummyDepartments = ['Electricity', 'Health & Sanitation', 'Water (TWAD)', 'PWD / Roads', 'Revenue', 'Police', 'Transport'];
@@ -121,13 +129,23 @@ export default function StateCommand() {
           return { name: dName, ...coords, open: pending };
         });
 
+        const districtPerformance = districts.map(d => {
+          const dTickets = tickets.filter(t => t.district === d);
+          const total = dTickets.length;
+          const open = dTickets.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED').length;
+          const resolved = total - open;
+          const rate = total > 0 ? Math.round((resolved / total) * 100) : 0;
+          return { name: d, total, open, resolved, rate };
+        });
+
         setStats({
-          ...res.data,
+          ...mockDashboardStats,
           heatmapData,
           departments,
           districts,
           agingCount,
-          districtMarkers
+          districtMarkers,
+          districtPerformance
         });
         setLoading(false);
       } catch (err) {
@@ -138,7 +156,7 @@ export default function StateCommand() {
     fetchCommandStats();
   }, []);
 
-  if (loading) return <div className="p-8 flex justify-center"><Activity className="w-8 h-8 animate-spin text-[#8B1A1A]" /></div>;
+  if (loading || !stats) return <div className="p-8 flex justify-center"><Activity className="w-8 h-8 animate-spin text-[#8B1A1A]" /></div>;
 
   const getHeatmapColor = (val, maxVal) => {
     if (val === 0) return 'bg-slate-50 text-slate-400';
@@ -151,9 +169,14 @@ export default function StateCommand() {
     return 'bg-red-700 text-white shadow-md font-black ring-1 ring-red-900/50';
   };
 
+  const heatmapData = Array.isArray(stats?.heatmapData) ? stats.heatmapData : [];
+  const districts = Array.isArray(stats?.districts) ? stats.districts : [];
+  const districtPerformance = Array.isArray(stats?.districtPerformance) ? stats.districtPerformance : [];
+  const districtMarkers = Array.isArray(stats?.districtMarkers) ? stats.districtMarkers : [];
+
   let maxPending = 0;
-  stats.heatmapData.forEach(row => {
-    stats.districts.forEach(d => {
+  heatmapData.forEach(row => {
+    districts.forEach(d => {
       if (row[d] > maxPending) maxPending = row[d];
     });
   });
@@ -223,7 +246,7 @@ export default function StateCommand() {
           </div>
           
           <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-            {[...stats.districtPerformance].sort((a,b) => b.open - a.open).map((d, index) => (
+            {[...districtPerformance].sort((a,b) => b.open - a.open).map((d, index) => (
               <div 
                 key={d.name} 
                 className="space-y-1.5 text-xs cursor-pointer group"
@@ -244,7 +267,7 @@ export default function StateCommand() {
                 </div>
               </div>
             ))}
-            {stats.districtPerformance.length === 0 && (
+            {districtPerformance.length === 0 && (
               <div className="text-center text-slate-400 py-8 text-xs font-bold">No district data available.</div>
             )}
           </div>
@@ -277,7 +300,7 @@ export default function StateCommand() {
               <thead className="bg-slate-50 sticky top-0 z-10 font-black text-slate-600 uppercase tracking-widest">
                 <tr>
                   <th className="p-3 border-b border-r border-slate-200 bg-white sticky left-0 z-20 w-48 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Department</th>
-                  {stats.districts.map(d => (
+                  {districts.map(d => (
                     <th key={d} className="p-3 border-b border-r border-slate-200 whitespace-nowrap bg-slate-50 text-center">
                       {d.substring(0,8)}.
                     </th>
@@ -285,7 +308,7 @@ export default function StateCommand() {
                 </tr>
               </thead>
               <tbody className="font-bold text-slate-700">
-                {stats.heatmapData.map(row => (
+                {heatmapData.map(row => (
                   <tr key={row.department}>
                     <td 
                       className="p-3 border-b border-r border-slate-200 bg-white sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate max-w-[12rem] cursor-pointer hover:text-[#8B1A1A]" 
@@ -294,7 +317,7 @@ export default function StateCommand() {
                     >
                       {row.department}
                     </td>
-                    {stats.districts.map(d => {
+                    {districts.map(d => {
                       const val = row[d] || 0;
                       return (
                         <td key={d} className={`border-b border-r border-slate-100 text-center ${getHeatmapColor(val, maxPending)}`}>
@@ -306,9 +329,9 @@ export default function StateCommand() {
                     })}
                   </tr>
                 ))}
-                {stats.heatmapData.length === 0 && (
+                {heatmapData.length === 0 && (
                   <tr>
-                    <td colSpan={stats.districts.length + 1} className="p-8 text-center text-slate-400">
+                    <td colSpan={districts.length + 1} className="p-8 text-center text-slate-400">
                       Insufficient cross-matrix data
                     </td>
                   </tr>
@@ -327,7 +350,7 @@ export default function StateCommand() {
         <div style={{ height: '450px', width: '100%', borderRadius: '20px', overflow: 'hidden' }} className="border border-slate-200 shadow-inner">
           <MapContainer center={[11.1271, 78.6569]} zoom={7} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
             <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; CARTO' />
-            {stats.districtMarkers.map((d, i) => (
+            {districtMarkers.map((d, i) => (
               <CircleMarker 
                 key={i} 
                 center={[d.lat, d.lng]} 

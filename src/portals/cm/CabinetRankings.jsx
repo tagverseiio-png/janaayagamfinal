@@ -12,8 +12,9 @@ export default function CabinetRankings() {
   useEffect(() => {
     const fetchLatestCabinetReport = async () => {
       try {
-        const res = await api.get('/cabinet/latest');
-        setCabinetReport(res.data);
+        // Bypass API
+        // const res = await api.get('/cabinet/latest');
+        // setCabinetReport(res.data);
       } catch (err) {
         console.warn('No existing cabinet report found');
       } finally {

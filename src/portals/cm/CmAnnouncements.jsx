@@ -15,8 +15,9 @@ export default function CmAnnouncements() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await api.get('/announcements');
-        setAnnouncements(res.data);
+        // Bypass API
+        // const res = await api.get('/announcements');
+        // setAnnouncements(res.data);
       } catch (err) {
         console.error('Failed to fetch announcements:', err);
       } finally {

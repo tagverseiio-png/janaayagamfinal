@@ -14,8 +14,7 @@ export default function ConstituencyMatrix() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = await api.get('/tickets');
-        let formatted = res.data;
+        let formatted = []; // Bypass localhost API, use massive dummy below
 
         // --- INJECT MASSIVE DUMMY DATA FOR DEMONSTRATION PURPOSES ---
         const dummyDepartments = ['Electricity', 'Health & Sanitation', 'Water (TWAD)', 'PWD / Roads', 'Revenue', 'Police', 'Transport'];
