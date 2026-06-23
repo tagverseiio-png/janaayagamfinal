@@ -9,7 +9,7 @@ const getDashboardRoute = (role, departmentName) => {
   const r = role ? role.toUpperCase() : '';
   if (r === 'CM') return '/cm';
   if (r === 'SUPERADMIN' || r === 'SUPER_ADMIN') return '/admin';
-  if (r === 'MLA') return '/mla-dashboard';
+  if (r === 'MLA') return '/mla';
   if (r === 'MINISTER') return '/minister';
   if (r === 'WARD MEMBER' || r === 'PANCHAYAT_PRESIDENT') return '/ward-member-dashboard';
   if (r === 'DISTRICT COLLECTOR' || r === 'COLLECTOR') return '/collector-dashboard';

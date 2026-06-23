@@ -13,7 +13,7 @@ import AdminDashboard from './portals/admin/AdminDashboard';
 import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
 import CmPortal from './portals/cm/CmPortal';
-import MlaDashboard from './portals/mla/MlaDashboard';
+import MlaPortal from './portals/mla/MlaPortal';
 import MinisterPortal from './portals/minister/MinisterPortal';
 import OfficerPortal from './portals/officer/OfficerPortal';
 import PublicPortal from './portals/public/PublicPortal';
@@ -71,7 +71,7 @@ export default function App() {
           {/* Employee Protected Routes */}
           <Route path="/cm/*" element={<EmployeeProtectedRoute><CmPortal /></EmployeeProtectedRoute>} />
           <Route path="/minister/*" element={<EmployeeProtectedRoute><MinisterPortal /></EmployeeProtectedRoute>} />
-          <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><MlaDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/mla/*" element={<EmployeeProtectedRoute><MlaPortal /></EmployeeProtectedRoute>} />
           <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/collector-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/dro-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
