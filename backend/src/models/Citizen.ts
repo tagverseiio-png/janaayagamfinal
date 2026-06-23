@@ -11,7 +11,7 @@ const citizenSchema = new Schema({
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
@@ -20,7 +20,7 @@ const citizenSchema = new Schema({
   toObject: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;

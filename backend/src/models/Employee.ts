@@ -14,7 +14,7 @@ const employeeSchema = new Schema({
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.departmentId) ret.departmentId = ret.departmentId.toString();
       if (ret.jurisdictionId) ret.jurisdictionId = ret.jurisdictionId.toString();
       delete ret._id;
@@ -25,7 +25,7 @@ const employeeSchema = new Schema({
   toObject: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.departmentId) ret.departmentId = ret.departmentId.toString();
       if (ret.jurisdictionId) ret.jurisdictionId = ret.jurisdictionId.toString();
       delete ret._id;

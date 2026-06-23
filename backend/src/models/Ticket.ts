@@ -25,7 +25,7 @@ const ticketSchema = new Schema({
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.citizenId) ret.citizenId = ret.citizenId.toString();
       if (ret.departmentId) ret.departmentId = ret.departmentId.toString();
       if (ret.categoryId) ret.categoryId = ret.categoryId.toString();
@@ -39,7 +39,7 @@ const ticketSchema = new Schema({
   toObject: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.citizenId) ret.citizenId = ret.citizenId.toString();
       if (ret.departmentId) ret.departmentId = ret.departmentId.toString();
       if (ret.categoryId) ret.categoryId = ret.categoryId.toString();

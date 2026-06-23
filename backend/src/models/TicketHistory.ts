@@ -10,7 +10,7 @@ const ticketHistorySchema = new Schema({
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.ticketId) ret.ticketId = ret.ticketId.toString();
       if (ret.employeeId) ret.employeeId = ret.employeeId.toString();
       delete ret._id;
@@ -21,7 +21,7 @@ const ticketHistorySchema = new Schema({
   toObject: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.ticketId) ret.ticketId = ret.ticketId.toString();
       if (ret.employeeId) ret.employeeId = ret.employeeId.toString();
       delete ret._id;

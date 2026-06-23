@@ -12,7 +12,7 @@ const jurisdictionSchema = new Schema({
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.parentId) ret.parentId = ret.parentId.toString();
       delete ret._id;
       delete ret.__v;
@@ -22,7 +22,7 @@ const jurisdictionSchema = new Schema({
   toObject: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       if (ret.parentId) ret.parentId = ret.parentId.toString();
       delete ret._id;
       delete ret.__v;
