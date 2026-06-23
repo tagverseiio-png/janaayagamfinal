@@ -6,10 +6,19 @@ const api = axios.create({
 
 export const getMediaUrl = (path) => {
   if (!path) return null;
-  if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/jana_feed_media')) return path;
+  
+  // If the path contains localhost:5001 or 127.0.0.1:5001, rewrite it to use the current hostname
+  let cleanPath = path;
+  if (typeof path === 'string') {
+    cleanPath = path.replace(/^(https?:\/\/)(localhost|127\.0\.0\.1)(:5001)/, `$1${window.location.hostname}$3`);
+  }
+
+  if (cleanPath.startsWith('http') || cleanPath.startsWith('data:') || cleanPath.startsWith('/jana_feed_media')) {
+    return cleanPath;
+  }
   const baseUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5001/api`;
   const host = baseUrl.replace('/api', '');
-  return `${host}${path}`;
+  return `${host}${cleanPath}`;
 };
 
 // Add a request interceptor to attach the JWT token
