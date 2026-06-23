@@ -1,0 +1,5 @@
+[
+  { "id": "EM-901", "type": "Flood Control", "department": "Public Works (PWD)", "district": "Chennai", "locality": "Velachery", "citizensAffected": 45000, "pendingHrs": 12, "status": "critical", "crossDept": true },
+  { "id": "EM-902", "type": "Epidemic Outbreak", "department": "Health", "district": "Thanjavur", "locality": "Pattukkottai", "citizensAffected": 1200, "pendingHrs": 24, "status": "active", "crossDept": false },
+  { "id": "EM-903", "type": "Grid Failure", "department": "Electricity", "district": "Madurai", "locality": "South Zone", "citizensAffected": 85000, "pendingHrs": 4, "status": "critical", "crossDept": false }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "ANN-001",
+    "title": "Monsoon Preparedness Warning",
+    "text": "All citizens in Chennai are advised to stay indoors during the heavy rainfall expected tomorrow. Helpline 1913 is active.",
+    "district": "Chennai",
+    "createdAt": "2026-06-22T08:00:00Z"
+  },
+  {
+    "id": "ANN-002",
+    "title": "Water Supply Disruption",
+    "text": "Water supply in Ward 1 Kodungaiyur will be disrupted due to pipeline maintenance on Thursday from 9 AM to 5 PM.",
+    "district": "Chennai",
+    "createdAt": "2026-06-21T10:00:00Z"
+  }
+]

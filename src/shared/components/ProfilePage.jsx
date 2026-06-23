@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Activity, LogOut, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Activity, LogOut, ArrowLeft, Handshake, PhoneCall, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
@@ -149,6 +149,63 @@ export default function ProfilePage() {
  {tLabel('Re-verify', 'மீண்டும் சரிபார்')}
  </button>
  </div>
+
+  {/* Row: Become a JanaNayagam */}
+  <button
+    onClick={() => navigate(isVolunteer ? '/citizen/volunteer-dashboard' : '/citizen/volunteer-signup')}
+    className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+  >
+    <div className="p-2 bg-red-50 rounded-xl mr-3 shrink-0">
+      <Handshake className="w-5 h-5 text-[#8B1A1A]" />
+    </div>
+    <div className="flex flex-col flex-1">
+      <span className="text-sm font-extrabold text-slate-800">
+        {tLabel('Become a JanaNayagam', 'ஜனநாயகம் ஆகுங்கள்')}
+      </span>
+      <span className="text-[11px] text-slate-400 font-bold">
+        {tLabel('Serve your ward', 'வார்டு சேவை')}
+      </span>
+    </div>
+    <ChevronRight className="w-4 h-4 text-slate-400" />
+  </button>
+
+  {/* Row: SOS Help */}
+  <button
+    onClick={() => navigate('/citizen/sos')}
+    className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+  >
+    <div className="p-2 bg-blue-50 rounded-xl mr-3 shrink-0">
+      <PhoneCall className="w-5 h-5 text-blue-500" />
+    </div>
+    <div className="flex flex-col flex-1">
+      <span className="text-sm font-extrabold text-slate-800">
+        {tLabel('SOS Help', 'அவசரம்')}
+      </span>
+      <span className="text-[11px] text-slate-400 font-bold">
+        {tLabel('Emergencies · 112', 'உதவி எண்கள் · 112')}
+      </span>
+    </div>
+    <ChevronRight className="w-4 h-4 text-slate-400" />
+  </button>
+
+  {/* Row: Invite a Friend */}
+  <button
+    onClick={() => navigate('/citizen/refer')}
+    className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+  >
+    <div className="p-2 bg-indigo-50 rounded-xl mr-3 shrink-0">
+      <Share2 className="w-5 h-5 text-indigo-800" />
+    </div>
+    <div className="flex flex-col flex-1">
+      <span className="text-sm font-extrabold text-slate-800">
+        {tLabel('Invite a Friend', 'பரிந்துரை')}
+      </span>
+      <span className="text-[11px] text-slate-400 font-bold">
+        {tLabel('Refer & earn', 'பகிர்ந்து கொள்க')}
+      </span>
+    </div>
+    <ChevronRight className="w-4 h-4 text-slate-400" />
+  </button>
 
  {/* Row: Language Toggle */}
  <div className="flex items-center justify-between p-4 border-b border-slate-100 ">

@@ -1,0 +1,5 @@
+[
+  { "id": "ai-1", "type": "critical", "text": "Electricity complaints in Chennai North rose 42% in 14 days; 68% from transformer failures in 3 AAE zones — preventive maintenance recommended." },
+  { "id": "ai-2", "type": "warning", "text": "High risk of grid overload in Madurai South due to upcoming festival season. Deploy additional field crews to substations." },
+  { "id": "ai-3", "type": "success", "text": "Resolution time in Coimbatore improved by 15% after AE redistribution." }
+]

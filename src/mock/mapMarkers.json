@@ -1,0 +1,5 @@
+[
+  { "id": "m1", "lat": 13.0827, "lng": 80.2707, "type": "outage", "title": "Chennai North Blackout", "severity": "high", "district": "Chennai", "zone": "North" },
+  { "id": "m2", "lat": 9.9252, "lng": 78.1198, "type": "transformer", "title": "Transformer Failure", "severity": "medium", "district": "Madurai", "zone": "South" },
+  { "id": "m3", "lat": 11.0168, "lng": 76.9558, "type": "complaint", "title": "Voltage Fluctuation", "severity": "low", "district": "Coimbatore", "zone": "East" }
+]

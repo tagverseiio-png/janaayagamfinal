@@ -1,0 +1,10 @@
+[
+  { "id": "cat_elec_1", "departmentId": "dept_elec", "label": "Power Outage / No Supply", "active": true },
+  { "id": "cat_elec_2", "departmentId": "dept_elec", "label": "Sparking Transformer", "active": true },
+  { "id": "cat_elec_3", "departmentId": "dept_elec", "label": "Low Voltage", "active": true },
+  { "id": "cat_elec_4", "departmentId": "dept_elec", "label": "Broken Electric Pole", "active": true },
+  { "id": "cat_health_1", "departmentId": "dept_health", "label": "Garbage Accumulation", "active": true },
+  { "id": "cat_health_2", "departmentId": "dept_health", "label": "Sewage Overflow", "active": true },
+  { "id": "cat_health_3", "departmentId": "dept_health", "label": "Dead Animal Carcass", "active": true },
+  { "id": "cat_health_4", "departmentId": "dept_health", "label": "Mosquito Breeding", "active": true }
+]

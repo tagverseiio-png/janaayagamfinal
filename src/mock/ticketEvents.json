@@ -1,0 +1,29 @@
+[
+  {
+    "id": "evt_1",
+    "ticketId": "TKT-2026-002",
+    "actorId": "cit_2",
+    "fromStatus": null,
+    "toStatus": "SUBMITTED",
+    "atrText": "Citizen submitted grievance",
+    "timestamp": "2026-06-21T09:15:00Z"
+  },
+  {
+    "id": "evt_2",
+    "ticketId": "TKT-2026-002",
+    "actorId": "off_health_dsi_121",
+    "fromStatus": "SUBMITTED",
+    "toStatus": "ASSIGNED",
+    "atrText": "Assigned to DSI Tmt. Meenakshi",
+    "timestamp": "2026-06-21T09:45:00Z"
+  },
+  {
+    "id": "evt_3",
+    "ticketId": "TKT-2026-004",
+    "actorId": "off_elec_aae_121",
+    "fromStatus": "IN_PROGRESS",
+    "toStatus": "RESOLVED",
+    "atrText": "Transformer sparking fixed. Cable replaced.",
+    "timestamp": "2026-06-20T15:30:00Z"
+  }
+]

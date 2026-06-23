@@ -1,0 +1,10 @@
+[
+  { "id": "cit_1", "name": "R. Kumar", "mobile": "9876543210", "aadhaarMasked": "XXXX-XXXX-1234", "photoUrl": "" },
+  { "id": "cit_2", "name": "S. Lakshmi", "mobile": "9876543211", "aadhaarMasked": "XXXX-XXXX-4567", "photoUrl": "" },
+  { "id": "cit_3", "name": "M. Karthik", "mobile": "9876543212", "aadhaarMasked": "XXXX-XXXX-8901", "photoUrl": "" },
+  { "id": "cit_4", "name": "A. Priya", "mobile": "9876543213", "aadhaarMasked": "XXXX-XXXX-2345", "photoUrl": "" },
+  { "id": "cit_5", "name": "V. Dinesh", "mobile": "9876543214", "aadhaarMasked": "XXXX-XXXX-6789", "photoUrl": "" },
+  { "id": "cit_6", "name": "K. Meena", "mobile": "9876543215", "aadhaarMasked": "XXXX-XXXX-3456", "photoUrl": "" },
+  { "id": "cit_7", "name": "N. Suresh", "mobile": "9876543216", "aadhaarMasked": "XXXX-XXXX-7890", "photoUrl": "" },
+  { "id": "cit_8", "name": "T. Ramesh", "mobile": "9876543217", "aadhaarMasked": "XXXX-XXXX-1122", "photoUrl": "" }
+]

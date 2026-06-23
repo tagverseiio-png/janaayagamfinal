@@ -1,0 +1,5 @@
+[
+  { "id": "mla1", "name": "Dha. Velu", "constituency": "Mylapore", "district": "Chennai", "total": 1250, "resolutionPct": 88, "satisfaction": 4.1 },
+  { "id": "mla2", "name": "Udhayanidhi Stalin", "constituency": "Chepauk-Thiruvallikeni", "district": "Chennai", "total": 2100, "resolutionPct": 94, "satisfaction": 4.8 },
+  { "id": "mla3", "name": "PTR Palanivel Thiagarajan", "constituency": "Madurai Central", "district": "Madurai", "total": 1800, "resolutionPct": 86, "satisfaction": 4.3 }
+]

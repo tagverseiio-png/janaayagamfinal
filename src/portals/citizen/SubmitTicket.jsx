@@ -3,10 +3,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle, User, Image } from 'lucide-react';
+import { Camera, MapPin, Send, AlertTriangle, ArrowLeft, Shield, CheckCircle, User, Image, Zap, Stethoscope, Map, Droplet, Waves, Lightbulb, Trash2, HardHat } from 'lucide-react';
 import CategoryIcon from '../../shared/components/CategoryIcon';
 import GeoCamera from '../../shared/components/GeoCamera';
 import api, { getMediaUrl } from '../../services/api';
+
+const SUBMIT_CATEGORIES = [
+  { id: 'CAT-ELE', label: 'Electricity', icon: Zap, active: true },
+  { id: 'CAT-SAN', label: 'Health / Sanitation', icon: Stethoscope, active: true },
+  { id: 'CAT-ROD', label: 'Roads / Pot Holes', icon: Map, active: false },
+  { id: 'CAT-WAT', label: 'Water Supply', icon: Droplet, active: false },
+  { id: 'CAT-DRA', label: 'Drainage / Sewerage', icon: Waves, active: false },
+  { id: 'CAT-LIG', label: 'Street Lights', icon: Lightbulb, active: false },
+  { id: 'CAT-GAR', label: 'Garbage / Waste', icon: Trash2, active: false },
+  { id: 'CAT-PUB', label: 'Public Works', icon: HardHat, active: false },
+];
 
 export default function SubmitTicket() {
 
@@ -70,19 +81,7 @@ export default function SubmitTicket() {
     }
   }, [locationCaptured, location]);
 
-  const [categoriesList, setCategoriesList] = useState([]);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await api.get('/metadata/categories');
-        setCategoriesList(response.data);
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-      }
-    }
-    fetchCategories();
-  }, []);
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
@@ -190,8 +189,8 @@ export default function SubmitTicket() {
     const targetDistrict = locationMode === 'home' ? livingDistrict : (localStorage.getItem('jn_district') || 'Chennai');
     const targetJurisdictionId = locationMode === 'home' ? localStorage.getItem('jn_jurisdiction_id') : null;
 
-    const selectedCat = categoriesList.find(c => c.code === category);
-    const catName = selectedCat ? selectedCat.name : category;
+    const selectedCat = SUBMIT_CATEGORIES.find(c => c.id === category);
+    const catName = selectedCat ? selectedCat.label : category;
 
     try {
       // Send as JSON with base64 photo — backend decodes and saves to disk
@@ -473,16 +472,17 @@ export default function SubmitTicket() {
                     1. {tLabel("Select Category", "வகைத் தேர்வு")}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {categoriesList.map((cat) => {
-                      const isSelected = category === cat.code;
-                      const isDisabled = !['CAT-ELE', 'CAT-SAN'].includes(cat.code);
-                      const displayName = cat.name;
+                    {SUBMIT_CATEGORIES.map((cat) => {
+                      const isSelected = category === cat.id;
+                      const isDisabled = !cat.active;
+                      const displayName = cat.label;
+                      const Icon = cat.icon;
                       return (
                         <button
-                          key={cat.code}
+                          key={cat.id}
                           type="button"
                           disabled={isDisabled}
-                          onClick={() => setCategory(cat.code)}
+                          onClick={() => setCategory(cat.id)}
                           className={`p-3 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all relative overflow-hidden ${
                             isDisabled ? 'bg-slate-50 border-slate-100 opacity-40 cursor-not-allowed' :
                             isSelected
@@ -490,10 +490,10 @@ export default function SubmitTicket() {
                               : 'bg-white border-slate-200 hover:border-slate-300 cursor-pointer'
                           }`}
                         >
-                          <CategoryIcon category={cat.code} />
+                          <Icon className={`w-6 h-6 mb-1 ${isSelected ? 'text-[#8B1A1A]' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`} />
                           <span className="text-[10px] font-extrabold tracking-wide uppercase leading-tight text-center">
                             {displayName}
-                            {isDisabled && <span className="block text-[8px] opacity-60">(Disabled)</span>}
+                            {isDisabled && <span className="block mt-0.5 text-[8px] opacity-60 font-black">(DISABLED)</span>}
                           </span>
                         </button>
                       );

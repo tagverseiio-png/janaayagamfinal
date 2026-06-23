@@ -14,7 +14,9 @@ import CitizenPortal from './portals/citizen/CitizenPortal';
 import TrackTicket from './portals/citizen/TrackTicket';
 import CmPortal from './portals/cm/CmPortal';
 import MlaDashboard from './portals/mla/MlaDashboard';
-import MinisterDashboard from './portals/minister/MinisterDashboard';
+import MinisterPortal from './portals/minister/MinisterPortal';
+import OfficerPortal from './portals/officer/OfficerPortal';
+import PublicPortal from './portals/public/PublicPortal';
 
 // Route Guard for Protected Routes
 const ProtectedRoute = ({ requiredRole, children }) => {
@@ -68,7 +70,7 @@ export default function App() {
 
           {/* Employee Protected Routes */}
           <Route path="/cm/*" element={<EmployeeProtectedRoute><CmPortal /></EmployeeProtectedRoute>} />
-          <Route path="/minister-dashboard" element={<EmployeeProtectedRoute><MinisterDashboard /></EmployeeProtectedRoute>} />
+          <Route path="/minister/*" element={<EmployeeProtectedRoute><MinisterPortal /></EmployeeProtectedRoute>} />
           <Route path="/mla-dashboard" element={<EmployeeProtectedRoute><MlaDashboard /></EmployeeProtectedRoute>} />
           <Route path="/ward-member-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
           <Route path="/collector-dashboard" element={<EmployeeProtectedRoute><EmployeeDashboard /></EmployeeProtectedRoute>} />
@@ -93,6 +95,8 @@ export default function App() {
           
           <Route path="/track" element={<TrackTicket />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/officer/*" element={<OfficerPortal />} />
+          <Route path="/public/*" element={<PublicPortal />} />
 
           {/* Fallback to Login page */}
           <Route path="*" element={<Navigate to="/" replace />} />

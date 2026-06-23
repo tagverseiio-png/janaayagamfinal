@@ -1,0 +1,20 @@
+[
+  { "id": "off_cm_1", "name": "Thiru. M.K. Stalin", "role": "CM", "departmentId": null, "jurisdictionId": "TN", "parentOfficerId": null },
+  { "id": "off_mla_mylapore", "name": "Thiru. Dha. Velu", "role": "MLA", "departmentId": null, "jurisdictionId": "25-Mylapore", "parentOfficerId": "off_cm_1" },
+  { "id": "off_min_elec", "name": "Thiru. V. Senthilbalaji", "role": "Minister", "departmentId": "dept_elec", "jurisdictionId": "TN", "parentOfficerId": "off_cm_1" },
+  { "id": "off_min_health", "name": "Thiru. Ma. Subramanian", "role": "Minister", "departmentId": "dept_health", "jurisdictionId": "TN", "parentOfficerId": "off_cm_1" },
+
+  { "id": "off_elec_dir", "name": "Dr. Rajendran", "role": "Director", "departmentId": "dept_elec", "jurisdictionId": "Chennai", "parentOfficerId": "off_min_elec" },
+  { "id": "off_elec_ae_myl", "name": "Thiru. Karthikeyan", "role": "AE", "departmentId": "dept_elec", "jurisdictionId": "25-Mylapore", "parentOfficerId": "off_elec_dir" },
+  { "id": "off_elec_aae_121", "name": "Thiru. Senthil Kumar", "role": "AAE", "departmentId": "dept_elec", "jurisdictionId": "ward_121", "parentOfficerId": "off_elec_ae_myl" },
+  { "id": "off_elec_aae_122", "name": "Tmt. Geetha", "role": "AAE", "departmentId": "dept_elec", "jurisdictionId": "ward_122", "parentOfficerId": "off_elec_ae_myl" },
+  { "id": "off_elec_aae_123", "name": "Thiru. Prakash", "role": "AAE", "departmentId": "dept_elec", "jurisdictionId": "ward_123", "parentOfficerId": "off_elec_ae_myl" },
+
+  { "id": "off_health_comm", "name": "Thiru. J. Radhakrishnan", "role": "Commissioner", "departmentId": "dept_health", "jurisdictionId": "Chennai", "parentOfficerId": "off_min_health" },
+  { "id": "off_health_deptcomm", "name": "Dr. Vimal", "role": "DeptCommissioner", "departmentId": "dept_health", "jurisdictionId": "Chennai", "parentOfficerId": "off_health_comm" },
+  { "id": "off_health_chi", "name": "Dr. Selvaraj", "role": "CHI", "departmentId": "dept_health", "jurisdictionId": "25-Mylapore", "parentOfficerId": "off_health_deptcomm" },
+  { "id": "off_health_hi", "name": "Dr. Arumugam", "role": "HI", "departmentId": "dept_health", "jurisdictionId": "25-Mylapore", "parentOfficerId": "off_health_chi" },
+  { "id": "off_health_si_121", "name": "Thiru. Murugan", "role": "SI", "departmentId": "dept_health", "jurisdictionId": "ward_121", "parentOfficerId": "off_health_hi" },
+  { "id": "off_health_dsi_121", "name": "Tmt. Meenakshi", "role": "DSI", "departmentId": "dept_health", "jurisdictionId": "ward_121", "parentOfficerId": "off_health_si_121" },
+  { "id": "off_health_dsi_122", "name": "Thiru. Babu", "role": "DSI", "departmentId": "dept_health", "jurisdictionId": "ward_122", "parentOfficerId": "off_health_hi" }
+]

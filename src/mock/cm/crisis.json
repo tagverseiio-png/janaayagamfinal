@@ -1,0 +1,68 @@
+[
+  {
+    "id": "c1",
+    "severity": "CRITICAL",
+    "category": "DISASTER",
+    "district": "RAMANATHAPURAM",
+    "title": "Cyclone alert – coastal districts",
+    "action": "Activate SDRF; coordinate with IMD; pre-position relief.",
+    "signal": 92,
+    "source": "Police",
+    "detectedAgo": "11h ago"
+  },
+  {
+    "id": "c2",
+    "severity": "CRITICAL",
+    "category": "PUBLIC ORDER",
+    "district": "THANJAVUR",
+    "title": "Communal tension flag",
+    "action": "Brief DGP; deploy peace committee; verified communique.",
+    "signal": 93,
+    "source": "Social",
+    "detectedAgo": "35h ago"
+  },
+  {
+    "id": "c3",
+    "severity": "CRITICAL",
+    "category": "HEALTHCARE",
+    "district": "KALLAKURICHI",
+    "title": "Dengue case spike",
+    "action": "Reinforce staffing; activate Makkalai Thedi Maruthuvam.",
+    "signal": 79,
+    "source": "Citizen",
+    "detectedAgo": "15h ago"
+  },
+  {
+    "id": "c4",
+    "severity": "WARNING",
+    "category": "INFRASTRUCTURE",
+    "district": "TENKASI",
+    "title": "Water shortage escalation",
+    "action": "Deploy mobile water tankers; brief District Collector immediately.",
+    "signal": 78,
+    "source": "Field",
+    "detectedAgo": "4h ago"
+  },
+  {
+    "id": "c5",
+    "severity": "WARNING",
+    "category": "AGRICULTURE",
+    "district": "TIRUVARUR",
+    "title": "Crop damage due to unseasonal rain",
+    "action": "Initiate preliminary damage assessment via Revenue Department.",
+    "signal": 65,
+    "source": "Field",
+    "detectedAgo": "8h ago"
+  },
+  {
+    "id": "c6",
+    "severity": "WARNING",
+    "category": "EDUCATION",
+    "district": "VELLORE",
+    "title": "School roof collapse incident (No casualties)",
+    "action": "Order structural audit of all nearby government schools.",
+    "signal": 88,
+    "source": "Police",
+    "detectedAgo": "2h ago"
+  }
+]

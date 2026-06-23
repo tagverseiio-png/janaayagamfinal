@@ -1,0 +1,10 @@
+[
+  { "id": "ward_121", "name": "Ward 121", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_122", "name": "Ward 122", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_123", "name": "Ward 123", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_124", "name": "Ward 124", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_125", "name": "Ward 125", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_126", "name": "Ward 126", "constituencyId": "25-Mylapore", "districtId": "Chennai" },
+  { "id": "ward_170", "name": "Ward 170 (Velachery)", "constituencyId": "26-Velachery", "districtId": "Chennai" },
+  { "id": "ward_171", "name": "Ward 171 (Velachery)", "constituencyId": "26-Velachery", "districtId": "Chennai" }
+]

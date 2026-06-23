@@ -1,0 +1,6 @@
+[
+  { "id": "d1", "name": "Electricity", "minister": "V. Senthilbalaji", "total": 14250, "resolutionPct": 82.8, "avgClosureHrs": 4.2, "escalationPct": 8, "satisfaction": 3.8, "status": "yellow" },
+  { "id": "d2", "name": "Health & Family Welfare", "minister": "Ma. Subramanian", "total": 45200, "resolutionPct": 91.5, "avgClosureHrs": 2.1, "escalationPct": 3, "satisfaction": 4.4, "status": "green" },
+  { "id": "d3", "name": "Public Works (PWD)", "minister": "E. V. Velu", "total": 31050, "resolutionPct": 78.2, "avgClosureHrs": 14.5, "escalationPct": 12, "satisfaction": 3.4, "status": "red" },
+  { "id": "d4", "name": "Municipal Admin", "minister": "K. N. Nehru", "total": 85400, "resolutionPct": 86.4, "avgClosureHrs": 8.5, "escalationPct": 6, "satisfaction": 4.0, "status": "green" }
+]

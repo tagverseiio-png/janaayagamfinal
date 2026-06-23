@@ -4,8 +4,10 @@ import { Activity, ShieldAlert, CheckCircle, Clock, TrendingUp, Grid, BarChart3,
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import StatCard from '../../shared/components/StatCard';
-import api from '../../services/api';
 import { TN_CONSTITUENCIES } from '../../data/constituencies';
+import { ticketService } from '../../services/ticketService';
+import { getScopeFilter } from '../../services/scope';
+import { departments as deptData, wards as wardData } from '../../mock';
 
 const DISTRICT_COORDS = {
   'Chennai': { lat: 13.0827, lng: 80.2707 },
@@ -61,40 +63,33 @@ export default function StateCommand() {
   useEffect(() => {
     const fetchCommandStats = async () => {
       try {
-        // Bypass localhost API calls to prevent hanging
+        const rawTickets = await ticketService.getTickets(getScopeFilter({ role: 'CM' }));
+        
+        // Enrich tickets with relations
+        const tickets = rawTickets.map(t => {
+          const dept = deptData.find(d => d.id === t.departmentId);
+          const ward = wardData.find(w => w.id === t.wardId);
+          return {
+            ...t,
+            department: { name: dept ? dept.name : t.departmentId },
+            district: ward ? ward.districtId : 'Chennai'
+          };
+        });
+
+        const totalTickets = tickets.length;
+        const totalResolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+        const totalOpen = totalTickets - totalResolved;
+        const resolutionRate = totalTickets > 0 ? ((totalResolved / totalTickets) * 100).toFixed(1) : 0;
+        const agingCount = tickets.filter(t => t.status === 'ESCALATED').length;
+
         const mockDashboardStats = {
-          totalOpen: 14500,
-          totalResolved: 48000,
-          criticalPriority: 850,
-          totalTickets: 62500,
-          resolutionRate: 76.8,
+          totalOpen,
+          totalResolved,
+          criticalPriority: agingCount,
+          totalTickets,
+          resolutionRate,
           avgResolutionTime: 42
         };
-        let tickets = []; // We will fill this entirely with massive dummy data below
-
-
-        // --- INJECT MASSIVE DUMMY DATA FOR DEMONSTRATION PURPOSES ---
-        const dummyDepartments = ['Electricity', 'Health & Sanitation', 'Water (TWAD)', 'PWD / Roads', 'Revenue', 'Police', 'Transport'];
-        const statuses = ['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'];
-        
-        const massiveDummy = [];
-        TN_CONSTITUENCIES.forEach(c => {
-          const count = Math.floor(Math.random() * 60) + 10;
-          for(let i = 0; i < count; i++) {
-            const status = statuses[Math.floor(Math.random() * statuses.length)];
-            const dept = dummyDepartments[Math.floor(Math.random() * dummyDepartments.length)];
-            
-            massiveDummy.push({
-              id: `dummy-${c.no}-${i}`,
-              department: { name: dept },
-              district: c.district,
-              status: status,
-            });
-          }
-        });
-        
-        tickets = [...tickets, ...massiveDummy];
-        // -----------------------------------------------------------
 
 
         const districtsSet = new Set();
@@ -121,7 +116,6 @@ export default function StateCommand() {
           return row;
         });
 
-        const agingCount = tickets.filter(t => t.status === 'ESCALATED').length;
 
         const districtMarkers = districts.map(dName => {
           const coords = DISTRICT_COORDS[dName] || { lat: 11.1271, lng: 78.6569 };

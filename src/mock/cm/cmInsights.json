@@ -1,0 +1,5 @@
+[
+  { "id": "cmi-1", "type": "critical", "text": "Statewide PWD complaints rose 24% this week. Thanjavur district alone contributed 45% of the increase due to incomplete road-laying." },
+  { "id": "cmi-2", "type": "warning", "text": "Health Department showing a 12% drop in resolution rate in Northern districts. Immediate intervention suggested for Chennai & Tiruvallur." },
+  { "id": "cmi-3", "type": "success", "text": "Municipal Administration achieved a record 92% SLA compliance statewide this month." }
+]

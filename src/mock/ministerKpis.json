@@ -1,0 +1,13 @@
+{
+  "totalGrievances": 14250,
+  "prevPct": 12,
+  "resolved": 11800,
+  "resolutionRate": 82.8,
+  "activeOutages": 145,
+  "householdsAffected": 32000,
+  "criticalEscalations": 89,
+  "avgRestorationHrs": 4.2,
+  "restorationTrend": "down",
+  "deptScore": 76,
+  "scoreStatus": "yellow"
+}

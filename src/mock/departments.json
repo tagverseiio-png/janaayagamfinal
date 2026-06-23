@@ -1,0 +1,7 @@
+[
+  { "id": "dept_elec", "name": "Electricity", "active": true },
+  { "id": "dept_health", "name": "Health & Sanitation", "active": true },
+  { "id": "dept_water", "name": "Water Supply (CMWSSB)", "active": false },
+  { "id": "dept_roads", "name": "PWD / Roads", "active": false },
+  { "id": "dept_police", "name": "Police", "active": false }
+]

@@ -1,0 +1,6 @@
+[
+  { "name": "Chennai", "total": 4500, "resolutionPct": 85, "avgClosureHrs": 3.2, "escalationPct": 5, "satisfaction": 4.1, "status": "green" },
+  { "name": "Madurai", "total": 2100, "resolutionPct": 72, "avgClosureHrs": 6.8, "escalationPct": 12, "satisfaction": 3.4, "status": "yellow" },
+  { "name": "Coimbatore", "total": 3200, "resolutionPct": 91, "avgClosureHrs": 2.5, "escalationPct": 2, "satisfaction": 4.6, "status": "green" },
+  { "name": "Tirunelveli", "total": 1800, "resolutionPct": 65, "avgClosureHrs": 14.2, "escalationPct": 18, "satisfaction": 2.8, "status": "red" }
+]

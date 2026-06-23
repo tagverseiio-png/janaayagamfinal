@@ -1,0 +1,73 @@
+{
+  "kpis": {
+    "stateSafetyIndex": 74.6,
+    "openCases": 364,
+    "openCasesTrend": -8,
+    "p1Critical": 4,
+    "avgResponse": 14.2,
+    "avgResponseTrend": -2.4
+  },
+  "districtHotspots": [
+    {
+      "id": "dh1",
+      "district": "Ramanathapuram",
+      "priority": "P1",
+      "type": "Cybercrime against women",
+      "openCount": 18,
+      "responseMin": 44.8,
+      "score": 91.2
+    },
+    {
+      "id": "dh2",
+      "district": "Thanjavur",
+      "priority": "P3",
+      "type": "Domestic Violence",
+      "openCount": 18,
+      "responseMin": 30.4,
+      "score": 93.9
+    },
+    {
+      "id": "dh3",
+      "district": "Virudhunagar",
+      "priority": "P3",
+      "type": "Domestic Violence",
+      "openCount": 18,
+      "responseMin": 33.9,
+      "score": 69.7
+    },
+    {
+      "id": "dh4",
+      "district": "Chennai",
+      "priority": "P1",
+      "type": "Harassment Complaint",
+      "openCount": 42,
+      "responseMin": 12.5,
+      "score": 42.1
+    },
+    {
+      "id": "dh5",
+      "district": "Madurai",
+      "priority": "P2",
+      "type": "Workplace Issue",
+      "openCount": 24,
+      "responseMin": 22.1,
+      "score": 76.5
+    },
+    {
+      "id": "dh6",
+      "district": "Coimbatore",
+      "priority": "P2",
+      "type": "Missing Person",
+      "openCount": 15,
+      "responseMin": 18.2,
+      "score": 88.4
+    }
+  ],
+  "incidentTypes": [
+    { "type": "Harassment Complaint", "volume": 145, "color": "#EF4444" },
+    { "type": "Domestic Violence", "volume": 120, "color": "#F59E0B" },
+    { "type": "Workplace Issue", "volume": 56, "color": "#10B981" },
+    { "type": "Cybercrime against women", "volume": 32, "color": "#EF4444" },
+    { "type": "Missing Person", "volume": 11, "color": "#F59E0B" }
+  ]
+}

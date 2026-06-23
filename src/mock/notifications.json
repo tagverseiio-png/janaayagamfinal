@@ -1,0 +1,20 @@
+[
+  {
+    "id": "notif_1",
+    "userId": "cit_4",
+    "ticketId": "TKT-2026-004",
+    "type": "TICKET_RESOLVED",
+    "message": "Your ticket TKT-2026-004 has been resolved by the department. Please confirm.",
+    "read": false,
+    "createdAt": "2026-06-20T15:35:00Z"
+  },
+  {
+    "id": "notif_2",
+    "userId": "cit_5",
+    "ticketId": "TKT-2026-005",
+    "type": "TICKET_CLOSED",
+    "message": "Your ticket TKT-2026-005 is now successfully closed.",
+    "read": true,
+    "createdAt": "2026-06-19T16:05:00Z"
+  }
+]

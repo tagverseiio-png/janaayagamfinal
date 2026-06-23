@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, Sliders, ThumbsUp, Share2, 
-  MapPin, User
+  MapPin, User, Radio, X
 } from 'lucide-react';
+import TnMap from '../../shared/components/TnMap';
 import { toast } from 'sonner';
+import mockAnnouncements from '../../mock/announcements.json';
 
 // Emojis mapping for stories
 const storyEmojis = {
@@ -40,6 +42,9 @@ export default function CivicFeed() {
 
   // Dynamic claims tracking
   const [claimsState, setClaimsState] = useState({});
+  const [stats, setStats] = useState({ totalActive: 0, totalResolved: 0, totalEscalated: 0 });
+  const [announcements, setAnnouncements] = useState([]);
+  const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
     // Sync claims from localStorage
@@ -58,11 +63,25 @@ export default function CivicFeed() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ticketsRes, deptsRes] = await Promise.all([
+        const [ticketsRes, deptsRes, statsRes] = await Promise.all([
           api.get('/tickets?feed=true'),
-          api.get('/metadata/departments')
+          api.get('/metadata/departments'),
+          api.get('/dashboard/stats').catch(() => ({ data: {} }))
         ]);
         
+        setStats({
+          totalActive: statsRes.data.totalOpen || 0,
+          totalResolved: statsRes.data.totalResolved || 0,
+          totalEscalated: statsRes.data.criticalPriority || 0
+        });
+
+        try {
+          const annData = mockAnnouncements.filter(a => a.district === userDistrict);
+          setAnnouncements(annData || []);
+        } catch (err) {
+          setAnnouncements([]);
+        }
+
         const formatted = ticketsRes.data.map(t => {
           let photo = t.photo_url || t.photo || null;
           
@@ -270,105 +289,39 @@ export default function CivicFeed() {
           </button>
         </div>
 
-        {/* Location Strip below top bar */}
-        <div className="bg-[#FFF0EE] px-4 py-2.5 flex items-center gap-1.5 w-full select-none shrink-0 border-t border-red-100/50">
-          <span className="text-xs">📍</span>
-          <span className="text-[12px] font-black text-[#8B1A1A] leading-none uppercase tracking-wide">
-            {tLabel(`${userWard}, ${userDistrict} — Your neighbourhood`, `${userWard}, ${userDistrict} — உங்கள் சுற்றுப்புறம்`)}
-          </span>
-        </div>
       </div>
 
-      {/* ══ 6. INSTAGRAM STORIES ROW ══ */}
-      <div className="h-[96px] bg-white border-b border-slate-100 overflow-x-auto hide-scrollbar flex items-center gap-4 px-4 py-3 shrink-0 select-none">
-        {storiesList.map((story) => {
-          const isRead = !!readStories[story.id];
-          const isCritical = story.id === 'critical';
-          const isActive = activeStory === story.id;
-
-          let ringColor = isRead ? 'border-slate-350' : 'border-[#8B1A1A]';
-          if (isCritical) {
-            ringColor = 'border-red-650 animate-pulse scale-102';
-          }
-          if (isActive) {
-            ringColor = 'border-amber-500 scale-102 border-[3px]';
-          }
-
-          return (
-            <div 
-              key={story.id}
-              onClick={() => handleStoryTap(story.id)}
-              className="flex flex-col items-center gap-1 cursor-pointer shrink-0 text-center"
-            >
-              <div className={`w-[52px] h-[52px] rounded-full border-2 p-0.5 flex items-center justify-center bg-white shadow-xs ${ringColor}`}>
-                <div className={`w-full h-full rounded-full flex items-center justify-center text-lg ${
-                  isCritical 
-                    ? 'bg-red-50 animate-bounce' 
-                    : story.id === 'water' 
-                      ? 'bg-blue-50' 
-                      : story.id === 'electricity' 
-                        ? 'bg-yellow-50' 
-                        : 'bg-slate-50'
-                }`}>
-                  {story.emoji}
-                </div>
-              </div>
-              <span className={`text-[10px] font-black tracking-wide ${isActive ? 'text-[#8B1A1A]' : 'text-slate-400'}`}>
-                {story.label}
-              </span>
+      {/* ── CM BROADCAST HIGH-PRIORITY BANNER ── */}
+      {announcements.length > 0 && showBanner && (
+        <div className="w-full bg-[#0055aa] text-white p-4 shadow-sm relative overflow-hidden animate-in slide-in-from-top duration-500 shrink-0">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-24 bg-white/10 rounded-full blur-xl"></div>
+          <div className="flex items-start gap-3 relative z-10">
+            <div className="p-2 bg-white/20 rounded-full shrink-0">
+              <Radio className="w-5 h-5 text-white animate-pulse" />
             </div>
-          );
-        })}
-      </div>
-
-      {/* ══ 7. TRENDING SECTION ══ */}
-      <div className="p-4 shrink-0 select-none">
-        <div className="bg-[#FFFBF0] border border-amber-250/50 border-l-[4px] border-l-amber-500 rounded-2xl p-4 shadow-xs space-y-3">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">🔥</span>
-            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-              {tLabel(`Trending in ${userWard}`, `${userWard} இல் பரவலாக பேசப்படுவது`)}
-            </h4>
-          </div>
-
-          <div className="space-y-2">
-            {allItems.slice(0, 3).map(trend => (
-              <div 
-                key={trend.id}
-                onClick={() => scrollToTicket(trend.id)}
-                className="flex items-center justify-between text-xs font-bold text-slate-600 hover:text-slate-900 border-b border-amber-100/30 pb-1.5 last:border-0 last:pb-0 cursor-pointer"
-              >
-                <span className="truncate max-w-[210px] flex items-center gap-1">
-                  <span>{getTrendEmoji(trend.category)}</span>
-                  <span className="truncate">{trend.title}</span>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded border border-white/10">
+                  CM Office Broadcast
                 </span>
-                <span className="text-[10px] text-slate-400 shrink-0">
-                  {trend.upvotes} upvotes · {trend.time}
+                <span className="text-[9px] font-bold opacity-60">
+                  {new Date(announcements[0].createdAt).toLocaleString()}
                 </span>
               </div>
-            ))}
+              <h3 className="text-sm font-black leading-tight">{announcements[0].title}</h3>
+              <p className="text-[11px] font-bold leading-normal opacity-90 line-clamp-2">
+                {announcements[0].text}
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowBanner(false)}
+              className="p-1 hover:bg-white/10 rounded-lg transition-colors shrink-0 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
-      </div>
-
-      <div className="overflow-x-auto hide-scrollbar flex items-center gap-2 px-4 py-1 shrink-0 select-none">
-        {categoriesTabs.map((cat) => {
-          const isActive = activeCategory === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => { setActiveCategory(cat); setActiveStory(null); }}
-              className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-colors border cursor-pointer ${
-                isActive
-                  ? 'bg-[#8B1A1A] text-white border-[#8B1A1A] shadow-xs'
-                  : 'bg-white text-slate-500 border-[#DDE1E7] hover:border-slate-350'
-              }`}
-            >
-              {getCategoryLabel(cat)}
-            </button>
-          );
-        })}
-      </div>
+      )}
 
       {/* ══ 3. SORT ROW ══ */}
       <div className="flex justify-between items-center px-4 py-2 shrink-0 select-none">

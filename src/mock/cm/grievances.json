@@ -1,0 +1,40 @@
+{
+  "kpis": {
+    "openTickets": 14812,
+    "resolved30D": 54326,
+    "slaBreaches": 1238
+  },
+  "departments": [
+    { "id": "d1", "name": "Revenue & Disaster Mgmt", "open": 2387, "resolved30D": 2066, "slaBreaches": 91, "rate": 46.4, "avgHrs": 77.5 },
+    { "id": "d2", "name": "Transport", "open": 2381, "resolved30D": 4851, "slaBreaches": 131, "rate": 67.1, "avgHrs": 91.1 },
+    { "id": "d3", "name": "Food & Civil Supplies", "open": 2001, "resolved30D": 4690, "slaBreaches": 162, "rate": 70.1, "avgHrs": 82.1 },
+    { "id": "d4", "name": "Rural Development", "open": 1572, "resolved30D": 6132, "slaBreaches": 66, "rate": 79.6, "avgHrs": 77.1 },
+    { "id": "d5", "name": "Public Works", "open": 1452, "resolved30D": 7681, "slaBreaches": 180, "rate": 84.1, "avgHrs": 89.5 },
+    { "id": "d6", "name": "Municipal Administration", "open": 1300, "resolved30D": 4679, "slaBreaches": 158, "rate": 78.3, "avgHrs": 26.8 },
+    { "id": "d7", "name": "Home/Police", "open": 1100, "resolved30D": 1653, "slaBreaches": 40, "rate": 60.0, "avgHrs": 71.2 },
+    { "id": "d8", "name": "School Education", "open": 1027, "resolved30D": 3941, "slaBreaches": 95, "rate": 79.3, "avgHrs": 19.9 },
+    { "id": "d9", "name": "Energy", "open": 571, "resolved30D": 2761, "slaBreaches": 106, "rate": 82.9, "avgHrs": 84.6 },
+    { "id": "d10", "name": "Social Welfare & Women Empowerment", "open": 428, "resolved30D": 833, "slaBreaches": 26, "rate": 66.1, "avgHrs": 71.1 },
+    { "id": "d11", "name": "Health & Family Welfare", "open": 334, "resolved30D": 8318, "slaBreaches": 52, "rate": 96.1, "avgHrs": 92.3 },
+    { "id": "d12", "name": "Agriculture", "open": 259, "resolved30D": 6721, "slaBreaches": 131, "rate": 96.3, "avgHrs": 64.2 }
+  ],
+  "categoryMix": [
+    { "name": "Water Supply", "value": 18.4, "color": "#3B82F6" },
+    { "name": "Roads & Potholes", "value": 14.2, "color": "#64748B" },
+    { "name": "Electricity", "value": 11.7, "color": "#F59E0B" },
+    { "name": "Sanitation", "value": 9.6, "color": "#10B981" },
+    { "name": "Ration/PDS", "value": 8.3, "color": "#EF4444" },
+    { "name": "Land Records", "value": 7.5, "color": "#8B5CF6" },
+    { "name": "Education", "value": 6.8, "color": "#EC4899" },
+    { "name": "Healthcare", "value": 6.2, "color": "#14B8A6" },
+    { "name": "Pension/Welfare", "value": 5.9, "color": "#F97316" },
+    { "name": "Others", "value": 11.4, "color": "#94A3B8" }
+  ],
+  "inflowChannels": [
+    { "id": "c1", "name": "CM HELPLINE 1100", "pct": 38 },
+    { "id": "c2", "name": "UNGALUDAN STALIN", "pct": 27 },
+    { "id": "c3", "name": "TN E-SEVAI", "pct": 18 },
+    { "id": "c4", "name": "SOCIAL MEDIA", "pct": 12 },
+    { "id": "c5", "name": "WALK-IN", "pct": 5 }
+  ]
+}

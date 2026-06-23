@@ -1,0 +1,8 @@
+[
+  { "month": "Jan", "grievances": 1400, "resolutionTime": 12.5, "satisfaction": 3.2 },
+  { "month": "Feb", "grievances": 1350, "resolutionTime": 11.0, "satisfaction": 3.4 },
+  { "month": "Mar", "grievances": 1600, "resolutionTime": 10.5, "satisfaction": 3.6 },
+  { "month": "Apr", "grievances": 1200, "resolutionTime": 8.0, "satisfaction": 4.1 },
+  { "month": "May", "grievances": 1150, "resolutionTime": 6.5, "satisfaction": 4.3 },
+  { "month": "Jun", "grievances": 950, "resolutionTime": 4.2, "satisfaction": 4.6 }
+]

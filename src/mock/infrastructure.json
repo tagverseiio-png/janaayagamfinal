@@ -1,0 +1,5 @@
+{
+  "transformers": { "total": 12500, "faulty": 145, "maintenanceDue": 350, "highRisk": 42 },
+  "substations": { "active": 210, "avgScore": 88, "failuresLastMonth": 12 },
+  "electricLines": { "damagedReports": 89, "repairOngoing": 65, "resolvedToday": 24 }
+}

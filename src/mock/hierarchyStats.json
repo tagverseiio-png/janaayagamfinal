@@ -1,0 +1,7 @@
+[
+  { "id": "minister", "levelName": "Minister's Office", "received": 89, "solvedFirst": 34, "escalated": 0, "avgResponseHrs": 1.2, "officersActive": 4, "regionScore": 92 },
+  { "id": "director", "levelName": "State Director", "received": 450, "solvedFirst": 280, "escalated": 89, "avgResponseHrs": 2.5, "officersActive": 12, "regionScore": 85 },
+  { "id": "ae", "levelName": "Area Engineer", "received": 3500, "solvedFirst": 2100, "escalated": 450, "avgResponseHrs": 4.8, "officersActive": 45, "regionScore": 78 },
+  { "id": "aae", "levelName": "Assistant AE", "received": 14250, "solvedFirst": 8200, "escalated": 3500, "avgResponseHrs": 6.2, "officersActive": 210, "regionScore": 72 },
+  { "id": "citizen", "levelName": "Citizen Portal", "received": 14250, "solvedFirst": 0, "escalated": 14250, "avgResponseHrs": 0, "officersActive": 0, "regionScore": 0 }
+]

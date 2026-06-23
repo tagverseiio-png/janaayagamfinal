@@ -1,0 +1,4 @@
+[
+  { "id": "ESC-001", "type": "transformer", "district": "Chennai", "zone": "North", "locality": "Vyasarpadi", "citizensAffected": 1200, "pendingHrs": 48, "officerId": "o1", "reason": "Part replacement delayed", "prevActions": ["Logged by citizen", "Assigned to AAE", "Escalated to AE"], "status": "critical" },
+  { "id": "ESC-002", "type": "blackout", "district": "Madurai", "zone": "South", "locality": "Tirumangalam", "citizensAffected": 5000, "pendingHrs": 12, "officerId": "o2", "reason": "Main grid failure", "prevActions": ["Logged automatically", "Assigned to AE"], "status": "active" }
+]

@@ -1,0 +1,4 @@
+{
+  "dept_elec": ["AAE", "AE", "Director", "Minister"],
+  "dept_health": ["DSI", "SI", "HI", "CHI", "DeptCommissioner", "Commissioner", "Minister"]
+}

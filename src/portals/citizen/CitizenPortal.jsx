@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, AlertTriangle, MapPin, Users, User, Shield, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../services/api';
 
-import CitizenDashboard from './CitizenDashboard';
 import SubmitTicket from './SubmitTicket';
 import MyTickets from './MyTickets';
 import CivicFeed from './CivicFeed';
 import EscalationHierarchy from './EscalationHierarchy';
 import SOSContact from './SOSContact';
-import SchemesDirectory from './SchemesDirectory';
 import ReferAFriend from './ReferAFriend';
 import VolunteerSignup from './VolunteerSignup';
 import VolunteerDashboard from './VolunteerDashboard';
@@ -191,7 +189,7 @@ export default function CitizenPortal() {
         {/* ══ 2. MAIN SCROLLABLE CONTENT AREA ══ */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
           <Routes>
-            <Route path="/" element={<CitizenDashboard />} />
+            <Route path="/" element={<Navigate to="/citizen/feed" replace />} />
             <Route path="/submit" element={<SubmitTicket />} />
             <Route path="/tickets" element={<MyTickets />} />
             <Route path="/feed" element={<CivicFeed />} />
@@ -200,7 +198,6 @@ export default function CitizenPortal() {
             <Route path="/profile/location" element={<LocationSettings />} />
             <Route path="/volunteer-signup" element={<VolunteerSignup />} />
             <Route path="/volunteer-dashboard" element={<VolunteerDashboard />} />
-            <Route path="/schemes" element={<SchemesDirectory />} />
             <Route path="/sos" element={<SOSContact />} />
             <Route path="/refer" element={<ReferAFriend />} />
           </Routes>
@@ -209,16 +206,16 @@ export default function CitizenPortal() {
         {/* ══ 3. FIXED BOTTOM TAB BAR ══ */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
           
-          {/* Tab 1: Live Map */}
+          {/* Tab 1: Live Feed */}
           <button
-            onClick={() => navigate('/citizen')}
+            onClick={() => navigate('/citizen/feed')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
-              isMapActive ? 'text-[#8B1A1A]' : 'text-slate-400'
+              isFeedActive || isMapActive ? 'text-[#8B1A1A]' : 'text-slate-400'
             }`}
           >
-            <Home className="w-5.5 h-5.5" />
+            <Users className="w-5.5 h-5.5" />
             <span className="text-[10px] font-black uppercase mt-1 tracking-wide">
-              {tLabel('Home', 'முகப்பு')}
+              {tLabel('Feed', 'ஊட்டம்')}
             </span>
           </button>
 
@@ -235,39 +232,20 @@ export default function CitizenPortal() {
             </span>
           </button>
 
-          {/* Tab 3: Track (Centre circular raised button) */}
-          <div className="flex flex-col items-center justify-center flex-1 relative -mt-3.5">
-            <button
-              onClick={() => navigate('/citizen/tickets')}
-              className={`w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(139,26,26,0.4)] transition-all transform active:scale-95 cursor-pointer ${
-                isTrackActive 
-                  ? 'bg-[#8B1A1A] border-4 border-[#F0EBE3] text-white' 
-                  : 'bg-[#8B1A1A] border-4 border-[#F0EBE3] text-white/80'
-              }`}
-            >
-              <MapPin className="w-5.5 h-5.5 animate-pulse" />
-            </button>
-            <span className={`text-[10px] font-black uppercase mt-1 tracking-wider ${
-              isTrackActive ? 'text-[#8B1A1A]' : 'text-slate-400'
-            }`}>
-              {tLabel('Track', 'கண்காணி')}
-            </span>
-          </div>
-
-          {/* Tab 4: Live Feed */}
+          {/* Tab 3: Track */}
           <button
-            onClick={() => navigate('/citizen/feed')}
+            onClick={() => navigate('/citizen/tickets')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
-              isFeedActive ? 'text-[#8B1A1A]' : 'text-slate-400'
+              isTrackActive ? 'text-[#8B1A1A]' : 'text-slate-400'
             }`}
           >
-            <Users className="w-5.5 h-5.5" />
+            <MapPin className="w-5.5 h-5.5" />
             <span className="text-[10px] font-black uppercase mt-1 tracking-wide">
-              {tLabel('Feed', 'ஊட்டம்')}
+              {tLabel('Track', 'கண்காணி')}
             </span>
           </button>
 
-          {/* Tab 5: Profile */}
+          {/* Tab 4: Profile */}
           <button
             onClick={() => navigate('/citizen/profile')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${

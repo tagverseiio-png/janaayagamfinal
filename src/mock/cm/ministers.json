@@ -1,0 +1,14 @@
+[
+  { "id": "m1", "name": "Mrs. S. Lakshmi", "portfolio": "Revenue", "grade": "A+", "kpiScore": 88.7, "trend": "up", "cleared": 164, "pending": 151, "fieldVisits": 19, "schemes": 3 },
+  { "id": "m2", "name": "Mrs. V. Geetha", "portfolio": "Social Welfare", "grade": "A", "kpiScore": 85.8, "trend": "up", "cleared": 135, "pending": 144, "fieldVisits": 2, "schemes": 3 },
+  { "id": "m3", "name": "Mr. P. Murugan", "portfolio": "School Education", "grade": "A", "kpiScore": 82.7, "trend": "up", "cleared": 564, "pending": 21, "fieldVisits": 24, "schemes": 5 },
+  { "id": "m4", "name": "Mrs. R. Bhuvana", "portfolio": "Municipal Admin", "grade": "B", "kpiScore": 79.9, "trend": "flat", "cleared": 892, "pending": 341, "fieldVisits": 12, "schemes": 2 },
+  { "id": "m5", "name": "Mr. N. Ravi", "portfolio": "Food & Civil Supplies", "grade": "B", "kpiScore": 75.6, "trend": "up", "cleared": 1104, "pending": 450, "fieldVisits": 8, "schemes": 1 },
+  { "id": "m6", "name": "Mr. T. Velan", "portfolio": "Agriculture", "grade": "B", "kpiScore": 75.0, "trend": "down", "cleared": 310, "pending": 415, "fieldVisits": 6, "schemes": 4 },
+  { "id": "m7", "name": "Mr. S. Kumar", "portfolio": "Transport", "grade": "C", "kpiScore": 68.4, "trend": "down", "cleared": 204, "pending": 620, "fieldVisits": 4, "schemes": 2 },
+  { "id": "m8", "name": "Dr. K. Anbu", "portfolio": "Health & Family Welfare", "grade": "A", "kpiScore": 84.1, "trend": "flat", "cleared": 1820, "pending": 210, "fieldVisits": 14, "schemes": 4 },
+  { "id": "m9", "name": "Mr. V. Selvam", "portfolio": "Public Works", "grade": "C", "kpiScore": 64.2, "trend": "down", "cleared": 95, "pending": 821, "fieldVisits": 3, "schemes": 1 },
+  { "id": "m10", "name": "Mr. R. Karthik", "portfolio": "Energy", "grade": "A+", "kpiScore": 91.2, "trend": "up", "cleared": 452, "pending": 12, "fieldVisits": 22, "schemes": 3 },
+  { "id": "m11", "name": "Mrs. D. Meena", "portfolio": "Rural Development", "grade": "B", "kpiScore": 72.8, "trend": "flat", "cleared": 820, "pending": 510, "fieldVisits": 11, "schemes": 6 },
+  { "id": "m12", "name": "Mr. C. Balaji", "portfolio": "Home/Police", "grade": "A", "kpiScore": 81.5, "trend": "up", "cleared": 540, "pending": 180, "fieldVisits": 16, "schemes": 2 }
+]

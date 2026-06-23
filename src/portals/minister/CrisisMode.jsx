@@ -174,9 +174,9 @@ export default function CrisisMode() {
  className="w-full bg-slate-50 border rounded-xl py-2 px-3 text-xs font-bold"
  >
  <option value="all">All Districts (Statewide)</option>
- {districtsList.map(d => (
- <option key={d} value={d}>
- {d} District
+ {districts.map(d => (
+ <option key={d.name || d} value={d.name || d}>
+ {d.name || d} District
  </option>
  ))}
  </select>
