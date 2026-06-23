@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Announcement from '../models/Announcement';
 
 export const createAnnouncement = async (req: Request, res: Response) => {
   try {
@@ -10,13 +10,11 @@ export const createAnnouncement = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only CM or Minister can create announcements' });
     }
 
-    const announcement = await prisma.announcement.create({
-      data: {
-        title,
-        text,
-        district: district || 'All',
-        authorId
-      }
+    const announcement = await Announcement.create({
+      title,
+      text,
+      district: district || 'All',
+      authorId
     });
 
     res.status(201).json(announcement);
@@ -33,18 +31,14 @@ export const getAnnouncements = async (req: Request, res: Response) => {
 
     if (district && district !== 'All') {
       query = {
-        OR: [
+        $or: [
           { district: district as string },
           { district: 'All' }
         ]
       };
     }
 
-    const announcements = await prisma.announcement.findMany({
-      where: query,
-      orderBy: { createdAt: 'desc' }
-    });
-
+    const announcements = await Announcement.find(query).sort({ createdAt: -1 });
     res.json(announcements);
   } catch (error) {
     console.error('Error fetching announcements:', error);

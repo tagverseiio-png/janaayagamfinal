@@ -28,6 +28,10 @@ export default function MinisterPortal() {
     return () => clearInterval(timer);
   }, []);
 
+  const ministerName = localStorage.getItem('jn_name') || 'State Minister';
+  const deptName = localStorage.getItem('jn_emp_dept') || 'Electricity & Energy Resources';
+  const isHealth = deptName.toLowerCase().includes('health') || deptName.toLowerCase().includes('sanit');
+
   const sidebarLinks = [
     { label: 'Dashboard', path: '/minister', end: true, icon: <LayoutDashboard className="w-5 h-5" /> },
     { label: 'Department Tickets', path: '/minister/dept', icon: <ShieldAlert className="w-5 h-5" /> },
@@ -53,7 +57,11 @@ export default function MinisterPortal() {
           </div>
           <div>
             <h1 className="text-[11px] font-black tracking-wider text-[#8B1A1A] uppercase leading-tight">
-              Electricity<br />Minister
+              {isHealth ? (
+                <>Health &<br />Sanitation</>
+              ) : (
+                <>Electricity<br />Minister</>
+              )}
             </h1>
           </div>
         </div>
@@ -87,8 +95,12 @@ export default function MinisterPortal() {
               <User className="w-5 h-5 text-[#8B1A1A]" />
             </div>
             <div>
-              <div className="text-xs font-black text-slate-800">State Minister</div>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Electricity Dept.</div>
+              <div className="text-xs font-black text-slate-800 truncate max-w-[150px]" title={ministerName}>
+                {ministerName}
+              </div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 truncate max-w-[150px]" title={deptName}>
+                {isHealth ? 'Health Dept.' : 'Electricity Dept.'}
+              </div>
             </div>
           </div>
 
@@ -109,7 +121,9 @@ export default function MinisterPortal() {
         <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="px-8 h-16 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-black tracking-wider text-slate-800 uppercase">Electricity Minister Command Center</h2>
+              <h2 className="text-sm font-black tracking-wider text-slate-800 uppercase">
+                {isHealth ? 'Health & Sanitation' : 'Electricity'} Minister Command Center
+              </h2>
               <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Government of Tamil Nadu</p>
             </div>
             <div className="flex items-center gap-4">

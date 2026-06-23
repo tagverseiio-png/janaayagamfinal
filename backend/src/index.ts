@@ -2,13 +2,15 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import { connectDB } from './db';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5001;
-const prisma = new PrismaClient();
+
+// Connect to MongoDB
+connectDB();
 
 import authRoutes from './routes/authRoutes';
 import metadataRoutes from './routes/metadataRoutes';
@@ -52,7 +54,7 @@ app.get('/api/ward-lookup', (req: Request, res: Response) => {
 });
 
 app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', message: 'JanaNayagam API is running' });
+  res.json({ status: 'ok', message: 'JanaNayagam API is running with MongoDB' });
 });
 
 // Generic Error Handler
@@ -69,6 +71,3 @@ app.listen(port, () => {
     checkAndAutoEscalateSlaBreaches();
   }, 15000); // Check every 15 seconds
 });
-
-// Export prisma for use in other files
-export { prisma };

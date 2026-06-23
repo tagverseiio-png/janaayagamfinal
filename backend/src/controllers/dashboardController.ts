@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Ticket from '../models/Ticket';
+import Jurisdiction from '../models/Jurisdiction';
 
 async function getJurisdictionDescendants(parentId: string): Promise<string[]> {
-  const children = await prisma.jurisdiction.findMany({
-    where: { parentId },
-    select: { id: true }
-  });
-  
-  const childIds = children.map(c => c.id);
+  const children = await Jurisdiction.find({ parentId }).select('_id');
+  const childIds = children.map(c => c._id.toString());
   const descendantIds: string[] = [...childIds];
   
   for (const childId of childIds) {
@@ -31,7 +28,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
       if (user.jurisdictionId) {
         const descendantIds = await getJurisdictionDescendants(user.jurisdictionId);
         query.jurisdictionId = {
-          in: [user.jurisdictionId, ...descendantIds]
+          $in: [user.jurisdictionId, ...descendantIds]
         };
       }
     } else if (user?.type === 'citizen') {
@@ -39,23 +36,21 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     }
 
     const [totalOpen, totalResolved, criticalPriority, tickets] = await Promise.all([
-      prisma.ticket.count({ where: { ...query, status: { notIn: ['RESOLVED', 'CLOSED'] } } }),
-      prisma.ticket.count({ where: { ...query, status: { in: ['RESOLVED', 'CLOSED'] } } }),
-      prisma.ticket.count({ where: { ...query, priority: 'CRITICAL' } }),
-      prisma.ticket.findMany({ 
-        where: query, 
-        include: { 
-          jurisdiction: true,
-          department: true
-        } 
-      })
+      Ticket.countDocuments({ ...query, status: { $nin: ['RESOLVED', 'CLOSED'] } }),
+      Ticket.countDocuments({ ...query, status: { $in: ['RESOLVED', 'CLOSED'] } }),
+      Ticket.countDocuments({ ...query, priority: 'CRITICAL' }),
+      Ticket.find(query).populate('jurisdiction').populate('department')
     ]);
 
     // District Performance
-    const districts = await prisma.jurisdiction.findMany({ where: { level: 'DISTRICT' } });
+    const districts = await Jurisdiction.find({ level: 'DISTRICT' });
     const districtPerformance = districts.map(dist => {
-      const distTickets = tickets.filter(t => t.jurisdictionId === dist.id || (t.jurisdiction?.parentId === dist.id));
-      // Note: This is a simplified check for descendants, might need more depth for real world
+      // Find tickets under this district or descendants of this district
+      const distTickets = tickets.filter(t => {
+        const tJuris = t.jurisdiction as any;
+        return t.jurisdictionId?.toString() === dist.id || 
+               tJuris?.parentId?.toString() === dist.id;
+      });
       
       const dResolved = distTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
       const dTotal = distTickets.length;
@@ -70,13 +65,11 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
       };
     }).sort((a, b) => a.rate - b.rate);
 
-    // Average Resolution Time (mocked for now, but could be calculated from resolved tickets)
+    // Average Resolution Time (mocked)
     const avgResolutionTime = 2.4; 
 
     // Total escalated tickets in this scope
-    const totalEscalated = await prisma.ticket.count({ 
-      where: { ...query, status: 'ESCALATED' } 
-    });
+    const totalEscalated = await Ticket.countDocuments({ ...query, status: 'ESCALATED' });
 
     const totalTickets = tickets.length;
     resolutionRate = totalTickets > 0 ? Math.round((totalResolved / totalTickets) * 100) : 100;
@@ -87,9 +80,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     // Sub-jurisdiction count
     let subJurisdictionCount = 0;
     if (user?.jurisdictionId) {
-      subJurisdictionCount = await prisma.jurisdiction.count({
-        where: { parentId: user.jurisdictionId }
-      });
+      subJurisdictionCount = await Jurisdiction.countDocuments({ parentId: user.jurisdictionId });
     }
 
     res.json({

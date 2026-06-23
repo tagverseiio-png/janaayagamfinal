@@ -77,7 +77,7 @@ export default function SignUpPage() {
       const response = await api.get(`/metadata/pincode/${pin}`);
       const data = response.data;
       
-      if (data && data.length > 0) {
+      if (data && data.length > 0 && pin === '600004') {
         const placeList = data.map(p => p.place);
         const districtName = data[0].district;
         
@@ -90,7 +90,7 @@ export default function SignUpPage() {
       } else {
         setPincodeStatus('error');
         setAreas([]);
-        toast.error(tLabel("Pincode not found. Please check and try again.", "பின்கோடு கிடைக்கவில்லை. சரிபார்க்கவும்."));
+        toast.error(tLabel("Currently, only Mylapore - Chennai is supported. Please use pincode 600004.", "தற்போது, மயிலாப்பூர் - சென்னை மட்டுமே ஆதரிக்கப்படுகிறது. தயவுசெய்து பின்கோடு 600004 ஐப் பயன்படுத்தவும்."));
       }
     } catch (err) {
       console.error('Pincode lookup failed:', err);
@@ -443,7 +443,7 @@ export default function SignUpPage() {
                     )}
                     {pincodeStatus === 'error' && (
                       <div className="text-[12px] font-black text-[#F44336] pl-1 animate-in fade-in slide-in-from-top-1">
-                        {tLabel("Pincode not found. Please check and try again.", "பின்கோடு கிடைக்கவில்லை. சரிபார்க்கவும்.")}
+                        {tLabel("Currently, only Mylapore - Chennai is supported. Please use pincode 600004.", "தற்போது, மயிலாப்பூர் - சென்னை மட்டுமே ஆதரிக்கப்படுகிறது. தயவுசெய்து பின்கோடு 600004 ஐப் பயன்படுத்தவும்.")}
                       </div>
                     )}
 

@@ -65,8 +65,10 @@ export default function EmployeeLoginPage() {
       
       if (employee.department) {
         localStorage.setItem('jn_emp_dept', employee.department.name);
+        localStorage.setItem('jn_emp_dept_id', employee.departmentId);
       } else {
         localStorage.removeItem('jn_emp_dept');
+        localStorage.removeItem('jn_emp_dept_id');
       }
 
       if (employee.jurisdiction) {

@@ -1,347 +1,309 @@
-import { PrismaClient } from '@prisma/client';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import Department from './models/Department';
+import Jurisdiction from './models/Jurisdiction';
+import ComplaintCategory from './models/ComplaintCategory';
+import CategoryEscalation from './models/CategoryEscalation';
+import Employee from './models/Employee';
+import Citizen from './models/Citizen';
+import Role from './models/Role';
+import Zone from './models/Zone';
+import TicketStateTransition from './models/TicketStateTransition';
+import PincodeMapping from './models/PincodeMapping';
+import Ticket from './models/Ticket';
+import TicketHistory from './models/TicketHistory';
+import TicketClaim from './models/TicketClaim';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jananayagam';
 
 async function main() {
-  console.log('Seeding Master Build Spec v3 users and roles...');
+  console.log('Connecting to database...');
+  await mongoose.connect(MONGODB_URI);
+  console.log('Connected to MongoDB.');
 
+  console.log('Cleaning all collections...');
+  await TicketHistory.deleteMany({});
+  await TicketClaim.deleteMany({});
+  await Ticket.deleteMany({});
+  await Employee.deleteMany({});
+  await Citizen.deleteMany({});
+  await CategoryEscalation.deleteMany({});
+  await ComplaintCategory.deleteMany({});
+  await Department.deleteMany({});
+  await Jurisdiction.deleteMany({});
+  await Role.deleteMany({});
+  await Zone.deleteMany({});
+  await TicketStateTransition.deleteMany({});
+  await PincodeMapping.deleteMany({});
+
+  console.log('Seeding roles metadata...');
+  await Role.create([
+    { code: 'AAE', slug: 'aae', adminLevel: 'WARD', jurisdictionScope: 'WARD', description: 'Assistant Area Engineer' },
+    { code: 'AE', slug: 'ae', adminLevel: 'TALUK', jurisdictionScope: 'TALUK', description: 'Area Engineer' },
+    { code: 'DSI', slug: 'dsi', adminLevel: 'WARD', jurisdictionScope: 'WARD', description: 'Division Sanitary Inspector' },
+    { code: 'SI', slug: 'si', adminLevel: 'BLOCK', jurisdictionScope: 'BLOCK', description: 'Sanitary Inspector' },
+    { code: 'HI', slug: 'hi', adminLevel: 'ZONE', jurisdictionScope: 'ZONE', description: 'Health Inspector' },
+    { code: 'CHI', slug: 'chi', adminLevel: 'DISTRICT', jurisdictionScope: 'DISTRICT', description: 'City Health Inspector' },
+    { code: 'MLA', slug: 'mla', adminLevel: 'CONSTITUENCY', jurisdictionScope: 'CONSTITUENCY', description: 'Member of Legislative Assembly' },
+    { code: 'MINISTER', slug: 'minister', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Cabinet Minister' },
+    { code: 'COMMISSIONER', slug: 'commissioner', adminLevel: 'CORPORATION', jurisdictionScope: 'CORPORATION', description: 'Corporation Commissioner' },
+    { code: 'DEPT_COMMISSIONER', slug: 'dept_commissioner', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Department Commissioner' }
+  ]);
+
+  console.log('Seeding zones...');
+  await Zone.create([
+    { zoneNumber: '4', name: 'Zone 4', region: 'GCC North', wardFrom: 1, wardTo: 15 }
+  ]);
+
+  console.log('Seeding pincodes...');
+  await PincodeMapping.create([
+    { pincode: '600004', place: 'Mylapore', district: 'Chennai' },
+    { pincode: '600021', place: 'Royapuram', district: 'Chennai' }
+  ]);
+
+  console.log('Seeding lifecycle transitions...');
+  await TicketStateTransition.create([
+    { fromState: 'SUBMITTED', toState: 'ASSIGNED', performedBy: 'SYSTEM', trigger: 'AUTO_ASSIGN' },
+    { fromState: 'ASSIGNED', toState: 'IN_PROGRESS', performedBy: 'OFFICIAL', trigger: 'START_WORK' },
+    { fromState: 'IN_PROGRESS', toState: 'ESCALATED', performedBy: 'SYSTEM', trigger: 'SLA_BREACH' },
+    { fromState: 'IN_PROGRESS', toState: 'RESOLVED', performedBy: 'OFFICIAL', trigger: 'RESOLVE' }
+  ]);
+
+  console.log('Seeding core departments...');
+  const deptElec = await Department.create({
+    name: 'Electricity & Energy Resources',
+    slug: 'electricity',
+    primaryDomain: 'tangedco.tn.gov.in',
+    isCivicFacing: true
+  });
+
+  const deptSan = await Department.create({
+    name: 'Health & Sanitation',
+    slug: 'sanitation',
+    primaryDomain: 'gcc.tn.gov.in',
+    isCivicFacing: true
+  });
+
+  console.log('Seeding jurisdictions hierarchy...');
+  const stateNode = await Jurisdiction.create({
+    level: 'STATE',
+    name: 'Tamil Nadu'
+  });
+
+  const districtNode = await Jurisdiction.create({
+    level: 'DISTRICT',
+    name: 'Chennai',
+    parentId: stateNode._id
+  });
+
+  const constituencyNode = await Jurisdiction.create({
+    level: 'CONSTITUENCY',
+    name: 'Mylapore',
+    parentId: districtNode._id
+  });
+
+  const mylaporeSectionNode = await Jurisdiction.create({
+    level: 'WARD',
+    name: 'Mylapore Section',
+    parentId: constituencyNode._id
+  });
+
+  const talukNode = await Jurisdiction.create({
+    level: 'TALUK',
+    name: 'Chennai South Area',
+    parentId: districtNode._id
+  });
+
+  const corporationNode = await Jurisdiction.create({
+    level: 'CORPORATION',
+    name: 'Greater Chennai Corporation',
+    parentId: districtNode._id
+  });
+
+  const zoneNode = await Jurisdiction.create({
+    level: 'ZONE',
+    name: 'Zone 4',
+    parentId: corporationNode._id
+  });
+
+  const blockNode = await Jurisdiction.create({
+    level: 'BLOCK',
+    name: 'Division 14',
+    parentId: zoneNode._id
+  });
+
+  const wardNode = await Jurisdiction.create({
+    level: 'WARD',
+    name: 'Ward 1',
+    parentId: blockNode._id
+  });
+
+  console.log('Seeding complaint categories...');
+  const catElec = await ComplaintCategory.create({
+    code: 'CAT-ELE',
+    name: 'Electricity Failure',
+    departmentId: deptElec._id,
+    defaultAssigneeRole: 'AAE',
+    defaultPriority: 'MEDIUM'
+  });
+
+  const catSan = await ComplaintCategory.create({
+    code: 'CAT-SAN',
+    name: 'Sanitation Issue',
+    departmentId: deptSan._id,
+    defaultAssigneeRole: 'DSI',
+    defaultPriority: 'MEDIUM'
+  });
+
+  console.log('Seeding category escalations...');
+  // 3-step chain for Electricity
+  await CategoryEscalation.create([
+    { categoryId: catElec._id, level: 'L1', assigneeTitle: 'Assistant Area Engineer', slaDays: 2 },
+    { categoryId: catElec._id, level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 4 },
+    { categoryId: catElec._id, level: 'L3', assigneeTitle: 'Minister', slaDays: 7 }
+  ]);
+
+  // 7-step chain for Sanitation
+  await CategoryEscalation.create([
+    { categoryId: catSan._id, level: 'L1', assigneeTitle: 'Division Sanitary Inspector', slaDays: 1 },
+    { categoryId: catSan._id, level: 'L2', assigneeTitle: 'Sanitary Inspector', slaDays: 2 },
+    { categoryId: catSan._id, level: 'L3', assigneeTitle: 'Health Inspector', slaDays: 3 },
+    { categoryId: catSan._id, level: 'L4', assigneeTitle: 'City Health Inspector', slaDays: 4 },
+    { categoryId: catSan._id, level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 5 },
+    { categoryId: catSan._id, level: 'L6', assigneeTitle: 'Corporation Commissioner', slaDays: 7 },
+    { categoryId: catSan._id, level: 'L7', assigneeTitle: 'Minister', slaDays: 10 }
+  ]);
+
+  console.log('Seeding exactly 11 officials (password: admin123)...');
   const passwordHash = await bcrypt.hash('admin123', 10);
 
-  // 1. Ensure core departments exist
-  const depts = [
-    { name: 'Electricity & Energy Resources', slug: 'electricity' },
-    { name: 'Health & Sanitation', slug: 'sanitation' },
-    { name: 'Water (TWAD/Metro Water)', slug: 'water' },
-    { name: 'PWD / Roads', slug: 'roads' }
-  ];
-
-  const deptMap: Record<string, string> = {}; // name -> id
-  for (const d of depts) {
-    let record = await prisma.department.findFirst({ 
-      where: { 
-        OR: [
-          { name: d.name },
-          { slug: d.slug }
-        ]
-      } 
-    });
-    if (!record) {
-      record = await prisma.department.create({
-        data: { name: d.name, slug: d.slug, isCivicFacing: true }
-      });
-    }
-    deptMap[d.name] = record.id;
-  }
-  console.log('Departments seeded/verified.');
-
-  // 2. Fetch or create crucial Jurisdictions
-  let state = await prisma.jurisdiction.findFirst({ where: { level: 'STATE' } });
-  if (!state) {
-    state = await prisma.jurisdiction.create({ data: { level: 'STATE', name: 'Tamil Nadu' } });
-  }
-
-  let chennai = await prisma.jurisdiction.findFirst({ where: { level: 'DISTRICT', name: 'Chennai' } });
-  if (!chennai) {
-    chennai = await prisma.jurisdiction.create({
-      data: { level: 'DISTRICT', name: 'Chennai', parentId: state.id }
-    });
-  }
-
-  let mylaporeConstituency = await prisma.jurisdiction.findFirst({
-    where: { level: 'CONSTITUENCY', name: 'Mylapore' }
-  });
-  if (!mylaporeConstituency) {
-    mylaporeConstituency = await prisma.jurisdiction.create({
-      data: { level: 'CONSTITUENCY', name: 'Mylapore', parentId: chennai.id }
-    });
-  }
-
-  let mylaporeSection = await prisma.jurisdiction.findFirst({
-    where: { level: 'WARD', name: 'Mylapore Section' }
-  });
-  if (!mylaporeSection) {
-    mylaporeSection = await prisma.jurisdiction.create({
-      data: { level: 'WARD', name: 'Mylapore Section', parentId: mylaporeConstituency.id }
-    });
-  }
-
-  let chennaiSouthArea = await prisma.jurisdiction.findFirst({
-    where: { level: 'TALUK', name: 'Chennai South Area' }
-  });
-  if (!chennaiSouthArea) {
-    chennaiSouthArea = await prisma.jurisdiction.create({
-      data: { level: 'TALUK', name: 'Chennai South Area', parentId: chennai.id }
-    });
-  }
-
-  let gcc = await prisma.jurisdiction.findFirst({
-    where: { level: 'CORPORATION', name: 'Greater Chennai Corporation' }
-  });
-  if (!gcc) {
-    gcc = await prisma.jurisdiction.create({
-      data: { level: 'CORPORATION', name: 'Greater Chennai Corporation', parentId: chennai.id }
-    });
-  }
-
-  let zone4 = await prisma.jurisdiction.findFirst({
-    where: { level: 'ZONE', name: 'Zone 4' }
-  });
-  if (!zone4) {
-    zone4 = await prisma.jurisdiction.create({
-      data: { level: 'ZONE', name: 'Zone 4', parentId: gcc.id }
-    });
-  }
-
-  let division14 = await prisma.jurisdiction.findFirst({
-    where: { level: 'BLOCK', name: 'Division 14' }
-  });
-  if (!division14) {
-    division14 = await prisma.jurisdiction.create({
-      data: { level: 'BLOCK', name: 'Division 14', parentId: zone4.id }
-    });
-  }
-
-  let ward1 = await prisma.jurisdiction.findFirst({
-    where: { level: 'WARD', name: 'Ward 1: Kodungaiyur (W)' }
-  });
-  if (!ward1) {
-    ward1 = await prisma.jurisdiction.create({
-      data: { level: 'WARD', name: 'Ward 1: Kodungaiyur (W)', parentId: division14.id }
-    });
-  }
-
-  console.log('Jurisdictions seeded/verified.');
-
-  // 3. Seed Complaint Categories
-  const categories = [
-    { code: 'CAT-ELE', name: 'Electricity Failure', departmentId: deptMap['Electricity & Energy Resources'], defaultAssigneeRole: 'AAE', defaultPriority: 'MEDIUM' },
-    { code: 'CAT-SAN', name: 'Sanitation Issue', departmentId: deptMap['Health & Sanitation'], defaultAssigneeRole: 'DSI', defaultPriority: 'MEDIUM' },
-    { code: 'CAT-WTR', name: 'Water Issue', departmentId: deptMap['Water (TWAD/Metro Water)'], defaultAssigneeRole: 'Ward Officer', defaultPriority: 'MEDIUM' },
-    { code: 'CAT-RDC', name: 'Pot Holes (Road)', departmentId: deptMap['PWD / Roads'], defaultAssigneeRole: 'Ward Officer', defaultPriority: 'MEDIUM' }
-  ];
-
-  const categoryMap: Record<string, string> = {};
-  for (const cat of categories) {
-    let rec = await prisma.complaintCategory.findUnique({ where: { code: cat.code } });
-    if (!rec) {
-      rec = await prisma.complaintCategory.create({ data: cat });
-    }
-    categoryMap[cat.code] = rec.id;
-  }
-  
-  // Seed Escalations
-  await prisma.categoryEscalation.deleteMany({});
-  
-  // Electricity Escalations
-  if (categoryMap['CAT-ELE']) {
-    await prisma.categoryEscalation.createMany({
-      data: [
-        { categoryId: categoryMap['CAT-ELE'], level: 'L1', assigneeTitle: 'Assistant Area Engineer', slaDays: 2 },
-        { categoryId: categoryMap['CAT-ELE'], level: 'L2', assigneeTitle: 'Area Engineer', slaDays: 4 },
-        { categoryId: categoryMap['CAT-ELE'], level: 'L3', assigneeTitle: 'Minister', slaDays: 7 }
-      ]
-    });
-  }
-
-  // Sanitation Escalations
-  if (categoryMap['CAT-SAN']) {
-    await prisma.categoryEscalation.createMany({
-      data: [
-        { categoryId: categoryMap['CAT-SAN'], level: 'L1', assigneeTitle: 'Division Sanitary Inspector', slaDays: 1 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L2', assigneeTitle: 'Sanitary Inspector', slaDays: 2 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L3', assigneeTitle: 'Health Inspector', slaDays: 3 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L4', assigneeTitle: 'City Health Inspector', slaDays: 4 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L5', assigneeTitle: 'Department Commissioner', slaDays: 5 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L6', assigneeTitle: 'Commissioner', slaDays: 7 },
-        { categoryId: categoryMap['CAT-SAN'], level: 'L7', assigneeTitle: 'Minister', slaDays: 10 }
-      ]
-    });
-  }
-
-  // Water Escalations
-  if (categoryMap['CAT-WTR']) {
-    await prisma.categoryEscalation.createMany({
-      data: [
-        { categoryId: categoryMap['CAT-WTR'], level: 'L1', assigneeTitle: 'Ward Officer', slaDays: 2 },
-        { categoryId: categoryMap['CAT-WTR'], level: 'L2', assigneeTitle: 'Assistant Engineer', slaDays: 5 },
-        { categoryId: categoryMap['CAT-WTR'], level: 'L3', assigneeTitle: 'Commissioner', slaDays: 10 }
-      ]
-    });
-  }
-
-  // Roads Escalations
-  if (categoryMap['CAT-RDC']) {
-    await prisma.categoryEscalation.createMany({
-      data: [
-        { categoryId: categoryMap['CAT-RDC'], level: 'L1', assigneeTitle: 'Ward Officer', slaDays: 2 },
-        { categoryId: categoryMap['CAT-RDC'], level: 'L2', assigneeTitle: 'Assistant Engineer', slaDays: 5 },
-        { categoryId: categoryMap['CAT-RDC'], level: 'L3', assigneeTitle: 'District Collector', slaDays: 10 }
-      ]
-    });
-  }
-  
-  console.log('Categories & Escalations seeded.');
-
-  // 4. Seed Employee/Official Accounts
-  const employees = [
-    {
-      username: 'cm_admin',
-      name: 'C. Joseph Vijay',
-      category: 'Elected Representative',
-      role: 'CM',
-      departmentId: null,
-      jurisdictionId: state.id
-    },
-    {
-      username: 'mla_mylapore',
-      name: 'Thiru P. Venkataramanan',
-      category: 'Elected Representative',
-      role: 'MLA',
-      departmentId: null,
-      jurisdictionId: mylaporeConstituency.id
-    },
-    {
-      username: 'minister_electricity',
-      name: 'C. T. R. Nirmal Kumar',
-      category: 'Elected Representative',
-      role: 'Minister',
-      departmentId: deptMap['Electricity & Energy Resources'],
-      jurisdictionId: state.id
-    },
-    {
-      username: 'minister_health',
-      name: 'Dr. K.G. Arunraj',
-      category: 'Elected Representative',
-      role: 'Minister',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: state.id
-    },
-    {
-      username: 'aae_electricity',
-      name: 'Er. S. Karthikeyan',
-      category: 'Department Official',
-      role: 'AAE',
-      departmentId: deptMap['Electricity & Energy Resources'],
-      jurisdictionId: mylaporeSection.id
-    },
-    {
-      username: 'area_engineer',
-      name: 'Er. R. Mohanraj',
-      category: 'Department Official',
-      role: 'AE',
-      departmentId: deptMap['Electricity & Energy Resources'],
-      jurisdictionId: chennaiSouthArea.id
-    },
-    {
-      username: 'dsi_admin',
-      name: 'M. Saravanan',
-      category: 'Department Official',
-      role: 'DSI',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: ward1.id
-    },
-    {
-      username: 'si_admin',
-      name: 'K. Priyadharshini',
-      category: 'Department Official',
-      role: 'SI',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: division14.id
-    },
-    {
-      username: 'hi_admin',
-      name: 'D. Ramesh Babu',
-      category: 'Department Official',
-      role: 'HI',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: zone4.id
-    },
-    {
-      username: 'chi_admin',
-      name: 'Dr. S. Lakshmi Narayanan',
-      category: 'Department Official',
-      role: 'CHI',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: chennai.id
-    },
-    {
-      username: 'dept_comm_admin',
-      name: 'T. Vijayakumar, I.A.S.',
-      category: 'Administrative Officer',
-      role: 'Department Commissioner',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: state.id
-    },
-    {
-      username: 'comm_admin',
-      name: 'R. Anandhi, I.A.S.',
-      category: 'Administrative Officer',
-      role: 'Corporation Commissioner',
-      departmentId: deptMap['Health & Sanitation'],
-      jurisdictionId: gcc.id
-    }
-  ];
-
-  // Clean old versions of these users to prevent unique constraint failures
-  const usernames = employees.map(e => e.username);
-  await prisma.employee.deleteMany({
-    where: { username: { in: usernames } }
+  // 3 Electricity Officials
+  const aaeElec = await Employee.create({
+    username: 'aae_electricity',
+    name: 'Er. S. Karthikeyan',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'AAE',
+    departmentId: deptElec._id,
+    jurisdictionId: mylaporeSectionNode._id
   });
 
-  const seededEmployees: Record<string, string> = {}; // username -> id
-  for (const emp of employees) {
-    const record = await prisma.employee.create({
-      data: {
-        username: emp.username,
-        name: emp.name,
-        category: emp.category,
-        role: emp.role,
-        password: passwordHash,
-        departmentId: emp.departmentId,
-        jurisdictionId: emp.jurisdictionId
-      }
-    });
-    seededEmployees[emp.username] = record.id;
-    console.log(`Seeded user: ${emp.username} / admin123`);
-  }
+  const aeElec = await Employee.create({
+    username: 'ae_chennai',
+    name: 'Er. R. Mohanraj',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'AE',
+    departmentId: deptElec._id,
+    jurisdictionId: talukNode._id
+  });
 
-  // 5. Seed Field Workers under AAE
-  const workers = [
-    { username: 'worker_gopal', name: 'Gopal', phone: '9876500001' },
-    { username: 'worker_ramesh', name: 'Ramesh', phone: '9876500002' },
-    { username: 'worker_anbarasan', name: 'Anbarasan', phone: '9876500003' },
-    { username: 'worker_murugan', name: 'Murugan', phone: '9876500004' },
-    { username: 'worker_selvam', name: 'Selvam', phone: '9876500005' },
-    { username: 'worker_velu', name: 'Velu', phone: '9876500006' }
-  ];
+  const ministerElec = await Employee.create({
+    username: 'minister_electricity',
+    name: 'C. T. R. Nirmal Kumar',
+    password: passwordHash,
+    category: 'Elected Representative',
+    role: 'Minister',
+    departmentId: deptElec._id,
+    jurisdictionId: stateNode._id
+  });
 
-  await prisma.employee.deleteMany({ where: { username: { in: workers.map(w => w.username) } } });
-  for (const w of workers) {
-    await prisma.employee.create({
-      data: {
-        username: w.username,
-        name: w.name,
-        phone: w.phone,
-        password: passwordHash,
-        category: 'Field Worker',
-        role: 'Field Worker',
-        departmentId: deptMap['Electricity & Energy Resources'],
-        jurisdictionId: mylaporeSection.id
-      }
-    });
-    console.log(`Seeded AAE field worker: ${w.username}`);
-  }
+  // 7 Health/Sanitation Officials
+  const dsiSan = await Employee.create({
+    username: 'dsi_admin',
+    name: 'M. Saravanan',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'DSI',
+    departmentId: deptSan._id,
+    jurisdictionId: wardNode._id
+  });
 
-  console.log('Seeded employees and field workers.');
-  console.log('Master Seeding Complete!');
+  const siSan = await Employee.create({
+    username: 'si_admin',
+    name: 'K. Priyadharshini',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'SI',
+    departmentId: deptSan._id,
+    jurisdictionId: blockNode._id
+  });
+
+  const hiSan = await Employee.create({
+    username: 'hi_admin',
+    name: 'D. Ramesh Babu',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'HI',
+    departmentId: deptSan._id,
+    jurisdictionId: zoneNode._id
+  });
+
+  const chiSan = await Employee.create({
+    username: 'chi_admin',
+    name: 'Dr. S. Lakshmi Narayanan',
+    password: passwordHash,
+    category: 'Department Official',
+    role: 'CHI',
+    departmentId: deptSan._id,
+    jurisdictionId: districtNode._id
+  });
+
+  const deptCommSan = await Employee.create({
+    username: 'dept_comm_admin',
+    name: 'T. Vijayakumar, I.A.S.',
+    password: passwordHash,
+    category: 'Administrative Officer',
+    role: 'Department Commissioner',
+    departmentId: deptSan._id,
+    jurisdictionId: stateNode._id
+  });
+
+  const commSan = await Employee.create({
+    username: 'comm_admin',
+    name: 'R. Anandhi, I.A.S.',
+    password: passwordHash,
+    category: 'Administrative Officer',
+    role: 'Corporation Commissioner',
+    departmentId: deptSan._id,
+    jurisdictionId: corporationNode._id
+  });
+
+  const ministerHealth = await Employee.create({
+    username: 'minister_health',
+    name: 'Dr. K.G. Arunraj',
+    password: passwordHash,
+    category: 'Elected Representative',
+    role: 'Minister',
+    departmentId: deptSan._id,
+    jurisdictionId: stateNode._id
+  });
+
+  // 1 Overarching MLA
+  const mlaOver = await Employee.create({
+    username: 'mla_venkataraman',
+    name: 'Thiru P. Venkataramanan',
+    password: passwordHash,
+    category: 'Elected Representative',
+    role: 'MLA',
+    departmentId: null,
+    jurisdictionId: constituencyNode._id
+  });
+
+  console.log('Database seeding completed successfully.');
+  console.log(`Seeded departments: 2`);
+  console.log(`Seeded officials: 11`);
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await mongoose.connection.close();
+    console.log('Database connection closed.');
   });

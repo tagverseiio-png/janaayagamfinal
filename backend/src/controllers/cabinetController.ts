@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Ticket from '../models/Ticket';
+import Department from '../models/Department';
+import CabinetReport from '../models/CabinetReport';
 
 export const generateCabinetReport = async (req: Request, res: Response) => {
   try {
@@ -7,21 +9,17 @@ export const generateCabinetReport = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Only CM can generate cabinet reports' });
     }
 
-    const tickets = await prisma.ticket.findMany({
-      include: { department: true }
-    });
-
-    const departments = await prisma.department.findMany();
+    const tickets = await Ticket.find().populate('department');
+    const departments = await Department.find();
     
     const rankings = departments.map(dept => {
-      const deptTickets = tickets.filter(t => t.departmentId === dept.id);
+      const deptTickets = tickets.filter(t => t.departmentId?.toString() === dept.id);
       const resolved = deptTickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
       const rate = deptTickets.length > 0 ? Math.round((resolved / deptTickets.length) * 100) : 100;
       
       let minister = 'Unassigned';
       if (dept.slug === 'electricity') minister = 'C. T. R. Nirmal Kumar';
       if (dept.slug === 'health') minister = 'Dr. K.G. Arunraj';
-      // ... more mapping could be added or fetched from DB
 
       return { 
         dept: dept.name, 
@@ -31,16 +29,14 @@ export const generateCabinetReport = async (req: Request, res: Response) => {
       };
     }).sort((a, b) => b.rate - a.rate);
 
-    const report = await prisma.cabinetReport.create({
-      data: {
-        title: 'TAMIL NADU STATE CABINET EFFICIENCY SUMMARY',
-        summaryText: 'Electricity and Sanitation sectors maintain peak response compliance.',
-        rankings: JSON.stringify(rankings)
-      }
+    const report = await CabinetReport.create({
+      title: 'TAMIL NADU STATE CABINET EFFICIENCY SUMMARY',
+      summaryText: 'Electricity and Sanitation sectors maintain peak response compliance.',
+      rankings: JSON.stringify(rankings)
     });
 
     res.status(201).json({
-      ...report,
+      ...report.toJSON(),
       rankings: JSON.parse(report.rankings)
     });
   } catch (error) {
@@ -51,16 +47,14 @@ export const generateCabinetReport = async (req: Request, res: Response) => {
 
 export const getLatestCabinetReport = async (req: Request, res: Response) => {
   try {
-    const report = await prisma.cabinetReport.findFirst({
-      orderBy: { createdAt: 'desc' }
-    });
+    const report = await CabinetReport.findOne().sort({ createdAt: -1 });
 
     if (!report) {
       return res.status(404).json({ error: 'No report found' });
     }
 
     res.json({
-      ...report,
+      ...report.toJSON(),
       rankings: JSON.parse(report.rankings)
     });
   } catch (error) {

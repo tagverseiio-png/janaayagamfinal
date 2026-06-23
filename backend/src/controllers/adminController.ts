@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Employee from '../models/Employee';
+import Department from '../models/Department';
+import Jurisdiction from '../models/Jurisdiction';
 import bcrypt from 'bcryptjs';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
   try {
-    const employees = await prisma.employee.findMany({
-      include: {
-        department: true,
-        jurisdiction: true
-      }
-    });
+    const employees = await Employee.find()
+      .populate('department')
+      .populate('jurisdiction');
+
     // Remove password from response
     const sanitized = employees.map(emp => {
-      const { password, ...rest } = emp;
+      const { password, ...rest } = emp.toObject();
       return rest;
     });
     res.json(sanitized);
@@ -31,14 +31,14 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const existingUser = await prisma.employee.findUnique({ where: { username } });
+    const existingUser = await Employee.findOne({ username });
     if (existingUser) {
       res.status(400).json({ error: 'Employee with this username already exists' });
       return;
     }
 
     if (phone) {
-      const existingPhone = await prisma.employee.findFirst({ where: { phone } });
+      const existingPhone = await Employee.findOne({ phone });
       if (existingPhone) {
         res.status(400).json({ error: 'Employee with this phone already exists' });
         return;
@@ -49,39 +49,38 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
 
     let departmentId = null;
     if (departmentName) {
-      let dept = await prisma.department.findUnique({ where: { name: departmentName } });
+      let dept = await Department.findOne({ name: departmentName });
       if (!dept) {
-          dept = await prisma.department.create({ data: { name: departmentName }});
+        dept = await Department.create({ name: departmentName });
       }
-      departmentId = dept.id;
+      departmentId = dept._id;
     }
 
     let jurisdictionId = providedJurisId || null;
     if (!jurisdictionId && jurisdictionLevel && jurisdictionName) {
-      let juris = await prisma.jurisdiction.findFirst({
-          where: { level: jurisdictionLevel, name: jurisdictionName }
-      });
+      let juris = await Jurisdiction.findOne({ level: jurisdictionLevel, name: jurisdictionName });
       if (!juris) {
-          juris = await prisma.jurisdiction.create({ data: { level: jurisdictionLevel, name: jurisdictionName }});
+        juris = await Jurisdiction.create({ level: jurisdictionLevel, name: jurisdictionName });
       }
-      jurisdictionId = juris.id;
+      jurisdictionId = juris._id;
     }
 
-    const newEmployee = await prisma.employee.create({
-      data: {
-        username,
-        password: hashedPassword,
-        phone,
-        name,
-        category,
-        role,
-        departmentId,
-        jurisdictionId
-      },
-      include: { department: true, jurisdiction: true }
+    const newEmployee = await Employee.create({
+      username,
+      password: hashedPassword,
+      phone,
+      name,
+      category,
+      role,
+      departmentId,
+      jurisdictionId
     });
 
-    const { password: _, ...employeeWithoutPassword } = newEmployee;
+    const populatedEmployee = await Employee.findById(newEmployee._id)
+      .populate('department')
+      .populate('jurisdiction');
+
+    const { password: _, ...employeeWithoutPassword } = populatedEmployee!.toObject();
     res.status(201).json(employeeWithoutPassword);
   } catch (error) {
     console.error('Create Employee Error:', error);
@@ -92,9 +91,7 @@ export const createEmployee = async (req: Request, res: Response): Promise<void>
 export const deleteEmployee = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    await prisma.employee.delete({
-      where: { id: id as string }
-    });
+    await Employee.findByIdAndDelete(id);
     res.json({ message: 'Employee deleted successfully' });
   } catch (error) {
     console.error('Delete Employee Error:', error);

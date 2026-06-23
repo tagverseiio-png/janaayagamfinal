@@ -364,8 +364,10 @@ export const normalizeDept = (category) => {
     'water': 'Water',
     'electricity energy resources': 'Electricity',
     'electricity': 'Electricity',
+    'electricity failure': 'Electricity',
     'eb': 'Electricity',
     'sanitation': 'Sanitation',
+    'sanitation issue': 'Sanitation',
     'health': 'Sanitation',
     'health sanitation': 'Sanitation',
     'health & sanitation': 'Sanitation',
@@ -458,7 +460,14 @@ export const getProgressPercent = (category, assignedTo) => {
 
 // Abbreviated / legacy role names → their canonical chain role
 const ROLE_ALIASES = { 
-  SI: 'Sanitary Inspector', 
+  SI: 'SANITARY_INSPECTOR',
+  HI: 'HEALTH_INSPECTOR',
+  CHI: 'CITY_HEALTH_OFFICER',
+  'CITY_HEALTH_INSPECTOR': 'CITY_HEALTH_OFFICER',
+  'Department Commissioner': 'DEPT_COMMISSIONER',
+  'DEPARTMENT_COMMISSIONER': 'DEPT_COMMISSIONER',
+  'Corporation Commissioner': 'COMMISSIONER',
+  'CORPORATION_COMMISSIONER': 'COMMISSIONER',
   DE: 'Deputy Engineer', 
   DAE: 'Deputy AE', 
   RI: 'Revenue Inspector',

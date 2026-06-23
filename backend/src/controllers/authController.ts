@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Employee from '../models/Employee';
+import Citizen from '../models/Citizen';
+import Jurisdiction from '../models/Jurisdiction';
 import { generateToken, TokenPayload } from '../utils/jwt';
 import bcrypt from 'bcryptjs';
 
@@ -12,10 +14,9 @@ export const loginEmployee = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const employee = await prisma.employee.findUnique({
-      where: { username },
-      include: { department: true, jurisdiction: true }
-    });
+    const employee = await Employee.findOne({ username })
+      .populate('department')
+      .populate('jurisdiction');
 
     if (!employee) {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -33,8 +34,8 @@ export const loginEmployee = async (req: Request, res: Response): Promise<void> 
       role: employee.role,
       type: 'employee',
       category: employee.category,
-      departmentId: employee.departmentId || undefined,
-      jurisdictionId: employee.jurisdictionId || undefined
+      departmentId: employee.departmentId ? employee.departmentId.toString() : undefined,
+      jurisdictionId: employee.jurisdictionId ? employee.jurisdictionId.toString() : undefined
     };
 
     const token = generateToken(payload);
@@ -59,25 +60,22 @@ export const signupCitizen = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const existing = await prisma.citizen.findUnique({
-      where: { phone }
-    });
+    const existing = await Citizen.findOne({ phone });
 
     if (existing) {
       res.status(409).json({ error: 'Phone already registered. Please login.' });
       return;
     }
 
-    const citizen = await prisma.citizen.create({
-      data: {
-        phone,
-        name,
-        district: district || null
-      }
+    const citizen = await Citizen.create({
+      phone,
+      name,
+      district: district || null
     });
 
-    const jurisdiction = district ? await prisma.jurisdiction.findFirst({
-      where: { name: district, level: 'DISTRICT' }
+    const jurisdiction = district ? await Jurisdiction.findOne({
+      name: district,
+      level: 'DISTRICT'
     }) : null;
 
     const payload: TokenPayload = {
@@ -92,7 +90,7 @@ export const signupCitizen = async (req: Request, res: Response): Promise<void> 
       message: 'Registration successful',
       token,
       citizen: {
-        ...citizen,
+        ...citizen.toJSON(),
         jurisdiction
       }
     });
@@ -111,9 +109,7 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const citizen = await prisma.citizen.findUnique({
-      where: { phone }
-    });
+    const citizen = await Citizen.findOne({ phone });
 
     if (!citizen) {
       res.status(404).json({
@@ -123,8 +119,9 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const jurisdiction = citizen.district ? await prisma.jurisdiction.findFirst({
-      where: { name: citizen.district, level: 'DISTRICT' }
+    const jurisdiction = citizen.district ? await Jurisdiction.findOne({
+      name: citizen.district,
+      level: 'DISTRICT'
     }) : null;
 
     const payload: TokenPayload = {
@@ -139,7 +136,7 @@ export const loginCitizen = async (req: Request, res: Response): Promise<void> =
       message: 'Login successful',
       token,
       citizen: {
-        ...citizen,
+        ...citizen.toJSON(),
         jurisdiction
       }
     });
@@ -159,10 +156,9 @@ export const loginEmployeeAadhaar = async (req: Request, res: Response): Promise
     }
 
     // Look up employee by Aadhaar username
-    const employee = await prisma.employee.findUnique({
-      where: { username: aadhaar },
-      include: { department: true, jurisdiction: true }
-    });
+    const employee = await Employee.findOne({ username: aadhaar })
+      .populate('department')
+      .populate('jurisdiction');
 
     if (!employee) {
       res.status(401).json({
@@ -177,8 +173,8 @@ export const loginEmployeeAadhaar = async (req: Request, res: Response): Promise
       role: employee.role,
       type: 'employee',
       category: employee.category,
-      departmentId: employee.departmentId || undefined,
-      jurisdictionId: employee.jurisdictionId || undefined
+      departmentId: employee.departmentId ? employee.departmentId.toString() : undefined,
+      jurisdictionId: employee.jurisdictionId ? employee.jurisdictionId.toString() : undefined
     };
 
     const token = generateToken(payload);
@@ -202,13 +198,14 @@ export const updateVolunteerStatus = async (req: Request, res: Response): Promis
       return;
     }
     const { isVolunteer, volunteerWard } = req.body;
-    const citizen = await prisma.citizen.update({
-      where: { id: citizenId },
-      data: {
+    const citizen = await Citizen.findOneAndUpdate(
+      { _id: citizenId },
+      {
         isVolunteer: isVolunteer === true,
         volunteerWard: volunteerWard || null
-      }
-    });
+      },
+      { new: true }
+    );
     res.json({
       message: 'Volunteer status updated successfully',
       citizen
@@ -218,4 +215,3 @@ export const updateVolunteerStatus = async (req: Request, res: Response): Promis
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-

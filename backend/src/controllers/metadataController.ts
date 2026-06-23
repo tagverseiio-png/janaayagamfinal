@@ -1,11 +1,17 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import Department from '../models/Department';
+import Jurisdiction from '../models/Jurisdiction';
+import Role from '../models/Role';
+import Zone from '../models/Zone';
+import TicketStateTransition from '../models/TicketStateTransition';
+import PincodeMapping from '../models/PincodeMapping';
+import ComplaintCategory from '../models/ComplaintCategory';
+import Employee from '../models/Employee';
+import Ticket from '../models/Ticket';
 
 export const getDepartments = async (req: Request, res: Response): Promise<void> => {
   try {
-    const departments = await prisma.department.findMany({
-      orderBy: { name: 'asc' }
-    });
+    const departments = await Department.find().sort({ name: 1 });
     res.json(departments);
   } catch (error) {
     console.error('Error fetching departments:', error);
@@ -15,18 +21,13 @@ export const getDepartments = async (req: Request, res: Response): Promise<void>
 
 export const getJurisdictions = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Optionally filter by level or parentId via query params
     const { level, parentId } = req.query;
 
     const query: any = {};
     if (level) query.level = level;
     if (parentId) query.parentId = parentId;
 
-    const jurisdictions = await prisma.jurisdiction.findMany({
-      where: query,
-      orderBy: { name: 'asc' }
-    });
-    
+    const jurisdictions = await Jurisdiction.find(query).sort({ name: 1 });
     res.json(jurisdictions);
   } catch (error) {
     console.error('Error fetching jurisdictions:', error);
@@ -42,8 +43,10 @@ export const createJurisdiction = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const jurisdiction = await prisma.jurisdiction.create({
-      data: { name, level, parentId: parentId || null }
+    const jurisdiction = await Jurisdiction.create({
+      name,
+      level,
+      parentId: parentId || null
     });
     
     res.status(201).json(jurisdiction);
@@ -58,10 +61,11 @@ export const updateJurisdiction = async (req: Request, res: Response): Promise<v
     const { id } = req.params;
     const { name, level, parentId } = req.body;
     
-    const jurisdiction = await prisma.jurisdiction.update({
-      where: { id: id as string },
-      data: { name, level, parentId }
-    });
+    const jurisdiction = await Jurisdiction.findByIdAndUpdate(
+      id,
+      { name, level, parentId: parentId || null },
+      { new: true }
+    );
     
     res.json(jurisdiction);
   } catch (error) {
@@ -75,27 +79,27 @@ export const deleteJurisdiction = async (req: Request, res: Response): Promise<v
     const { id } = req.params;
     
     // Safety check: Don't delete if it has child jurisdictions
-    const children = await prisma.jurisdiction.findMany({ where: { parentId: id as string }});
+    const children = await Jurisdiction.find({ parentId: id });
     if (children.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because it has child jurisdictions. Delete them first.' });
       return;
     }
 
     // Safety check: Don't delete if it has attached employees
-    const employees = await prisma.employee.findMany({ where: { jurisdictionId: id as string }});
+    const employees = await Employee.find({ jurisdictionId: id });
     if (employees.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because employees are assigned to it.' });
       return;
     }
 
     // Safety check: Don't delete if it has attached tickets
-    const tickets = await prisma.ticket.findMany({ where: { jurisdictionId: id as string }});
+    const tickets = await Ticket.find({ jurisdictionId: id });
     if (tickets.length > 0) {
       res.status(400).json({ error: 'Cannot delete jurisdiction because tickets are linked to it.' });
       return;
     }
 
-    await prisma.jurisdiction.delete({ where: { id: id as string }});
+    await Jurisdiction.findByIdAndDelete(id);
     res.json({ message: 'Jurisdiction deleted successfully' });
   } catch (error) {
     console.error('Error deleting jurisdiction:', error);
@@ -105,15 +109,13 @@ export const deleteJurisdiction = async (req: Request, res: Response): Promise<v
 
 export const getComplaintCategories = async (req: Request, res: Response): Promise<void> => {
   try {
-    const categories = await prisma.complaintCategory.findMany({
-      include: {
-        department: true,
-        escalations: {
-          orderBy: { level: 'asc' }
-        }
-      },
-      orderBy: { name: 'asc' }
-    });
+    const categories = await ComplaintCategory.find()
+      .populate('department')
+      .populate({
+        path: 'escalations',
+        options: { sort: { level: 1 } }
+      })
+      .sort({ name: 1 });
     res.json(categories);
   } catch (error) {
     console.error('Error fetching complaint categories:', error);
@@ -123,9 +125,7 @@ export const getComplaintCategories = async (req: Request, res: Response): Promi
 
 export const getRoles = async (req: Request, res: Response): Promise<void> => {
   try {
-    const roles = await prisma.role.findMany({
-      orderBy: { code: 'asc' }
-    });
+    const roles = await Role.find().sort({ code: 1 });
     res.json(roles);
   } catch (error) {
     console.error('Error fetching roles:', error);
@@ -135,9 +135,7 @@ export const getRoles = async (req: Request, res: Response): Promise<void> => {
 
 export const getZones = async (req: Request, res: Response): Promise<void> => {
   try {
-    const zones = await prisma.zone.findMany({
-      orderBy: { name: 'asc' }
-    });
+    const zones = await Zone.find().sort({ name: 1 });
     res.json(zones);
   } catch (error) {
     console.error('Error fetching zones:', error);
@@ -147,7 +145,7 @@ export const getZones = async (req: Request, res: Response): Promise<void> => {
 
 export const getLifecycleTransitions = async (req: Request, res: Response): Promise<void> => {
   try {
-    const transitions = await prisma.ticketStateTransition.findMany();
+    const transitions = await TicketStateTransition.find();
     res.json(transitions);
   } catch (error) {
     console.error('Error fetching lifecycle transitions:', error);
@@ -158,9 +156,7 @@ export const getLifecycleTransitions = async (req: Request, res: Response): Prom
 export const getPincodeDetails = async (req: Request, res: Response): Promise<void> => {
   try {
     const { pincode } = req.params;
-    const mappings = await prisma.pincodeMapping.findMany({
-      where: { pincode }
-    });
+    const mappings = await PincodeMapping.find({ pincode });
     res.json(mappings);
   } catch (error) {
     console.error('Error fetching pincode details:', error);
@@ -175,22 +171,18 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
     
     if (!department) {
       // Return full list of all hierarchies
-      const departments = await prisma.department.findMany({
-        include: {
-          categories: {
-            include: {
-              escalations: {
-                orderBy: { level: 'asc' }
-              }
-            }
-          }
+      const departments = await Department.find().populate({
+        path: 'categories',
+        populate: {
+          path: 'escalations',
+          options: { sort: { level: 1 } }
         }
       });
       
-      const fullList = departments.map(d => ({
+      const fullList = departments.map((d: any) => ({
         department: d.name,
         slug: d.slug,
-        steps: d.categories[0]?.escalations.map(e => ({
+        steps: d.categories?.[0]?.escalations.map((e: any) => ({
           role: e.assigneeTitle,
           label: e.assigneeTitle,
           slaDays: e.slaDays
@@ -209,22 +201,11 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
     else if (deptStr.includes('water')) searchSlug = 'water-resources';
 
     // Query department by slug or exact name
-    const dept = await prisma.department.findFirst({
-      where: {
-        OR: [
-          { slug: searchSlug },
-          { name: String(department) }
-        ]
-      },
-      include: {
-        categories: {
-          include: {
-            escalations: {
-              orderBy: { level: 'asc' }
-            }
-          }
-        }
-      }
+    const dept = await Department.findOne({
+      $or: [
+        { slug: searchSlug },
+        { name: String(department) }
+      ]
     });
 
     const categoryQuery = req.query.category as string;
@@ -234,15 +215,20 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    let targetCategory = dept.categories[0];
+    const categories = await ComplaintCategory.find({ departmentId: dept._id }).populate({
+      path: 'escalations',
+      options: { sort: { level: 1 } }
+    });
+
+    let targetCategory = categories[0];
     if (categoryQuery) {
-      const found = dept.categories.find(c => c.name.toLowerCase() === String(categoryQuery).toLowerCase().trim() || c.id === categoryQuery);
+      const found = categories.find(c => c.name.toLowerCase() === String(categoryQuery).toLowerCase().trim() || c.id === categoryQuery);
       if (found) {
         targetCategory = found;
       }
     }
 
-    const steps = targetCategory?.escalations.map(e => ({
+    const steps = targetCategory?.escalations?.map((e: any) => ({
       role: e.assigneeTitle,
       label: e.assigneeTitle,
       slaDays: e.slaDays
@@ -263,26 +249,17 @@ export const getHierarchy = async (req: Request, res: Response): Promise<void> =
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
   try {
     const { role, departmentId, jurisdictionId } = req.query;
-    let query: any = {};
+    const query: any = {};
     if (role) query.role = role;
     if (departmentId) query.departmentId = departmentId;
     if (jurisdictionId) query.jurisdictionId = jurisdictionId;
 
-    const employees = await prisma.employee.findMany({
-      where: query,
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        phone: true,
-        role: true,
-        category: true
-      }
-    });
+    const employees = await Employee.find(query)
+      .select('id name username phone role category jurisdictionId')
+      .populate('jurisdiction', 'name');
     res.json(employees);
   } catch (error) {
     console.error('Error fetching employees:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-

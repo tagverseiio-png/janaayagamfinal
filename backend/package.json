@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "tsx src/seed.ts",
-    "seed:tn": "tsx src/seedJurisdictions.ts",
+    "seed": "tsx src/seedUsers.ts",
     "seed:users": "tsx src/seedUsers.ts"
   },
   "keywords": [],
@@ -14,12 +13,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.10.0",
     "multer": "^2.1.1"
   },
   "devDependencies": {
@@ -29,7 +28,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/node": "^25.9.2",
-    "prisma": "^5.22.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
