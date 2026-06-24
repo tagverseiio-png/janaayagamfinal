@@ -16,6 +16,7 @@ import CmPortal from './portals/cm/CmPortal';
 import MlaPortal from './portals/mla/MlaPortal';
 import MinisterPortal from './portals/minister/MinisterPortal';
 import OfficerPortal from './portals/officer/OfficerPortal';
+import OfficerProfile from './portals/officer/OfficerProfile';
 import PublicPortal from './portals/public/PublicPortal';
 
 // Route Guard for Protected Routes
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/track" element={<TrackTicket />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/officer/*" element={<OfficerPortal />} />
+          <Route path="/official/:id" element={<EmployeeProtectedRoute><OfficerProfile /></EmployeeProtectedRoute>} />
           <Route path="/public/*" element={<PublicPortal />} />
 
           {/* Fallback to Login page */}

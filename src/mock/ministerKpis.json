@@ -1,13 +1,18 @@
 {
-  "totalGrievances": 14250,
+  "totalGrievances": 45218,
   "prevPct": 12,
-  "resolved": 11800,
-  "resolutionRate": 82.8,
-  "activeOutages": 145,
-  "householdsAffected": 32000,
+  "resolved": 38450,
+  "resolutionRate": 85,
+  "activeOutages": 124,
+  "householdsAffected": 45000,
   "criticalEscalations": 89,
   "avgRestorationHrs": 4.2,
   "restorationTrend": "down",
   "deptScore": 76,
-  "scoreStatus": "yellow"
+  "scoreStatus": "yellow",
+  "escalatedToCm": 15,
+  "avgResolutionTime": "4.2",
+  "efficiencyScore": 88,
+  "criticalIncidents": 8,
+  "pendingReview": 1420
 }

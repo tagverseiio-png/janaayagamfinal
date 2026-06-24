@@ -34,7 +34,12 @@ export default function TicketCard({ ticket, role, onAction }) {
  if (onAction) {
  onAction(id, 'view');
  }
- };
+ };  const priorityBadgeConfig = {
+    'P1': { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
+    'P2': { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
+    'P3': { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' },
+  };
+  const pConf = priorityBadgeConfig[ticket.priority] || priorityBadgeConfig['P3'];
 
  return (
  <div 
@@ -54,7 +59,7 @@ export default function TicketCard({ ticket, role, onAction }) {
     </div>
   )}
 
- {/* Row 1: Category Icon + Name (left) + Status Badge (right) */}
+ {/* Row 1: Category Icon + Name (left) + Priority/Status Badge (right) */}
  <div className="flex justify-between items-center w-full">
  <div className="flex items-center gap-2">
  <CategoryIcon category={category} />
@@ -65,7 +70,14 @@ export default function TicketCard({ ticket, role, onAction }) {
  #{id}
  </span>
  </div>
- <StatusBadge status={status} />
+ <div className="flex items-center gap-2">
+  {ticket.priority && (
+    <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest border ${pConf.bg} ${pConf.text} ${pConf.border}`}>
+      {ticket.priority}
+    </span>
+  )}
+  <StatusBadge status={status} />
+ </div>
  </div>
 
  {/* Row 2: Description (2 lines max, ellipsis) */}

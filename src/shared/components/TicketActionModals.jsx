@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getNextRole } from '../../data/hierarchyData';
 
 import { getMediaUrl } from '../../services/api';
+import { departments } from '../../mock';
 
 export default function TicketActionModals({ 
   activeTicket, 
@@ -21,6 +22,7 @@ export default function TicketActionModals({
   const [showGeoCamera, setShowGeoCamera] = useState(false);
   const [agentName, setAgentName] = useState('');
   const [assignmentNotes, setAssignmentNotes] = useState('');
+  const [targetDept, setTargetDept] = useState('');
 
   // Dummy coordinates for simulation
   const resolutionLat = '12.9784';
@@ -64,6 +66,17 @@ export default function TicketActionModals({
     setModalState(null);
     setAgentName('');
     setAssignmentNotes('');
+  };
+
+  const handleReassignSubmit = (e) => {
+    if (e) e.preventDefault();
+    onSubmitAction(activeTicket.id, 'reassign', {
+      target_department: targetDept,
+      reassign_notes: escalationNotes
+    });
+    setModalState(null);
+    setTargetDept('');
+    setEscalationNotes('');
   };
 
   const handleEscalateConfirm = () => {
@@ -161,6 +174,34 @@ export default function TicketActionModals({
                     <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">{activeTicket.status}</p>
                   </div>
                 </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Priority Level</span>
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={activeTicket.priority || 'P3'}
+                      onChange={(e) => onSubmitAction(activeTicket.id, 'set_priority', { priority: e.target.value })}
+                      className="bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 p-2 focus:outline-none focus:border-[#8B1A1A]"
+                    >
+                      <option value="P1">P1 - Critical</option>
+                      <option value="P2">P2 - High</option>
+                      <option value="P3">P3 - Standard</option>
+                    </select>
+                    <span className="text-[10px] font-bold text-slate-400">
+                      ({activeTicket.prioritySource === 'auto' ? 'auto' : `set by ${localStorage.getItem('jn_emp_name') || 'officer'}`})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                   <button 
+                     onClick={() => setModalState('reassign')}
+                     className="text-[10px] font-black uppercase text-indigo-600 border border-indigo-200 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                   >
+                     Reassign Department
+                   </button>
+                </div>
+
               </div>
 
               <div className="pt-2">
@@ -405,6 +446,79 @@ export default function TicketActionModals({
                   Yes, Escalate
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Reassign Modal */}
+      <AnimatePresence>
+        {modalState === 'reassign' && (
+          <div className="fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4"
+            >
+              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                <h4 className="font-black text-indigo-600 text-base uppercase">
+                  Reassign Department
+                </h4>
+                <button onClick={() => setModalState(null)}>
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+
+              <form onSubmit={handleReassignSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block">
+                    Target Department
+                  </label>
+                  <select
+                    required
+                    value={targetDept}
+                    onChange={(e) => setTargetDept(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm"
+                  >
+                    <option value="" disabled>Select a department...</option>
+                    {departments.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block">
+                    Reassignment Reason
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={escalationNotes}
+                    onChange={(e) => setEscalationNotes(e.target.value)}
+                    placeholder="Why is this being reassigned?"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm resize-none"
+                  ></textarea>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setModalState(null); setTargetDept(''); setEscalationNotes(''); }}
+                    className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-extrabold text-xs uppercase transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!targetDept || !escalationNotes.trim()}
+                    className="flex-1 py-3 rounded-xl bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase transition-all shadow-md"
+                  >
+                    Confirm Reassign
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

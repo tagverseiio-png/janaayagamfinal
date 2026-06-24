@@ -168,56 +168,7 @@ export default function EscalateCm() {
 
  </form>
 
- {/* History table */}
- <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
- <h4 className="font-extrabold text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2 pl-1">
- <History className="w-5 h-5 text-slate-700" />
- Past Chief Minister Escalations
- </h4>
 
- <div className="overflow-x-auto rounded-2xl border">
- <table className="w-full text-left border-collapse text-xs">
- <thead>
- <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
- <th className="px-5 py-3">ID</th>
- <th className="px-4 py-3">Urgency</th>
- <th className="px-4 py-3">Mandate Justification</th>
- <th className="px-5 py-3">Status</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100 text-xs font-bold text-slate-700 ">
- {history.length === 0 ? (
- <tr>
- <td colSpan={4} className="px-5 py-6 text-center text-slate-400 font-medium italic">
- No past CM escalations found
- </td>
- </tr>
- ) : (
- history.map(row => (
- <tr key={row.id} className="hover:bg-slate-50/50 ">
- <td className="px-5 py-4 font-mono text-slate-800 ">#{row.id}</td>
- <td className="px-4 py-4">
- <span className={`px-2 py-0.5 rounded font-black text-[9px] uppercase ${
- row.urgency === 'Emergency' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
- }`}>
- {row.urgency}
- </span>
- </td>
- <td className="px-4 py-4 max-w-[240px] truncate font-medium text-slate-600 ">
- {row.justification}
- </td>
- <td className="px-5 py-4 whitespace-nowrap">
- <span className="px-2 py-0.5 rounded font-black text-[9px] uppercase bg-slate-100 text-slate-650 ">
- {row.status}
- </span>
- </td>
- </tr>
- ))
- )}
- </tbody>
- </table>
- </div>
- </div>
 
  {/* CONFIRMATION MODAL: BEFORE CM ESCALATION DISPATCH */}
  <AnimatePresence>

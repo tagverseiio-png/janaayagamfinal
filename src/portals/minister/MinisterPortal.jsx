@@ -9,6 +9,7 @@ import MinisterDashboard from './MinisterDashboard';
 import MinisterDeptView from './MinisterDeptView';
 import CrisisMode from './CrisisMode';
 import EscalateCm from './EscalateCm';
+import Analytics from './Analytics';
 
 const DummyPage = ({ title }) => (
   <div className="flex items-center justify-center h-[60vh] bg-white rounded-2xl border border-slate-200">
@@ -153,8 +154,8 @@ export default function MinisterPortal() {
           <div className="max-w-[1500px] mx-auto">
             <Routes>
               <Route path="/" element={<MinisterDashboard />} />
-              <Route path="/dept" element={<MinisterDeptView />} />
-              <Route path="/analytics" element={<DummyPage title="Analytics" />} />
+              <Route path="/portfolios" element={<MinisterDeptView />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/crisis" element={<CrisisMode />} />
               <Route path="/escalate" element={<EscalateCm />} />
               <Route path="/reports" element={<DummyPage title="Reports" />} />

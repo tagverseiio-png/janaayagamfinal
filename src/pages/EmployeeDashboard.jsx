@@ -8,6 +8,8 @@ import TicketCard from '../shared/components/TicketCard';
 import TicketActionModals from '../shared/components/TicketActionModals';
 import api from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 export default function EmployeeDashboard() {
   const { t, lang, toggleLang } = useLanguage();
@@ -125,13 +127,14 @@ export default function EmployeeDashboard() {
 
   const handleModalSubmit = async (id, actionType, payload = {}) => {
     try {
-      let newStatus = 'Open';
+      const ticketToUpdate = tickets.find(t => t.id === id);
+      const dbId = ticketToUpdate ? ticketToUpdate.dbId : id;
+      
+      let newStatus = ticketToUpdate ? ticketToUpdate.status : 'Open';
       if (actionType === 'assign') newStatus = 'In Progress';
       if (actionType === 'resolve') newStatus = 'Resolved';
       if (actionType === 'escalate') newStatus = 'Escalated';
-
-      const ticketToUpdate = tickets.find(t => t.id === id);
-      const dbId = ticketToUpdate ? ticketToUpdate.dbId : id;
+      if (actionType === 'reassign') newStatus = 'Assigned';
 
       await api.patch(`/tickets/${dbId}`, { status: newStatus, ...payload });
       toast.success(tLabel(`Ticket action submitted successfully`, `புகார் நடவடிக்கை சமர்ப்பிக்கப்பட்டது`));
@@ -780,6 +783,7 @@ export default function EmployeeDashboard() {
     const menuItems = [
       { id: 'dashboard', label: tLabel('DASHBOARD', 'டாஷ்போர்டு'), icon: <BarChart2 /> },
       { id: 'tickets', label: tLabel('TICKET INBOX', 'புகார் பெட்டி'), icon: <FileText /> },
+      { id: 'map', label: tLabel('AREA MAP', 'பகுதி வரைபடம்'), icon: <MapPin /> },
       { id: 'reports', label: tLabel('REPORTS', 'அறிக்கைகள்'), icon: <List /> },
     ];
 
@@ -868,6 +872,48 @@ export default function EmployeeDashboard() {
     </div>
   );
 
+  const renderMap = () => (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 h-[calc(100vh-100px)] flex flex-col relative z-0">
+      <h2 className="text-xl font-black text-[#8B1A1A] uppercase tracking-wide flex items-center gap-2 mb-4 shrink-0">
+        <MapPin className="w-6 h-6" /> {tLabel('Area Map View', 'பகுதி வரைபடம்')}
+      </h2>
+      <div className="flex-1 rounded-xl overflow-hidden border border-slate-200 relative z-0">
+        <MapContainer center={[13.0827, 80.2707]} zoom={12} style={{ height: '100%', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; OpenStreetMap contributors'
+          />
+          {inboxTickets.map(ticket => {
+            if (!ticket.lat || !ticket.lng) return null;
+            const pConf = {
+              'P1': 'red',
+              'P2': 'orange',
+              'P3': 'gray'
+            }[ticket.priority] || 'gray';
+            
+            return (
+              <CircleMarker 
+                key={ticket.id}
+                center={[ticket.lat, ticket.lng]}
+                radius={8}
+                pathOptions={{ color: pConf, fillColor: pConf, fillOpacity: 0.7 }}
+                eventHandlers={{
+                  click: () => handleAction(ticket.id, 'view')
+                }}
+              >
+                <Popup>
+                  <div className="text-sm font-bold">{ticket.category}</div>
+                  <div className="text-xs">{ticket.description}</div>
+                  <div className="text-xs font-black mt-1" style={{color: pConf}}>{ticket.priority || 'P3'}</div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
+        </MapContainer>
+      </div>
+    </div>
+  );
+
   const renderReports = () => (
     <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 text-center mt-10 max-w-3xl mx-auto">
       <List className="w-16 h-16 text-[#8B1A1A] mx-auto mb-4" />
@@ -910,6 +956,7 @@ export default function EmployeeDashboard() {
             >
               {activeMenu === 'dashboard' && renderDashboard()}
               {activeMenu === 'tickets' && renderTickets()}
+              {activeMenu === 'map' && renderMap()}
               {activeMenu === 'reports' && renderReports()}
             </motion.div>
           </AnimatePresence>

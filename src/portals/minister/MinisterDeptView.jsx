@@ -139,27 +139,6 @@ export default function MinisterDeptView() {
         </p>
       </div>
 
-      {/* Portfolio Selector */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">
-          Select Department Portfolio
-        </span>
-        <div className="flex gap-2 overflow-x-auto p-1 hide-scrollbar bg-slate-100 rounded-2xl border">
-          {departments.map(dept => (
-            <button
-              key={dept}
-              onClick={() => setSelectedDept(dept)}
-              className={`px-4 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
-                selectedDept === dept
-                  ? 'bg-[#9a0002] text-white shadow-sm'
-                  : 'text-slate-600 '
-              }`}
-            >
-              {t(`categories.${dept}`)}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
         <div className="relative w-full max-w-md">

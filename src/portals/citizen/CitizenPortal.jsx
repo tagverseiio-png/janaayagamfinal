@@ -204,7 +204,7 @@ export default function CitizenPortal() {
         </main>
 
         {/* ══ 3. FIXED BOTTOM TAB BAR ══ */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[470px] bg-white border-t sm:border-x border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
           
           {/* Tab 1: Live Feed */}
           <button

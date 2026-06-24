@@ -8,11 +8,13 @@
     "status": "SUBMITTED",
     "photoUrl": "https://images.unsplash.com/photo-1544256718-3bcf237f3974",
     "lat": 13.0336,
-    "lng": 80.2680,
+    "lng": 80.268,
     "assignedOfficerId": null,
     "claimCount": 2,
     "createdAt": "2026-06-21T08:30:00Z",
-    "updatedAt": "2026-06-21T08:30:00Z"
+    "updatedAt": "2026-06-21T08:30:00Z",
+    "priority": "P1",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-002",
@@ -22,12 +24,14 @@
     "categoryId": "cat_health_1",
     "status": "ASSIGNED",
     "photoUrl": "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b",
-    "lat": 13.0350,
-    "lng": 80.2650,
+    "lat": 13.035,
+    "lng": 80.265,
     "assignedOfficerId": "off_health_dsi_121",
     "claimCount": 5,
     "createdAt": "2026-06-21T09:15:00Z",
-    "updatedAt": "2026-06-21T09:45:00Z"
+    "updatedAt": "2026-06-21T09:45:00Z",
+    "priority": "P3",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-003",
@@ -37,12 +41,14 @@
     "categoryId": "cat_health_2",
     "status": "IN_PROGRESS",
     "photoUrl": "https://images.unsplash.com/photo-1621213032595-654dbda50117",
-    "lat": 13.0380,
-    "lng": 80.2700,
+    "lat": 13.038,
+    "lng": 80.27,
     "assignedOfficerId": "off_health_dsi_122",
     "claimCount": 12,
     "createdAt": "2026-06-20T14:20:00Z",
-    "updatedAt": "2026-06-21T10:00:00Z"
+    "updatedAt": "2026-06-21T10:00:00Z",
+    "priority": "P1",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-004",
@@ -57,7 +63,9 @@
     "assignedOfficerId": "off_elec_aae_121",
     "claimCount": 8,
     "createdAt": "2026-06-19T11:00:00Z",
-    "updatedAt": "2026-06-20T15:30:00Z"
+    "updatedAt": "2026-06-20T15:30:00Z",
+    "priority": "P2",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-005",
@@ -67,12 +75,14 @@
     "categoryId": "cat_elec_4",
     "status": "CLOSED",
     "photoUrl": "https://images.unsplash.com/photo-1508614589041-895b88991e3e",
-    "lat": 13.0400,
-    "lng": 80.2660,
+    "lat": 13.04,
+    "lng": 80.266,
     "assignedOfficerId": "off_elec_aae_123",
     "claimCount": 1,
     "createdAt": "2026-06-18T09:00:00Z",
-    "updatedAt": "2026-06-19T16:00:00Z"
+    "updatedAt": "2026-06-19T16:00:00Z",
+    "priority": "P3",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-006",
@@ -83,11 +93,13 @@
     "status": "SUBMITTED",
     "photoUrl": "https://images.unsplash.com/photo-1521484343169-2f22b7a2d8a4",
     "lat": 13.0375,
-    "lng": 80.2690,
+    "lng": 80.269,
     "assignedOfficerId": null,
     "claimCount": 1,
     "createdAt": "2026-06-22T07:15:00Z",
-    "updatedAt": "2026-06-22T07:15:00Z"
+    "updatedAt": "2026-06-22T07:15:00Z",
+    "priority": "P3",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-007",
@@ -97,12 +109,14 @@
     "categoryId": "cat_elec_3",
     "status": "ASSIGNED",
     "photoUrl": "https://images.unsplash.com/photo-1498677231914-50e50e93ebcd",
-    "lat": 13.0330,
+    "lat": 13.033,
     "lng": 80.2685,
     "assignedOfficerId": "off_elec_aae_121",
     "claimCount": 3,
     "createdAt": "2026-06-21T18:00:00Z",
-    "updatedAt": "2026-06-21T19:00:00Z"
+    "updatedAt": "2026-06-21T19:00:00Z",
+    "priority": "P3",
+    "prioritySource": "auto"
   },
   {
     "id": "TKT-2026-008",
@@ -112,11 +126,13 @@
     "categoryId": "cat_health_3",
     "status": "RESOLVED",
     "photoUrl": "https://images.unsplash.com/photo-1481277542470-605612bd2d61",
-    "lat": 13.0410,
+    "lat": 13.041,
     "lng": 80.2655,
     "assignedOfficerId": "off_health_hi",
     "claimCount": 2,
     "createdAt": "2026-06-19T08:00:00Z",
-    "updatedAt": "2026-06-20T10:00:00Z"
+    "updatedAt": "2026-06-20T10:00:00Z",
+    "priority": "P3",
+    "prioritySource": "auto"
   }
 ]

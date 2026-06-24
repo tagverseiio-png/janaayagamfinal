@@ -263,7 +263,8 @@ export default function CivicFeed() {
   };
 
   return (
-    <div className="pb-24 overflow-x-hidden select-none">
+    <div className="pb-24 overflow-x-hidden select-none bg-white min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-[470px] flex flex-col">
       
       {/* ══ 1. PAGE HEADER & LOCATION STRIP ══ */}
       <div className="bg-white sticky top-0 z-50 border-b border-[#DDE1E7] shrink-0">
@@ -291,7 +292,7 @@ export default function CivicFeed() {
 
       </div>
 
-      {/* ── CM BROADCAST HIGH-PRIORITY BANNER ── */}
+      {/* ── 2. CM ANNOUNCEMENT BANNER ── */}
       {announcements.length > 0 && showBanner && (
         <div className="w-full bg-[#0055aa] text-white p-4 shadow-sm relative overflow-hidden animate-in slide-in-from-top duration-500 shrink-0">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-24 bg-white/10 rounded-full blur-xl"></div>
@@ -324,22 +325,22 @@ export default function CivicFeed() {
       )}
 
       {/* ══ 3. SORT ROW ══ */}
-      <div className="flex justify-between items-center px-4 py-2 shrink-0 select-none">
-        <span className="text-[12px] text-slate-400 font-extrabold uppercase">
+      <div className="flex justify-between items-center px-4 py-3 shrink-0 select-none bg-white border-b border-slate-100">
+        <span className="text-[13px] text-slate-500 font-bold">
           {processedItems.length} {tLabel("issues in your area", "சிக்கல்கள் உங்கள் பகுதியில்")}
         </span>
 
         <button
           onClick={toggleSortOption}
-          className="bg-white border border-[#DDE1E7] px-3 py-1 rounded-[12px] text-[11px] font-black text-slate-650 flex items-center gap-1 shadow-xs cursor-pointer active:bg-slate-50"
+          className="text-[13px] font-bold text-slate-800 flex items-center gap-1 cursor-pointer hover:opacity-70"
         >
-          <span>🔃</span>
-          <span>{sortOption === 'Recent' ? tLabel('Recent ▼', 'சமீபத்திய ▼') : sortOption === 'Most Upvoted' ? tLabel('Upvoted ▼', 'வாக்குகள் ▼') : tLabel('Nearby ▼', 'அருகிலுள்ள ▼')}</span>
+          <span>{sortOption === 'Recent' ? tLabel('Recent', 'சமீபத்திய') : sortOption === 'Most Upvoted' ? tLabel('Upvoted', 'வாக்குகள்') : tLabel('Nearby', 'அருகிலுள்ள')}</span>
+          <Sliders className="w-3.5 h-3.5 ml-1" />
         </button>
       </div>
 
       {/* ══ 4. FEED CARDS ══ */}
-      <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1 select-none">
+      <div className="flex flex-col select-none bg-slate-50 sm:bg-white pb-8">
         {processedItems.map(item => {
           const hasClaimed = !!claimsState[item.id];
           const displayClaims = item.claimCount;
@@ -348,10 +349,33 @@ export default function CivicFeed() {
             <div 
               key={item.id}
               id={`feed-card-${item.id}`}
-              className="bg-white border border-[#DDE1E7] rounded-[24px] overflow-hidden flex flex-col shadow-sm h-full"
+              className="bg-white border-b sm:border border-[#DDE1E7] sm:rounded-[8px] sm:mb-6 overflow-hidden flex flex-col"
             >
-              {/* Photo (social-media style) */}
-              <div className="relative w-full aspect-video md:aspect-square bg-slate-100 group">
+              {/* POST HEADER */}
+              <div className="flex items-center justify-between p-3">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                       <User className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[14px] font-bold text-slate-900 leading-none tracking-tight">{item.category}</span>
+                       <span className="text-[12px] text-slate-500 mt-0.5">{item.ward}</span>
+                    </div>
+                 </div>
+                 {/* Status pill right side */}
+                 <span className={`text-[10px] font-bold px-2.5 py-1 rounded-sm uppercase tracking-wider ${
+                    item.status === 'RESOLVED' || item.status === 'CLOSED'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : item.status === 'ESCALATED'
+                        ? 'bg-orange-50 text-orange-700'
+                        : 'bg-red-50 text-[#8B1A1A]'
+                  }`}>
+                    {item.status}
+                 </span>
+              </div>
+
+              {/* POST IMAGE */}
+              <div className="relative w-full aspect-square bg-slate-100 border-y border-[#DDE1E7]/50">
                 {item.photo ? (
                   <img 
                     src={getMediaUrl(item.photo)} 
@@ -361,87 +385,42 @@ export default function CivicFeed() {
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400">
                     <svg className="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">No photo</span>
                   </div>
                 )}
-                
-                {/* Category & Ward Overlays */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                  <span className="bg-white/90 backdrop-blur-md text-[#8B1A1A] text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg border border-white/20 uppercase tracking-widest">
-                    {item.category}
-                  </span>
-                  <span className="bg-black/40 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg border border-white/10 uppercase tracking-widest flex items-center gap-1.5 w-fit">
-                    <MapPin className="w-3 h-3 text-white" />
-                    {item.ward}
-                  </span>
-                </div>
-
-                {/* Status Chip */}
-                <div className="absolute top-4 right-4">
-                  <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border-2 uppercase tracking-widest shadow-lg ${
-                    item.status === 'RESOLVED' || item.status === 'CLOSED'
-                      ? 'bg-emerald-500/90 text-white border-emerald-400/50'
-                      : item.status === 'ESCALATED'
-                        ? 'bg-orange-500/90 text-white border-orange-400/50'
-                        : 'bg-[#8B1A1A]/90 text-white border-red-400/50'
-                  }`}>
-                    {item.status === 'ESCALATED' && item.assignedTo?.role
-                      ? `ESCALATED — ${item.assignedTo.role}`
-                      : item.status}
-                  </span>
-                </div>
               </div>
 
-              {/* CARD BODY */}
-              <div className="p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <h4 className="text-lg font-black text-slate-800 leading-tight">
+              {/* POST ACTIONS & BODY */}
+              <div className="p-3 space-y-2">
+                 {/* Action Icons */}
+                 <div className="flex items-center gap-4 py-1">
+                    <button onClick={() => handleClaimToggle(item.id)} className="hover:opacity-70 transition-opacity">
+                       <ThumbsUp className={`w-6 h-6 ${hasClaimed ? 'fill-[#8B1A1A] text-[#8B1A1A]' : 'text-slate-800'}`} />
+                    </button>
+                    <button onClick={() => handleShare(item.title, item.ticketNumber)} className="hover:opacity-70 transition-opacity">
+                       <Share2 className="w-6 h-6 text-slate-800" />
+                    </button>
+                 </div>
+                 
+                 {/* Likes/Claims count */}
+                 <div className="text-[14px] font-bold text-slate-900">
+                    {displayClaims} claims
+                 </div>
+
+                 {/* Caption */}
+                 <div className="text-[14px] text-slate-900 leading-snug">
+                    <span className="font-bold mr-2">{item.ticketNumber}</span>
                     {item.title}
-                  </h4>
-                  <p className="text-sm font-bold text-slate-500 leading-relaxed line-clamp-2">
+                 </div>
+                 
+                 <div className="text-[14px] text-slate-600 line-clamp-2 leading-snug">
                     {item.desc}
-                  </p>
-                </div>
+                 </div>
 
-                {/* Unified Claim Stats */}
-                <div className="flex items-center gap-2 py-1">
-                   <div className="flex -space-x-2">
-                      {[1,2,3].map(i => (
-                        <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
-                           <User className="w-3.5 h-3.5 text-slate-400" />
-                        </div>
-                      ))}
-                   </div>
-                   <span className="text-xs font-black text-[#8B1A1A]">
-                      {displayClaims} {tLabel('Citizens Claimed', 'குடிமக்கள் உரிமை கோரினர்')}
-                   </span>
-                </div>
-
-                {/* ACTION BUTTONS ROW */}
-                <div className="flex items-center gap-3 w-full">
-                  {/* Claim Button */}
-                  <button
-                    onClick={() => handleClaimToggle(item.id)}
-                    className={`flex items-center justify-center gap-2 flex-1 h-12 rounded-2xl font-black text-sm transition-all shadow-md active:scale-[0.98] ${
-                      hasClaimed 
-                        ? 'bg-red-50 text-[#8B1A1A] border border-red-100 cursor-default' 
-                        : 'bg-[#8B1A1A] text-white hover:bg-[#6b1414]'
-                    }`}
-                  >
-                    <ThumbsUp className={`w-4 h-4 ${hasClaimed ? 'fill-[#8B1A1A]' : ''}`} />
-                    <span>{hasClaimed ? tLabel('Claimed', 'உரிமை கோரப்பட்டது') : tLabel('Claim Issue', 'உரிமை கோரு')}</span>
-                  </button>
-
-                  {/* Share button */}
-                  <button
-                    onClick={() => handleShare(item.title, item.ticketNumber)}
-                    className="flex items-center justify-center gap-2 w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all border border-slate-200"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                </div>
+                 {/* Time */}
+                 <div className="text-[11px] text-slate-500 uppercase tracking-wide mt-2">
+                    {item.time}
+                 </div>
               </div>
-
             </div>
           );
         })}
@@ -470,6 +449,7 @@ export default function CivicFeed() {
         )}
       </div>
 
+      </div>
     </div>
   );
 }
