@@ -263,83 +263,87 @@ export default function CivicFeed() {
   };
 
   return (
-    <div className="pb-24 overflow-x-hidden select-none bg-white min-h-screen flex flex-col items-center">
-      <div className="w-full max-w-[470px] flex flex-col">
+    <div className="w-full bg-[#F0EBE3] min-h-screen font-sans">
       
-      {/* ══ 1. PAGE HEADER & LOCATION STRIP ══ */}
-      <div className="bg-white sticky top-0 z-50 border-b border-[#DDE1E7] shrink-0">
-        <div className="h-14 px-4 flex justify-between items-center w-full">
-          {/* Back button left arrow inside bar */}
-          <button
-            onClick={() => navigate('/citizen')}
-            className="w-11 h-11 flex items-center justify-start text-[#8B1A1A] cursor-pointer"
-            title={tLabel("Back to Home", "முகப்புக்குத் திரும்பு")}
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
+      {/* ══ STICKY TOP BLOCK: header + CM banner + sort row ══ */}
+      <div className="sticky top-[52px] z-40 w-full shadow-sm">
 
-          <h2 className="text-base font-black text-slate-800 tracking-wide">
-            {tLabel("Civic Feed", "குடிமக்கள் ஊட்டம்")}
-          </h2>
-
-          <button 
-            onClick={toggleSortOption}
-            className="w-11 h-11 flex items-center justify-end text-slate-400 hover:text-slate-600"
-          >
-            <Sliders className="w-5 h-5" />
-          </button>
-        </div>
-
-      </div>
-
-      {/* ── 2. CM ANNOUNCEMENT BANNER ── */}
-      {announcements.length > 0 && showBanner && (
-        <div className="w-full bg-[#0055aa] text-white p-4 shadow-sm relative overflow-hidden animate-in slide-in-from-top duration-500 shrink-0">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-24 bg-white/10 rounded-full blur-xl"></div>
-          <div className="flex items-start gap-3 relative z-10">
-            <div className="p-2 bg-white/20 rounded-full shrink-0">
-              <Radio className="w-5 h-5 text-white animate-pulse" />
-            </div>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded border border-white/10">
-                  CM Office Broadcast
-                </span>
-                <span className="text-[9px] font-bold opacity-60">
-                  {new Date(announcements[0].createdAt).toLocaleString()}
-                </span>
-              </div>
-              <h3 className="text-sm font-black leading-tight">{announcements[0].title}</h3>
-              <p className="text-[11px] font-bold leading-normal opacity-90 line-clamp-2">
-                {announcements[0].text}
-              </p>
-            </div>
-            <button 
-              onClick={() => setShowBanner(false)}
-              className="p-1 hover:bg-white/10 rounded-lg transition-colors shrink-0 cursor-pointer"
+        {/* 1. PAGE HEADER */}
+        <div className="bg-white border-b border-[#DDE1E7] w-full">
+          <div className="h-14 px-4 flex justify-between items-center w-full">
+            <button
+              onClick={() => navigate('/citizen')}
+              className="w-11 h-11 flex items-center justify-start text-[#8B1A1A] cursor-pointer"
+              title={tLabel("Back to Home", "முகப்புக்குத் திரும்பு")}
             >
-              <X className="w-5 h-5" />
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-base font-black text-slate-800 tracking-wide">
+              {tLabel("Civic Feed", "குடிமக்கள் ஊட்டம்")}
+            </h2>
+
+            <button 
+              onClick={toggleSortOption}
+              className="w-11 h-11 flex items-center justify-end text-slate-400 hover:text-slate-600"
+            >
+              <Sliders className="w-5 h-5" />
             </button>
           </div>
         </div>
-      )}
 
-      {/* ══ 3. SORT ROW ══ */}
-      <div className="flex justify-between items-center px-4 py-3 shrink-0 select-none bg-white border-b border-slate-100">
-        <span className="text-[13px] text-slate-500 font-bold">
-          {processedItems.length} {tLabel("issues in your area", "சிக்கல்கள் உங்கள் பகுதியில்")}
-        </span>
+        {/* 2. CM ANNOUNCEMENT BANNER — medium size */}
+        {announcements.length > 0 && showBanner && (
+          <div className="w-full bg-[#0055aa] text-white px-4 py-3 relative overflow-hidden shrink-0">
+            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="p-1.5 bg-white/20 rounded-full shrink-0">
+                <Radio className="w-4 h-4 text-white animate-pulse" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[8px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded border border-white/10 shrink-0">
+                    CM Broadcast
+                  </span>
+                  <span className="text-[9px] font-bold opacity-60 truncate">
+                    {new Date(announcements[0].createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-[12px] font-black leading-snug">{announcements[0].title}</p>
+                <p className="text-[10px] font-semibold opacity-80 leading-snug line-clamp-1 mt-0.5">
+                  {announcements[0].text}
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowBanner(false)}
+                className="p-1 hover:bg-white/10 rounded transition-colors shrink-0 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
-        <button
-          onClick={toggleSortOption}
-          className="text-[13px] font-bold text-slate-800 flex items-center gap-1 cursor-pointer hover:opacity-70"
-        >
-          <span>{sortOption === 'Recent' ? tLabel('Recent', 'சமீபத்திய') : sortOption === 'Most Upvoted' ? tLabel('Upvoted', 'வாக்குகள்') : tLabel('Nearby', 'அருகிலுள்ள')}</span>
-          <Sliders className="w-3.5 h-3.5 ml-1" />
-        </button>
-      </div>
+      </div>{/* end sticky top block */}
 
-      {/* ══ 4. FEED CARDS ══ */}
+      {/* ══ 4. FEED CARDS — mobile constrained (470px centered) ══ */}
+      <div className="flex justify-center w-full bg-slate-50">
+      <div className="w-full max-w-[470px] sm:border-x border-slate-200/60 sm:shadow-2xl">
+
+        {/* Sort row — scrolls with feed */}
+        <div className="flex justify-between items-center px-4 py-2.5 select-none bg-white border-b border-slate-100 w-full">
+          <span className="text-[12px] text-slate-500 font-bold">
+            {processedItems.length} {tLabel("issues in your area", "சிக்கல்கள் உங்கள் பகுதியில்")}
+          </span>
+          <button
+            onClick={toggleSortOption}
+            className="text-[12px] font-bold text-slate-800 flex items-center gap-1 cursor-pointer hover:opacity-70"
+          >
+            <span>{sortOption === 'Recent' ? tLabel('Recent', 'சமீபத்திய') : sortOption === 'Most Upvoted' ? tLabel('Upvoted', 'வாக்குகள்') : tLabel('Nearby', 'அருகிலுள்ள')}</span>
+            <Sliders className="w-3 h-3 ml-0.5" />
+          </button>
+        </div>
+
       <div className="flex flex-col select-none bg-slate-50 sm:bg-white pb-8">
         {processedItems.map(item => {
           const hasClaimed = !!claimsState[item.id];
@@ -449,7 +453,8 @@ export default function CivicFeed() {
         )}
       </div>
 
-      </div>
+      </div>{/* end max-w-[470px] */}
+      </div>{/* end flex justify-center */}
     </div>
   );
 }

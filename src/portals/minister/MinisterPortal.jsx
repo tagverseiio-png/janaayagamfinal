@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import { 
   Zap, BarChart2, ShieldAlert, AlertTriangle, LayoutDashboard,
-  User, LogOut, Bell, Clock as ClockIcon
+  User, LogOut, Bell, Clock as ClockIcon, FileText
 } from 'lucide-react';
 
 import MinisterDashboard from './MinisterDashboard';
@@ -10,6 +10,7 @@ import MinisterDeptView from './MinisterDeptView';
 import CrisisMode from './CrisisMode';
 import EscalateCm from './EscalateCm';
 import Analytics from './Analytics';
+import MinisterReports from './MinisterReports';
 
 const DummyPage = ({ title }) => (
   <div className="flex items-center justify-center h-[60vh] bg-white rounded-2xl border border-slate-200">
@@ -34,12 +35,12 @@ export default function MinisterPortal() {
   const isHealth = deptName.toLowerCase().includes('health') || deptName.toLowerCase().includes('sanit');
 
   const sidebarLinks = [
-    { label: 'Dashboard', path: '/minister', end: true, icon: <LayoutDashboard className="w-5 h-5" /> },
-    { label: 'Department Tickets', path: '/minister/dept', icon: <ShieldAlert className="w-5 h-5" /> },
-    { label: 'Analytics', path: '/minister/analytics', icon: <BarChart2 className="w-5 h-5" /> },
-    { label: 'Crisis Mode', path: '/minister/crisis', icon: <Zap className="w-5 h-5" /> },
-    { label: 'Escalate to CM', path: '/minister/escalate', icon: <AlertTriangle className="w-5 h-5" /> },
-    { label: 'Reports', path: '/minister/reports', icon: <BarChart2 className="w-5 h-5" /> },
+    { label: 'Dashboard',          path: '/minister',            end: true, icon: <LayoutDashboard className="w-5 h-5" /> },
+    { label: 'Department Tickets', path: '/minister/portfolios',            icon: <ShieldAlert className="w-5 h-5" /> },
+    { label: 'Analytics',          path: '/minister/analytics',             icon: <BarChart2 className="w-5 h-5" /> },
+    { label: 'Reports',            path: '/minister/reports',               icon: <FileText className="w-5 h-5" /> },
+    { label: 'Crisis Mode',        path: '/minister/crisis',                icon: <Zap className="w-5 h-5" /> },
+    { label: 'Escalate to CM',     path: '/minister/escalate',              icon: <AlertTriangle className="w-5 h-5" /> },
   ];
 
   const handleLogout = () => {
@@ -91,16 +92,19 @@ export default function MinisterPortal() {
 
         {/* Profile + Logout — same style as CM Portal */}
         <div className="p-4 border-t border-slate-100 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#8B1A1A]/10 rounded-full flex items-center justify-center">
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
+            onClick={() => navigate('/profile')}
+          >
+            <div className="w-10 h-10 bg-[#8B1A1A]/10 rounded-full flex items-center justify-center shrink-0">
               <User className="w-5 h-5 text-[#8B1A1A]" />
             </div>
-            <div>
-              <div className="text-xs font-black text-slate-800 truncate max-w-[150px]" title={ministerName}>
+            <div className="overflow-hidden">
+              <div className="text-xs font-black text-slate-800 truncate" title={ministerName}>
                 {ministerName}
               </div>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 truncate max-w-[150px]" title={deptName}>
-                {isHealth ? 'Health Dept.' : 'Electricity Dept.'}
+              <div className="text-[10px] text-slate-500 font-bold uppercase truncate" title={deptName}>
+                {deptName}
               </div>
             </div>
           </div>
@@ -158,7 +162,7 @@ export default function MinisterPortal() {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/crisis" element={<CrisisMode />} />
               <Route path="/escalate" element={<EscalateCm />} />
-              <Route path="/reports" element={<DummyPage title="Reports" />} />
+              <Route path="/reports" element={<MinisterReports />} />
             </Routes>
           </div>
         </main>

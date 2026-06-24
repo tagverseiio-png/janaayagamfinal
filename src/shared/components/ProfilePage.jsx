@@ -80,8 +80,8 @@ export default function ProfilePage() {
  };
 
  return (
- <div className="w-full pb-24 select-none">
- {/* ══ PAGE HEADER ══ */}
+    <div className="w-full pb-24 select-none">
+        {/* ══ PAGE HEADER ══ */}
  <div className="bg-white sticky top-0 z-50 border-b border-slate-200 shrink-0">
  <div className="h-14 px-4 flex justify-between items-center w-full">
  <button
@@ -150,58 +150,100 @@ export default function ProfilePage() {
  </button>
  </div>
 
-  {/* Row: Become a JanaNayagam */}
+  {role === 'citizen' && (
+    <>
+      {/* Row: Become a JanaNayagam */}
+      <button
+        onClick={() => navigate(isVolunteer ? '/citizen/volunteer-dashboard' : '/citizen/volunteer-signup')}
+        className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+      >
+        <div className="p-2 bg-red-50 rounded-xl mr-3 shrink-0">
+          <Handshake className="w-5 h-5 text-[#8B1A1A]" />
+        </div>
+        <div className="flex flex-col flex-1">
+          <span className="text-sm font-extrabold text-slate-800">
+            {tLabel('Become a JanaNayagam', 'ஜனநாயகம் ஆகுங்கள்')}
+          </span>
+          <span className="text-[11px] text-slate-400 font-bold">
+            {tLabel('Serve your ward', 'வார்டு சேவை')}
+          </span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-400" />
+      </button>
+
+      {/* Row: SOS Help */}
+      <button
+        onClick={() => navigate('/citizen/sos')}
+        className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+      >
+        <div className="p-2 bg-blue-50 rounded-xl mr-3 shrink-0">
+          <PhoneCall className="w-5 h-5 text-blue-500" />
+        </div>
+        <div className="flex flex-col flex-1">
+          <span className="text-sm font-extrabold text-slate-800">
+            {tLabel('SOS Help', 'அவசரம்')}
+          </span>
+          <span className="text-[11px] text-slate-400 font-bold">
+            {tLabel('Emergencies · 112', 'உதவி எண்கள் · 112')}
+          </span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-400" />
+      </button>
+
+      {/* Row: Invite a Friend */}
+      <button
+        onClick={() => navigate('/citizen/refer')}
+        className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
+      >
+        <div className="p-2 bg-indigo-50 rounded-xl mr-3 shrink-0">
+          <Share2 className="w-5 h-5 text-indigo-800" />
+        </div>
+        <div className="flex flex-col flex-1">
+          <span className="text-sm font-extrabold text-slate-800">
+            {tLabel('Invite a Friend', 'பரிந்துரை')}
+          </span>
+          <span className="text-[11px] text-slate-400 font-bold">
+            {tLabel('Refer & earn', 'பகிர்ந்து கொள்க')}
+          </span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-400" />
+      </button>
+    </>
+  )}
+
+  {/* Row: How It Works */}
   <button
-    onClick={() => navigate(isVolunteer ? '/citizen/volunteer-dashboard' : '/citizen/volunteer-signup')}
+    onClick={() => navigate('/how-it-works')}
     className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
   >
-    <div className="p-2 bg-red-50 rounded-xl mr-3 shrink-0">
-      <Handshake className="w-5 h-5 text-[#8B1A1A]" />
+    <div className="p-2 bg-emerald-50 rounded-xl mr-3 shrink-0">
+      <Activity className="w-5 h-5 text-emerald-600" />
     </div>
     <div className="flex flex-col flex-1">
       <span className="text-sm font-extrabold text-slate-800">
-        {tLabel('Become a JanaNayagam', 'ஜனநாயகம் ஆகுங்கள்')}
+        {tLabel('How it works', 'இது எப்படி செயல்படுகிறது')}
       </span>
       <span className="text-[11px] text-slate-400 font-bold">
-        {tLabel('Serve your ward', 'வார்டு சேவை')}
+        {tLabel('Understanding JanaNayagam', 'ஜனநாயகம் குறித்து அறிய')}
       </span>
     </div>
     <ChevronRight className="w-4 h-4 text-slate-400" />
   </button>
 
-  {/* Row: SOS Help */}
+  {/* Row: About Us */}
   <button
-    onClick={() => navigate('/citizen/sos')}
+    onClick={() => navigate('/about-us')}
     className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
   >
-    <div className="p-2 bg-blue-50 rounded-xl mr-3 shrink-0">
-      <PhoneCall className="w-5 h-5 text-blue-500" />
+    <div className="p-2 bg-amber-50 rounded-xl mr-3 shrink-0">
+      <Handshake className="w-5 h-5 text-amber-600" />
     </div>
     <div className="flex flex-col flex-1">
       <span className="text-sm font-extrabold text-slate-800">
-        {tLabel('SOS Help', 'அவசரம்')}
+        {tLabel('About Us', 'எங்களை பற்றி')}
       </span>
       <span className="text-[11px] text-slate-400 font-bold">
-        {tLabel('Emergencies · 112', 'உதவி எண்கள் · 112')}
-      </span>
-    </div>
-    <ChevronRight className="w-4 h-4 text-slate-400" />
-  </button>
-
-  {/* Row: Invite a Friend */}
-  <button
-    onClick={() => navigate('/citizen/refer')}
-    className="w-full flex items-center p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors"
-  >
-    <div className="p-2 bg-indigo-50 rounded-xl mr-3 shrink-0">
-      <Share2 className="w-5 h-5 text-indigo-800" />
-    </div>
-    <div className="flex flex-col flex-1">
-      <span className="text-sm font-extrabold text-slate-800">
-        {tLabel('Invite a Friend', 'பரிந்துரை')}
-      </span>
-      <span className="text-[11px] text-slate-400 font-bold">
-        {tLabel('Refer & earn', 'பகிர்ந்து கொள்க')}
+        {tLabel('Our mission & team', 'எங்கள் நோக்கம்')}
       </span>
     </div>
     <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -304,8 +346,8 @@ export default function ProfilePage() {
  <span>{tLabel('Logout Session', 'அமர்விலிருந்து வெளியேறு')}</span>
  </button>
 
- </div>
- </div>
- </div>
- );
+      </div>
+    </div>
+  </div>
+  );
 }

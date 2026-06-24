@@ -18,6 +18,9 @@ import MinisterPortal from './portals/minister/MinisterPortal';
 import OfficerPortal from './portals/officer/OfficerPortal';
 import OfficerProfile from './portals/officer/OfficerProfile';
 import PublicPortal from './portals/public/PublicPortal';
+import ProfilePage from './shared/components/ProfilePage';
+import HowItWorks from './pages/HowItWorks';
+import AboutUs from './pages/AboutUs';
 
 // Route Guard for Protected Routes
 const ProtectedRoute = ({ requiredRole, children }) => {
@@ -98,6 +101,9 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/officer/*" element={<OfficerPortal />} />
           <Route path="/official/:id" element={<EmployeeProtectedRoute><OfficerProfile /></EmployeeProtectedRoute>} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/about-us" element={<AboutUs />} />
           <Route path="/public/*" element={<PublicPortal />} />
 
           {/* Fallback to Login page */}

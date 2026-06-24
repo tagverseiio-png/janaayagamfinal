@@ -814,7 +814,10 @@ export default function EmployeeDashboard() {
         </div>
         
         <div className="p-4 border-t border-slate-200 space-y-3">
-          <div className="flex items-center gap-2">
+          <div 
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
+          >
             <div className="w-8 h-8 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-xs uppercase">
               {role.charAt(0)}
             </div>

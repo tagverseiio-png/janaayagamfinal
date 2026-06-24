@@ -142,11 +142,11 @@ export default function CitizenPortal() {
   return (
     <div style={{ backgroundColor: '#F0EBE3' }} className="min-h-screen font-sans">
       
-      {/* Responsive container */}
-      <div className="min-h-screen bg-[#F0EBE3] flex flex-col relative pb-[66px]">
+      {/* Responsive container — always full width */}
+      <div className="min-h-screen bg-[#F0EBE3] flex flex-col relative pb-[66px] w-full">
         
         {/* ══ 1. HEADER ══ */}
-        <header className="bg-white px-4 py-3 flex justify-between items-center shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border-b border-slate-100 z-50">
+        <header className="sticky top-0 z-50 bg-white px-4 py-3 flex justify-between items-center shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border-b border-slate-100">
           <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => navigate('/citizen')}>
             <Shield className="w-5 h-5 text-[#8B1A1A]" />
             <h1 className="text-sm font-black text-[#8B1A1A] tracking-wider uppercase">
@@ -186,8 +186,8 @@ export default function CitizenPortal() {
           </div>
         </header>
 
-        {/* ══ 2. MAIN SCROLLABLE CONTENT AREA ══ */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative pb-20">
+        {/* ══ 2. MAIN CONTENT AREA ══ */}
+        <main className="flex-1 relative">
           <Routes>
             <Route path="/" element={<Navigate to="/citizen/feed" replace />} />
             <Route path="/submit" element={<SubmitTicket />} />
@@ -203,8 +203,8 @@ export default function CitizenPortal() {
           </Routes>
         </main>
 
-        {/* ══ 3. FIXED BOTTOM TAB BAR ══ */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[470px] bg-white border-t sm:border-x border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
+        {/* ══ 3. FIXED BOTTOM TAB BAR — always full width ══ */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 w-full bg-white border-t border-slate-200/80 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] h-[66px] flex justify-around items-center px-2 select-none shrink-0">
           
           {/* Tab 1: Live Feed */}
           <button
