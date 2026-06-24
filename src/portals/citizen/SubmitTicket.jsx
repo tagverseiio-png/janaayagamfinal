@@ -179,6 +179,13 @@ export default function SubmitTicket() {
     await proceedWithSubmission();
   };
 
+  const calculatePriority = (catName, desc) => {
+    const text = (catName + ' ' + desc).toLowerCase();
+    if (text.includes('blackout') || text.includes('transformer') || text.includes('cyclone') || text.includes('fire') || text.includes('hazard') || text.includes('critical')) return 'P1';
+    if (catName.toLowerCase().includes('electricity') || catName.toLowerCase().includes('health')) return 'P2';
+    return 'P3';
+  };
+
   const proceedWithSubmission = async () => {
     // Determine target ward and district for routing
     let targetWard = assignedWard || (locationMode === 'home' ? livingWard : (localStorage.getItem('jn_ward') || 'Ward 170'));
@@ -192,6 +199,8 @@ export default function SubmitTicket() {
     const selectedCat = SUBMIT_CATEGORIES.find(c => c.id === category);
     const catName = selectedCat ? selectedCat.label : category;
 
+    const ticketPriority = calculatePriority(catName, description);
+
     try {
       // Send as JSON with base64 photo — backend decodes and saves to disk
       const payload = {
@@ -203,7 +212,9 @@ export default function SubmitTicket() {
         lat: location ? parseFloat(location.lat) : undefined,
         lng: location ? parseFloat(location.lng) : undefined,
         channel: 'WEB',
-        photo: photo || undefined
+        photo: photo || undefined,
+        priority: ticketPriority,
+        prioritySource: 'auto'
       };
 
       const res = await api.post('/tickets', payload);

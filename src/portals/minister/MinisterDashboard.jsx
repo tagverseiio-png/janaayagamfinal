@@ -563,7 +563,11 @@ export default function MinisterDashboard() {
                         </thead>
                         <tbody className="text-sm text-slate-700">
                           {officersAtSelectedLevel.map(officer => (
-                            <tr key={officer.id} className="border-b border-slate-100 hover:bg-white transition-colors">
+                            <tr 
+                              key={officer.id} 
+                              onClick={() => navigate(`/official/${officer.id}`)}
+                              className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
+                            >
                               <td className="py-3 font-medium flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-[#8B1A1A]/10 flex items-center justify-center text-[10px] font-black text-[#8B1A1A]">
                                   {officer.name.charAt(0)}
