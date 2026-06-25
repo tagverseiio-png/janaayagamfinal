@@ -48,6 +48,25 @@ export default function TicketInbox() {
  const [touchStart, setTouchStart] = useState(null);
  const [touchEnd, setTouchEnd] = useState(null);
 
+ // Transfer states
+ const [departments, setDepartments] = useState([]);
+ const [categories, setCategories] = useState([]);
+ const [transferModalOpen, setTransferModalOpen] = useState(false);
+ const [selectedDeptId, setSelectedDeptId] = useState('');
+ const [selectedCatId, setSelectedCatId] = useState('');
+ const [transferNotes, setTransferNotes] = useState('');
+
+ const fetchMetadataForTransfer = async () => {
+   try {
+     const deptsRes = await api.get('/metadata/departments');
+     const catsRes = await api.get('/metadata/categories');
+     setDepartments(deptsRes.data);
+     setCategories(catsRes.data);
+   } catch (err) {
+     console.error('Failed to fetch metadata for transfer', err);
+   }
+ };
+
   const fetchTickets = async () => {
     try {
       const res = await api.get('/tickets');
@@ -79,6 +98,8 @@ export default function TicketInbox() {
     } else if (action === 'close' || action === 'resolve') {
       setResolveStep(1);
       setResolveModalOpen(true);
+    } else if (action === 'transfer') {
+      setTransferModalOpen(true);
     } else if (action === 'view') {
       toast.info(`Grievance Description: ${ticket.description}`);
     }
@@ -86,6 +107,7 @@ export default function TicketInbox() {
 
   useEffect(() => {
     fetchTickets();
+    fetchMetadataForTransfer();
   }, []);
 
   // Change priority directly
@@ -200,6 +222,34 @@ export default function TicketInbox() {
       toast.error('Failed to escalate ticket');
     }
   };
+
+  const handleTransferSubmit = async (e) => {
+     if (e) e.preventDefault();
+     if (!selectedDeptId || !selectedCatId) {
+       toast.error('Please select both a department and a category.');
+       return;
+     }
+     try {
+       const targetDeptObj = departments.find(d => d._id === selectedDeptId);
+       const targetCatObj = categories.find(c => c._id === selectedCatId);
+
+       await api.patch(`/tickets/${activeTicket.dbId}`, {
+         departmentId: selectedDeptId,
+         categoryId: selectedCatId,
+         notes: `Transfer requested: Moved to ${targetDeptObj?.name || 'New Dept'} (${targetCatObj?.name || 'New Cat'}). Notes: ${transferNotes}`
+       });
+
+       toast.success(`Ticket transferred successfully to ${targetDeptObj?.name || 'new department'}`);
+       setTransferModalOpen(false);
+       setSelectedDeptId('');
+       setSelectedCatId('');
+       setTransferNotes('');
+       fetchTickets();
+     } catch (err) {
+       console.error('Failed to transfer ticket:', err);
+       toast.error('Failed to transfer ticket.');
+     }
+   };
 
   const getEscalateConfirmText = () => {
     const dept = activeTicket?.department || activeTicket?.category;
@@ -324,7 +374,7 @@ export default function TicketInbox() {
 
  {/* Inline Action Controls Panel (only for unresolved tickets) */}
  {ticket.status !== 'resolved' && ticket.status !== 'closed' && (
- <div className="pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-5 gap-3">
+ <div className="pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
  
  {/* 1. Dispatch Agent Button */}
  <button
@@ -337,16 +387,15 @@ export default function TicketInbox() {
 
  {/* 2. Priority Select */}
  <div className="relative">
- <select
- value={ticket.priority}
- onChange={(e) => handlePriorityChange(ticket.id, e.target.value)}
- className="w-full text-center py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-[10.5px] font-black uppercase text-slate-700 shadow-sm cursor-pointer appearance-none outline-none"
- >
- <option value="low">Low Priority</option>
- <option value="medium">Medium Priority</option>
- <option value="high">High Priority</option>
- <option value="critical">Critical Priority</option>
- </select>
+  <select
+  value={(ticket.priority || 'low').toLowerCase()}
+  onChange={(e) => handlePriorityChange(ticket.id, e.target.value)}
+  className="w-full text-center py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-[10.5px] font-black uppercase text-slate-700 shadow-sm cursor-pointer appearance-none outline-none"
+  >
+  <option value="high">High</option>
+  <option value="medium">Mid</option>
+  <option value="low">Low</option>
+  </select>
  </div>
 
  {/* 3. Status Select */}
@@ -382,6 +431,15 @@ export default function TicketInbox() {
  >
  <Star className={`w-3.5 h-3.5 ${ticket.mla_notified ? 'fill-white' : ''}`} />
  <span>{t('notify_mla')}</span>
+ </button>
+
+ {/* 6. Transfer Case Button */}
+ <button
+ onClick={() => { setActiveTicket(ticket); setTransferModalOpen(true); }}
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-[10.5px] font-black uppercase text-indigo-650 hover:bg-indigo-100 shadow-sm"
+ >
+ <ArrowUpRight className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+ <span>Transfer Case</span>
  </button>
 
  </div>
@@ -663,6 +721,97 @@ export default function TicketInbox() {
  </div>
  )}
  </AnimatePresence>
+
+  {/* MODAL 4: Transfer Case */}
+  <AnimatePresence>
+  {transferModalOpen && (
+  <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <motion.div 
+  initial={{ scale: 0.95, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  exit={{ scale: 0.95, opacity: 0 }}
+  className="w-full max-w-md bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4 text-left"
+  >
+  <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+  <h4 className="font-black text-indigo-600 text-base uppercase">
+  Transfer Case
+  </h4>
+  <button onClick={() => { setTransferModalOpen(false); setSelectedDeptId(''); setSelectedCatId(''); setTransferNotes(''); }}>
+  <X className="w-5 h-5 text-slate-400" />
+  </button>
+  </div>
+
+  <form onSubmit={handleTransferSubmit} className="space-y-4">
+  <div className="space-y-1">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block text-left">
+  Target Department
+  </label>
+  <select
+  required
+  value={selectedDeptId}
+  onChange={(e) => { setSelectedDeptId(e.target.value); setSelectedCatId(''); }}
+  className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm"
+  >
+  <option value="" disabled>Select Department</option>
+  {departments.map(d => (
+  <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
+  ))}
+  </select>
+  </div>
+
+  <div className="space-y-1">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block text-left">
+  Target Category
+  </label>
+  <select
+  required
+  disabled={!selectedDeptId}
+  value={selectedCatId}
+  onChange={(e) => setSelectedCatId(e.target.value)}
+  className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm disabled:opacity-50"
+  >
+  <option value="" disabled>Select Category</option>
+  {categories.filter(c => (c.departmentId || '').toString() === selectedDeptId.toString()).map(c => (
+  <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
+  ))}
+  </select>
+  </div>
+
+  <div className="space-y-1">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block text-left">
+  Transfer Reason / Notes
+  </label>
+  <textarea
+  rows={3}
+  required
+  value={transferNotes}
+  onChange={(e) => setTransferNotes(e.target.value)}
+  placeholder="State the reason for transferring this grievance to another department..."
+  className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-xs shadow-sm resize-none font-bold"
+  ></textarea>
+  </div>
+
+  <div className="flex gap-2">
+  <button
+  type="button"
+  onClick={() => { setTransferModalOpen(false); setSelectedDeptId(''); setSelectedCatId(''); setTransferNotes(''); }}
+  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-extrabold text-xs uppercase"
+  >
+  Cancel
+  </button>
+  <button
+  type="submit"
+  disabled={!selectedDeptId || !selectedCatId || !transferNotes.trim()}
+  className="flex-1 py-3.5 rounded-xl bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-md"
+  >
+  Confirm Transfer
+  </button>
+  </div>
+  </form>
+  </motion.div>
+  </div>
+  )}
+  </AnimatePresence>
 
  {/* ── GeoCamera Overlay modal ── */}
  {showGeoCamera && (

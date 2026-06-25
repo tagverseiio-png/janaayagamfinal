@@ -62,6 +62,7 @@ export default function EmployeeLoginPage() {
       localStorage.setItem('jn_emp_role', employee.role);
       localStorage.setItem('jn_role', 'employee');
       localStorage.setItem('jn_name', employee.name);
+      localStorage.setItem('jn_phone', employee.phone || '');
       
       if (employee.department) {
         localStorage.setItem('jn_emp_dept', employee.department.name);

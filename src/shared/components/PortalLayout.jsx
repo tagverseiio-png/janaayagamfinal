@@ -180,7 +180,10 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  <Bell className="w-5 h-5" />
  <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-600 rounded-full border border-white" />
  </button>
- <div className="w-8 h-8 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+ <div 
+   onClick={() => navigate(`/${role.replace('_', '-')}/profile`)}
+   className="w-8 h-8 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-xs shadow-sm cursor-pointer hover:opacity-85"
+ >
  {initials}
  </div>
  </div>
@@ -208,7 +211,10 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
  </div>
 
  {/* Profile summary card inside drawer */}
- <div className="px-5 pb-4 flex flex-col items-center text-center space-y-2 select-none">
+ <div 
+   onClick={() => { setMobileMenuOpen(false); navigate(`/${role.replace('_', '-')}/profile`); }}
+   className="px-5 pb-4 flex flex-col items-center text-center space-y-2 select-none cursor-pointer hover:opacity-85"
+ >
  <div className="w-14 h-14 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-extrabold text-lg shadow-inner">
  {initials}
  </div>
@@ -328,7 +334,10 @@ export default function PortalLayout({ children, sidebarLinks, roleLabel }) {
 
  {/* Bottom logout + Profile summary */}
  <div className="p-4 border-t border-slate-200 space-y-3">
- <div className="flex items-center gap-2">
+ <div 
+   onClick={() => navigate(`/${role.replace('_', '-')}/profile`)}
+   className="flex items-center gap-2 cursor-pointer hover:opacity-85"
+ >
  <div className="w-8 h-8 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center font-bold text-xs select-none">
  {initials}
  </div>

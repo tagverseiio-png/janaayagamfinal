@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Megaphone, Send, Activity, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../services/api';
 import { TN_DISTRICTS } from '../../data/constituencies';
 
 export default function CmAnnouncements() {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastText, setBroadcastText] = useState('');
@@ -15,9 +17,8 @@ export default function CmAnnouncements() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        // Bypass API
-        // const res = await api.get('/announcements');
-        // setAnnouncements(res.data);
+        const res = await api.get('/announcements');
+        setAnnouncements(res.data);
       } catch (err) {
         console.error('Failed to fetch announcements:', err);
       } finally {
@@ -26,6 +27,57 @@ export default function CmAnnouncements() {
     };
     fetchAnnouncements();
   }, []);
+
+  const handleViewCitizenPortal = async () => {
+    const testPhone = '9000000000';
+    try {
+      let res;
+      try {
+        res = await api.post('/auth/citizen/login', { phone: testPhone });
+      } catch (err) {
+        if (err.response?.data?.code === 'NOT_REGISTERED') {
+          res = await api.post('/auth/citizen/signup', {
+            phone: testPhone,
+            name: 'CM Preview Citizen',
+            district: 'Chennai'
+          });
+        } else {
+          throw err;
+        }
+      }
+
+      const { token, citizen } = res.data;
+
+      // Clear employee session
+      localStorage.removeItem('jn_emp_role');
+      localStorage.removeItem('jn_emp_dept');
+      localStorage.removeItem('jn_emp_jurisdiction');
+      localStorage.removeItem('jn_emp_district');
+      localStorage.removeItem('jn_emp_constituency');
+
+      // Save citizen details
+      localStorage.setItem('jn_token', token);
+      localStorage.setItem('jn_user_id', citizen.id);
+      localStorage.setItem('jn_role', 'citizen');
+      localStorage.setItem('jn_name', citizen.name);
+      localStorage.setItem('jn_is_volunteer', citizen.isVolunteer ? 'true' : 'false');
+      localStorage.setItem('jn_volunteer_ward', citizen.volunteerWard || '');
+      localStorage.setItem('jn_district', citizen.district || 'Chennai');
+      localStorage.setItem('jn_living_district', citizen.district || 'Chennai');
+      
+      const completeAddress = `Parrys, ${citizen.district || 'Chennai'}, Tamil Nadu - 600001`;
+      localStorage.setItem('jn_living_address', completeAddress);
+      localStorage.setItem('jn_ward_name', 'Ward 1');
+      localStorage.setItem('jn_ward_number', '1');
+      localStorage.setItem('jn_living_ward', 'Ward 1');
+
+      toast.success('Viewing Citizen Portal as Preview Citizen');
+      navigate('/citizen/feed');
+    } catch (err) {
+      console.error('Failed to log in as preview citizen:', err);
+      toast.error('Failed to redirect to Citizen Portal.');
+    }
+  };
 
   const handleBroadcast = async (e) => {
     e.preventDefault();
@@ -56,13 +108,21 @@ export default function CmAnnouncements() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12">
       {/* ── HEADER ── */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-        <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-          <Megaphone className="w-5 h-5 text-[#8B1A1A]" /> CM Announcements Broadcast
-        </h1>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-          Direct communication pipeline from the CM's office to the public
-        </p>
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-[#8B1A1A]" /> CM Announcements Broadcast
+          </h1>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+            Direct communication pipeline from the CM's office to the public
+          </p>
+        </div>
+        <button
+          onClick={handleViewCitizenPortal}
+          className="px-4 py-2.5 bg-[#8B1A1A] hover:bg-red-800 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all self-start sm:self-center shrink-0 cursor-pointer"
+        >
+          View Citizen Portal
+        </button>
       </div>
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start">

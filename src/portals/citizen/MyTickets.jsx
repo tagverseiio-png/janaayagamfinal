@@ -929,6 +929,60 @@ export default function MyTickets() {
                             </div>
                           </div>
 
+                          {/* 4.1 Grievance Activity History Log */}
+                          {ticket.history && ticket.history.length > 0 && (
+                            <div className="border-t border-slate-200/50 pt-4 mt-4">
+                              <span className="text-[9.5px] font-black text-slate-450 block tracking-widest uppercase mb-3">
+                                📋 {tLabel("Grievance Activity History", "புகார் நடவடிக்கை வரலாறு")}
+                              </span>
+                              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                                {ticket.history.map((h, hIdx) => {
+                                  const dateStr = new Date(h.createdAt).toLocaleString(
+                                    i18n.language === 'ta' ? 'ta-IN' : 'en-US',
+                                    { dateStyle: 'medium', timeStyle: 'short' }
+                                  );
+                                  
+                                  // Determine action label
+                                  let actionLabel = h.action;
+                                  if (h.action === 'created') actionLabel = tLabel('Grievance Submitted', 'புகார் சமர்ப்பிக்கப்பட்டது');
+                                  else if (h.action.startsWith('status_changed_to_')) {
+                                    const st = h.action.replace('status_changed_to_', '');
+                                    actionLabel = `${tLabel('Status changed to', 'நிலை மாற்றப்பட்டது:')} ${st}`;
+                                  } else if (h.action === 'volunteer_escalation') actionLabel = tLabel('Escalated by Volunteer', 'தன்னார்வலரால் மேல்முறையீடு செய்யப்பட்டது');
+                                  else if (h.action === 'citizen_escalation') actionLabel = tLabel('Escalated by Citizen', 'பொதுமக்களால் மேல்முறையீடு செய்யப்பட்டது');
+                                  
+                                  return (
+                                    <div key={h._id || hIdx} className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl flex flex-col gap-1 text-[11px] font-medium text-slate-600">
+                                      <div className="flex justify-between items-center flex-wrap gap-1 border-b border-slate-200/40 pb-1 mb-1">
+                                        <span className="font-extrabold text-slate-800 uppercase tracking-wide text-[10px]">
+                                          {actionLabel}
+                                        </span>
+                                        <span className="text-[9px] font-bold text-slate-450 font-mono">
+                                          {dateStr}
+                                        </span>
+                                      </div>
+                                      
+                                      {h.notes && (
+                                        <p className="text-slate-700 italic font-bold">
+                                          "{h.notes}"
+                                        </p>
+                                      )}
+                                      
+                                      {h.employee && (
+                                        <div className="text-[9.5px] text-slate-450 font-bold mt-1 flex items-center gap-1">
+                                          <span>👤 {h.employee.name}</span>
+                                          <span className="bg-slate-200/85 text-slate-600 px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider">
+                                            {h.employee.role}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* 4.5 ACTIVE STATE ACTIONS (escalate) */}
                           {['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'REOPENED'].includes(statusKey) && (
                             <div className="border-t border-slate-200/50 pt-4 flex justify-between items-center">

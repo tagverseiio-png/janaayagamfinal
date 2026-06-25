@@ -34,12 +34,16 @@ export default function TicketCard({ ticket, role, onAction }) {
  if (onAction) {
  onAction(id, 'view');
  }
- };  const priorityBadgeConfig = {
+  };  const priorityBadgeConfig = {
     'P1': { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
     'P2': { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
     'P3': { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' },
+    'HIGH': { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
+    'MEDIUM': { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
+    'LOW': { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' },
+    'CRITICAL': { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' }
   };
-  const pConf = priorityBadgeConfig[ticket.priority] || priorityBadgeConfig['P3'];
+  const pConf = priorityBadgeConfig[(ticket.priority || '').toUpperCase()] || priorityBadgeConfig['LOW'] || priorityBadgeConfig['P3'];
 
  return (
  <div 

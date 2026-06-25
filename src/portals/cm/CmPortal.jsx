@@ -13,6 +13,7 @@ import CmGrievances from './CmGrievances';
 import CmMinisters from './CmMinisters';
 import CmCrisisRadar from './CmCrisisRadar';
 import CmAiBriefing from './CmAiBriefing';
+import CmAnnouncements from './CmAnnouncements';
 
 // Simple dummy components for unbuilt routes
 const DummyPage = ({ title }) => (
@@ -145,7 +146,7 @@ export default function CmPortal() {
               <Route path="/grievances" element={<CmGrievances />} />
               <Route path="/ministers" element={<CmMinisters />} />
               <Route path="/crisis-radar" element={<CmCrisisRadar />} />
-              <Route path="/announcements" element={<DummyPage title="State Announcements" />} />
+              <Route path="/announcements" element={<CmAnnouncements />} />
               <Route path="/ai-briefing" element={<CmAiBriefing />} />
               <Route path="*" element={<Navigate to="/cm" replace />} />
             </Routes>

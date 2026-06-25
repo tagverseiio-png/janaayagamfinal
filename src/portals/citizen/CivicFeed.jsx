@@ -76,10 +76,17 @@ export default function CivicFeed() {
         });
 
         try {
+          const res = await api.get(`/announcements?district=${userDistrict}`);
+          if (res.data && res.data.length > 0) {
+            setAnnouncements(res.data);
+          } else {
+            const annData = mockAnnouncements.filter(a => a.district === userDistrict);
+            setAnnouncements(annData || []);
+          }
+        } catch (err) {
+          console.error('Failed to fetch announcements from DB, falling back to mock:', err);
           const annData = mockAnnouncements.filter(a => a.district === userDistrict);
           setAnnouncements(annData || []);
-        } catch (err) {
-          setAnnouncements([]);
         }
 
         const formatted = ticketsRes.data.map(t => {

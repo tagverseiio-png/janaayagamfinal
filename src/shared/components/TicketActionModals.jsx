@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getNextRole } from '../../data/hierarchyData';
 
-import { getMediaUrl } from '../../services/api';
+import api, { getMediaUrl } from '../../services/api';
 import { departments } from '../../mock';
 
 export default function TicketActionModals({ 
@@ -23,6 +23,23 @@ export default function TicketActionModals({
   const [agentName, setAgentName] = useState('');
   const [assignmentNotes, setAssignmentNotes] = useState('');
   const [targetDept, setTargetDept] = useState('');
+  const [realDepts, setRealDepts] = useState([]);
+  const [realCats, setRealCats] = useState([]);
+  const [targetCategory, setTargetCategory] = useState('');
+
+  React.useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const deptsRes = await api.get('/metadata/departments');
+        const catsRes = await api.get('/metadata/categories');
+        setRealDepts(deptsRes.data);
+        setRealCats(catsRes.data);
+      } catch (err) {
+        console.error('Failed to fetch metadata in action modals:', err);
+      }
+    };
+    fetchMetadata();
+  }, []);
 
   // Dummy coordinates for simulation
   const resolutionLat = '12.9784';
@@ -70,12 +87,17 @@ export default function TicketActionModals({
 
   const handleReassignSubmit = (e) => {
     if (e) e.preventDefault();
+    const targetDeptObj = realDepts.find(d => (d._id || d.id) === targetDept);
+    const targetCatObj = realCats.find(c => (c._id || c.id) === targetCategory);
+
     onSubmitAction(activeTicket.id, 'reassign', {
       target_department: targetDept,
-      reassign_notes: escalationNotes
+      target_category: targetCategory,
+      notes: `Reassigned: Moved to ${targetDeptObj?.name || 'New Department'} (${targetCatObj?.name || 'New Category'}). Reason: ${escalationNotes}`
     });
     setModalState(null);
     setTargetDept('');
+    setTargetCategory('');
     setEscalationNotes('');
   };
 
@@ -179,13 +201,13 @@ export default function TicketActionModals({
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Priority Level</span>
                   <div className="flex items-center gap-3">
                     <select
-                      value={activeTicket.priority || 'P3'}
+                      value={(activeTicket.priority || 'LOW').toUpperCase()}
                       onChange={(e) => onSubmitAction(activeTicket.id, 'set_priority', { priority: e.target.value })}
                       className="bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 p-2 focus:outline-none focus:border-[#8B1A1A]"
                     >
-                      <option value="P1">P1 - Critical</option>
-                      <option value="P2">P2 - High</option>
-                      <option value="P3">P3 - Standard</option>
+                      <option value="HIGH">High</option>
+                      <option value="MEDIUM">Mid</option>
+                      <option value="LOW">Low</option>
                     </select>
                     <span className="text-[10px] font-bold text-slate-400">
                       ({activeTicket.prioritySource === 'auto' ? 'auto' : `set by ${localStorage.getItem('jn_emp_name') || 'officer'}`})
@@ -478,12 +500,30 @@ export default function TicketActionModals({
                   <select
                     required
                     value={targetDept}
-                    onChange={(e) => setTargetDept(e.target.value)}
+                    onChange={(e) => { setTargetDept(e.target.value); setTargetCategory(''); }}
                     className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm"
                   >
                     <option value="" disabled>Select a department...</option>
-                    {departments.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                    {realDepts.map(d => (
+                      <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1 block">
+                    Target Category
+                  </label>
+                  <select
+                    required
+                    disabled={!targetDept}
+                    value={targetCategory}
+                    onChange={(e) => setTargetCategory(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-600 outline-none px-4 py-3 rounded-xl text-slate-800 text-sm shadow-sm disabled:opacity-50"
+                  >
+                    <option value="" disabled>Select a category...</option>
+                    {realCats.filter(c => (c.departmentId || '').toString() === targetDept.toString()).map(c => (
+                      <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
                     ))}
                   </select>
                 </div>
@@ -512,8 +552,8 @@ export default function TicketActionModals({
                   </button>
                   <button
                     type="submit"
-                    disabled={!targetDept || !escalationNotes.trim()}
-                    className="flex-1 py-3 rounded-xl bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase transition-all shadow-md"
+                    disabled={!targetDept || !targetCategory || !escalationNotes.trim()}
+                    className="flex-1 py-3 rounded-xl bg-[#8B1A1A] disabled:opacity-50 hover:bg-red-800 text-white font-extrabold text-xs uppercase transition-all shadow-md"
                   >
                     Confirm Reassign
                   </button>

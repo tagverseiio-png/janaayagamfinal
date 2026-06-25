@@ -50,7 +50,8 @@ async function main() {
     { code: 'MLA', slug: 'mla', adminLevel: 'CONSTITUENCY', jurisdictionScope: 'CONSTITUENCY', description: 'Member of Legislative Assembly' },
     { code: 'MINISTER', slug: 'minister', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Cabinet Minister' },
     { code: 'COMMISSIONER', slug: 'commissioner', adminLevel: 'CORPORATION', jurisdictionScope: 'CORPORATION', description: 'Corporation Commissioner' },
-    { code: 'DEPT_COMMISSIONER', slug: 'dept_commissioner', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Department Commissioner' }
+    { code: 'DEPT_COMMISSIONER', slug: 'dept_commissioner', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Department Commissioner' },
+    { code: 'CM', slug: 'cm', adminLevel: 'STATE', jurisdictionScope: 'STATE', description: 'Chief Minister' }
   ]);
 
   console.log('Seeding zones...');
@@ -185,6 +186,7 @@ async function main() {
     username: 'aae_electricity',
     name: 'Er. S. Karthikeyan',
     password: passwordHash,
+    phone: '+91 94440 10001',
     category: 'Department Official',
     role: 'AAE',
     departmentId: deptElec._id,
@@ -195,6 +197,7 @@ async function main() {
     username: 'ae_chennai',
     name: 'Er. R. Mohanraj',
     password: passwordHash,
+    phone: '+91 94440 10002',
     category: 'Department Official',
     role: 'AE',
     departmentId: deptElec._id,
@@ -205,6 +208,7 @@ async function main() {
     username: 'minister_electricity',
     name: 'C. T. R. Nirmal Kumar',
     password: passwordHash,
+    phone: '+91 94440 10003',
     category: 'Elected Representative',
     role: 'Minister',
     departmentId: deptElec._id,
@@ -216,6 +220,7 @@ async function main() {
     username: 'dsi_admin',
     name: 'M. Saravanan',
     password: passwordHash,
+    phone: '+91 94440 10004',
     category: 'Department Official',
     role: 'DSI',
     departmentId: deptSan._id,
@@ -226,6 +231,7 @@ async function main() {
     username: 'si_admin',
     name: 'K. Priyadharshini',
     password: passwordHash,
+    phone: '+91 94440 10005',
     category: 'Department Official',
     role: 'SI',
     departmentId: deptSan._id,
@@ -236,6 +242,7 @@ async function main() {
     username: 'hi_admin',
     name: 'D. Ramesh Babu',
     password: passwordHash,
+    phone: '+91 94440 10006',
     category: 'Department Official',
     role: 'HI',
     departmentId: deptSan._id,
@@ -246,6 +253,7 @@ async function main() {
     username: 'chi_admin',
     name: 'Dr. S. Lakshmi Narayanan',
     password: passwordHash,
+    phone: '+91 94440 10007',
     category: 'Department Official',
     role: 'CHI',
     departmentId: deptSan._id,
@@ -256,6 +264,7 @@ async function main() {
     username: 'dept_comm_admin',
     name: 'T. Vijayakumar, I.A.S.',
     password: passwordHash,
+    phone: '+91 94440 10008',
     category: 'Administrative Officer',
     role: 'Department Commissioner',
     departmentId: deptSan._id,
@@ -266,6 +275,7 @@ async function main() {
     username: 'comm_admin',
     name: 'R. Anandhi, I.A.S.',
     password: passwordHash,
+    phone: '+91 94440 10009',
     category: 'Administrative Officer',
     role: 'Corporation Commissioner',
     departmentId: deptSan._id,
@@ -276,6 +286,7 @@ async function main() {
     username: 'minister_health',
     name: 'Dr. K.G. Arunraj',
     password: passwordHash,
+    phone: '+91 94440 10010',
     category: 'Elected Representative',
     role: 'Minister',
     departmentId: deptSan._id,
@@ -287,15 +298,38 @@ async function main() {
     username: 'mla_venkataraman',
     name: 'Thiru P. Venkataramanan',
     password: passwordHash,
+    phone: '+91 94440 10011',
     category: 'Elected Representative',
     role: 'MLA',
     departmentId: null,
     jurisdictionId: constituencyNode._id
   });
 
+  const mlaMylapore = await Employee.create({
+    username: 'mla_mylapore',
+    name: 'Thiru. Dha. Velu',
+    password: passwordHash,
+    phone: '+91 94440 10012',
+    category: 'Elected Representative',
+    role: 'MLA',
+    departmentId: null,
+    jurisdictionId: constituencyNode._id
+  });
+
+  const cmAdmin = await Employee.create({
+    username: 'cm_admin',
+    name: 'Thiru. M.K. Stalin',
+    password: passwordHash,
+    phone: '+91 94440 10013',
+    category: 'Elected Representative',
+    role: 'CM',
+    departmentId: null,
+    jurisdictionId: stateNode._id
+  });
+
   console.log('Database seeding completed successfully.');
   console.log(`Seeded departments: 2`);
-  console.log(`Seeded officials: 11`);
+  console.log(`Seeded officials: 13`);
 }
 
 main()

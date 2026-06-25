@@ -660,6 +660,42 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
     if (priority) data.priority = priority.toUpperCase();
     if (assignedToId) data.assignedToId = assignedToId;
     
+    // Support department & category transfer reassignments
+    const newDeptId = req.body.departmentId || req.body.target_department;
+    const newCatId = req.body.categoryId || req.body.target_category;
+    
+    if (newDeptId) data.departmentId = newDeptId;
+    if (newCatId) data.categoryId = newCatId;
+
+    if (newDeptId || newCatId) {
+      const activeDeptId = newDeptId || currentTicket.departmentId;
+      const activeCatId = newCatId || currentTicket.categoryId;
+      
+      if (activeDeptId && activeCatId) {
+        const category = await ComplaintCategory.findById(activeCatId).populate({
+          path: 'escalations',
+          options: { sort: { level: 1 } }
+        });
+        const escalations = category?.escalations as any[] | undefined;
+        if (category && escalations && escalations.length > 0) {
+          const firstRole = escalations[0].assigneeTitle;
+          const officer = await findEmployeeByEscalationRole(
+            activeDeptId.toString(),
+            firstRole,
+            currentTicket.jurisdictionId ? currentTicket.jurisdictionId.toString() : undefined
+          );
+          if (officer) {
+            data.assignedToId = officer._id;
+            data.status = 'ASSIGNED';
+            console.log(`[TRANSFER] Auto-assigned to first responder of new dept/cat: ${firstRole} (${officer.name})`);
+          } else {
+            data.assignedToId = null;
+            data.status = 'SUBMITTED';
+          }
+        }
+      }
+    }
+
     // Save photo details
     const proofPhotoVal = req.body.proofPhoto || req.body.photo || req.body.resolution_proof;
     if (proofPhotoVal) data.proofPhoto = proofPhotoVal;
@@ -668,8 +704,8 @@ export const updateTicket = async (req: Request, res: Response): Promise<void> =
 
     // MLA Security & Flagging enforcement
     if (updater && updater.role === 'MLA') {
-      if (status || priority || assignedToId) {
-        res.status(403).json({ error: 'MLA is restricted to VIEW + FLAG only. Cannot change status, priority, or assignee.' });
+      if (status || priority || assignedToId || newDeptId || newCatId) {
+        res.status(403).json({ error: 'MLA is restricted to VIEW + FLAG only. Cannot change status, priority, department, category, or assignee.' });
         return;
       }
       if (!notes || notes.trim() === '') {
