@@ -176,8 +176,8 @@ export default function SignUpPage() {
     // Lookup coordinates by dynamic district data
     const selectedDistObj = dbDistricts.find(d => d.name === district);
     const coords = { 
-      lat: selectedDistObj?.lat || 10.8505, 
-      lng: selectedDistObj?.lng || 78.6677 
+      lat: selectedDistObj?.lat || 13.0330, 
+      lng: selectedDistObj?.lng || 80.2641 
     };
 
     try {

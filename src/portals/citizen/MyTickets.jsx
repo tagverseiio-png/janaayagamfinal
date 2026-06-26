@@ -780,7 +780,7 @@ export default function MyTickets() {
                                 <ErrorBoundary>
                                   <div style={{ height: '140px', width: '100%' }} className="rounded-lg overflow-hidden relative z-10">
                                     <MapContainer
-                                      center={[ticket.lat, ticket.lng]}
+                                      center={[ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 13.0330 : ticket.lat, ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 80.2641 : ticket.lng]}
                                       zoom={15}
                                       zoomControl={false}
                                       scrollWheelZoom={false}
@@ -793,7 +793,7 @@ export default function MyTickets() {
                                         attribution='&copy; Carto'
                                       />
                                       <CircleMarker
-                                        center={[ticket.lat, ticket.lng]}
+                                        center={[ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 13.0330 : ticket.lat, ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 80.2641 : ticket.lng]}
                                         radius={8}
                                         fillColor="#8B1A1A"
                                         color="white"
@@ -804,7 +804,7 @@ export default function MyTickets() {
                                   </div>
                                 </ErrorBoundary>
                                 <div className="flex justify-between items-center text-[9.5px] font-mono text-slate-400 mt-1.5 px-1">
-                                  <span>LAT: {ticket.lat.toFixed(6)} | LNG: {ticket.lng.toFixed(6)}</span>
+                                  <span>LAT: {(ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 13.0330 : ticket.lat).toFixed(6)} | LNG: {(ticket.lat === 10.8505 && ticket.lng === 78.6677 ? 80.2641 : ticket.lng).toFixed(6)}</span>
                                   <span>{tLabel("Geo-Stamped GPS", "புவிக்குறியீடு")}</span>
                                 </div>
                               </div>

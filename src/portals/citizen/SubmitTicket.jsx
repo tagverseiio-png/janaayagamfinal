@@ -124,7 +124,13 @@ export default function SubmitTicket() {
       return;
     }
     setLocationMode('home');
-    setLocation({ lat: localStorage.getItem('jn_living_lat') || '13.0827', lng: localStorage.getItem('jn_living_lng') || '80.2707' });
+    const livingLat = localStorage.getItem('jn_living_lat');
+    const livingLng = localStorage.getItem('jn_living_lng');
+    const isStateFallback = livingLat === '10.8505' && livingLng === '78.6677';
+    setLocation({
+      lat: isStateFallback ? '13.0330' : (livingLat || '13.0330'),
+      lng: isStateFallback ? '80.2641' : (livingLng || '80.2641')
+    });
     setLocationCaptured(true);
     setStep(1);
   };

@@ -76,8 +76,8 @@ export default function LoginPage() {
       // Handle location detail restoration
       const storedDistrict = localStorage.getItem('jn_district') || citizen.district || 'Chennai';
       const coords = {
-        lat: citizen.jurisdiction?.lat || 10.8505,
-        lng: citizen.jurisdiction?.lng || 78.6677
+        lat: citizen.jurisdiction?.lat || 13.0330,
+        lng: citizen.jurisdiction?.lng || 80.2641
       };
 
       if (!localStorage.getItem('jn_district')) {
