@@ -35,4 +35,36 @@ api.interceptors.request.use(
   }
 );
 
+// Add a response interceptor to handle 401 Unauthorized errors
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear session keys
+      const keysToRemove = [
+        'jn_token',
+        'jn_user_id',
+        'jn_role',
+        'jn_name',
+        'jn_is_volunteer',
+        'jn_volunteer_ward',
+        'jn_emp_role',
+        'jn_emp_dept',
+        'jn_emp_dept_id',
+        'jn_emp_jurisdiction',
+        'jn_emp_district',
+        'jn_emp_constituency',
+        'jn_phone'
+      ];
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+      
+      // Redirect to login page
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
