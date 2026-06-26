@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shield, LogOut, CheckCircle, AlertTriangle, Clock, MapPin, Search, BarChart2, FileText, List, Users, TrendingUp, Activity, Target, Phone, ArrowUpRight, CheckCircle2, User, ChevronRight, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 import TnMap from '../shared/components/TnMap';
 import TicketCard from '../shared/components/TicketCard';
 import TicketActionModals from '../shared/components/TicketActionModals';
@@ -948,21 +947,12 @@ export default function EmployeeDashboard() {
 
         {/* Dashboard Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeMenu}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              {activeMenu === 'dashboard' && renderDashboard()}
-              {activeMenu === 'tickets' && renderTickets()}
-              {activeMenu === 'map' && renderMap()}
-              {activeMenu === 'reports' && renderReports()}
-            </motion.div>
-          </AnimatePresence>
+          <div className="h-full">
+            {activeMenu === 'dashboard' && renderDashboard()}
+            {activeMenu === 'tickets' && renderTickets()}
+            {activeMenu === 'map' && renderMap()}
+            {activeMenu === 'reports' && renderReports()}
+          </div>
         </div>
       </main>
 
